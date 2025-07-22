@@ -5,7 +5,10 @@ const lightTheme = createTheme({
     palette: {
         mode: "light",
         primary: {
-            main: "#16b48e", // 
+            main: "#16b48e", //
+            dark: "#f9f9f9",
+            light: "#f9f9f9",
+           
         },
         secondary: {
             main: "#616161", //
@@ -36,6 +39,26 @@ const lightTheme = createTheme({
             standard: 300,
         },
     },
+    components: {
+        MuiAppBar: {
+            styleOverrides: {
+                root: {
+                    boxShadow: "none",
+                    backgroundImage: "none",
+                    backgroundColor: "#fff", // Ensure the AppBar is transparent
+                },
+            },
+        },
+        MuiDrawer: {
+            styleOverrides: {
+                root: {
+                    boxShadow: "none",
+                    backgroundImage: "none",
+                    backgroundColor: "#fff", // Ensure the AppBar is transparent
+                },
+            },
+        },
+    },
 });
 
 // Dark Theme
@@ -44,6 +67,8 @@ const darkTheme = createTheme({
         mode: "dark",
         primary: {
             main: "#16b48e", // Light blue
+            dark: "#0b0f19",
+            light: "#171b25",
         },
         secondary: {
             main: "#616161", // Light pink
@@ -72,6 +97,26 @@ const darkTheme = createTheme({
     transitions: {
         duration: {
             standard: 300,
+        },
+    },
+    components: {
+        MuiAppBar: {
+            styleOverrides: {
+                root: {
+                    boxShadow: "none",
+                    backgroundImage: "none",
+                    backgroundColor: "#030303",
+                },
+            },
+        },
+        MuiDrawer: {
+            styleOverrides: {
+                root: {
+                    boxShadow: "none",
+                    backgroundImage: "none",
+                    backgroundColor: "#030303",
+                },
+            },
         },
     },
 });

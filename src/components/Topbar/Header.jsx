@@ -6,7 +6,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import React, { Fragment, useState } from "react";
 
 import { Link as ScrollLink } from "react-scroll";
-import { IconButton, Paper, Stack, Typography } from "@mui/material";
+import { IconButton, Paper, Stack, Typography, useTheme } from "@mui/material";
 
 import ButtonBorder from "@components/common/ButtonBorder";
 import { darkLogo, lightLogo } from "@/assets";
@@ -43,6 +43,7 @@ export default function Header({ children }) {
     const [state, setState] = useState({ left: false });
 
     const { address, isDarkMode } = useGenrelContext();
+    const theme = useTheme();
 
     const toggleDrawer = (anchor, open) => (event) => {
         if (event && event.type === "keydown" && (event.key === "Tab" || event.key === "Shift")) {
@@ -62,11 +63,10 @@ export default function Header({ children }) {
         >
             {children}
 
-            <Stack direction="column" alignItems="center" gap={"0px"} justifyContent={"center"}>
-                <img src={isDarkMode ? darkLogo : lightLogo} alt="logo" srcSet="" width="100px" />
-                <Typography fontWeight="700" fontSize="14px" sx={(theme) => ({ color: theme.palette.text.secondary })}>
-                    {" "}
-                    Trend Up{" "}
+            <Stack direction="row" alignItems="center" gap={"0px"}>
+                <img width="60px" src={lightLogo} alt="logo" srcSet="" />
+                <Typography color={theme.palette.text.secondary} fontWeight="700" fontSize={{ md: "24px", xs: "20px" }}>
+                    TRENDUP
                 </Typography>
             </Stack>
 
@@ -215,15 +215,13 @@ export default function Header({ children }) {
                             {["left"].map((anchor) => (
                                 <React.Fragment key={anchor}>
                                     <Stack direction="row" alignItems="center" gap={"0px"}>
-                                        <img
-                                            src={isDarkMode ? darkLogo : lightLogo}
-                                            alt="logo"
-                                            srcSet=""
-                                            width="40px"
-                                        />
-                                        <Typography fontWeight="700" fontSize="14px">
-                                            {" "}
-                                            Trend Up{" "}
+                                        <img width="60px" src={lightLogo} alt="logo" srcSet="" />
+                                        <Typography
+                                            color={theme.palette.text.secondary}
+                                            fontWeight="700"
+                                            fontSize={{ md: "24px", xs: "20px" }}
+                                        >
+                                            TRENDUP
                                         </Typography>
                                     </Stack>
 

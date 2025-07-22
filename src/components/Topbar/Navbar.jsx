@@ -1,4 +1,4 @@
-import { Avatar, Box, Container, Stack, Typography, useTheme } from "@mui/material";
+import { Avatar, Box, Container, IconButton, Stack, Typography, useTheme } from "@mui/material";
 import { Link } from "react-router-dom";
 
 import { useGenrelContext } from "@/context/GenrelContext";
@@ -7,21 +7,22 @@ import ButtonBorder from "@components/common/ButtonBorder";
 import { ThemeToggle } from "../common/ToggelTheme/ToggelTheme";
 import ConnectButton from "../common/ConnectButton/ConnectButton";
 import { useSelector } from "react-redux";
+import { MenuIcon } from "@/assets/icons";
 
-const array = [
-    {
-        name: "Home",
-        link1: "/",
-    },
-    {
-        name: "Vote",
-        link1: "/vote",
-    },
-    {
-        name: "Chats",
-        link1: "/chat",
-    },
-];
+// const array = [
+//     {
+//         name: "Home",
+//         link1: "/",
+//     },
+//     {
+//         name: "Vote",
+//         link1: "/vote",
+//     },
+//     {
+//         name: "Chats",
+//         link1: "/chat",
+//     },
+// ];
 
 const Navbar = () => {
     const { isDarkMode } = useGenrelContext();
@@ -43,93 +44,14 @@ const Navbar = () => {
             >
                 <Stack direction="row" alignItems="center" gap={"0px"}>
                     <img width="60px" src={isDarkMode ? darkLogo : lightLogo} alt="logo" srcSet="" />
-                    <Typography fontWeight="700" fontSize="24px">
-                        {" "}
-                        Trend Up{" "}
+                    <Typography
+                        color={theme.palette.text.secondary}
+                        fontWeight="700"
+                        fontSize={{ md: "24px", xs: "20px" }}
+                    >
+                        TRENDUP
                     </Typography>
                 </Stack>
-
-                {user && (
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "flex-start",
-                            gap: "0px 80px",
-                            alignItems: "center",
-                            borderRadius: "10px",
-                        }}
-                    >
-                        <Box>
-                            <Stack
-                                direction="row"
-                                spacing={2}
-                                sx={{
-                                    alignItems: "center",
-                                }}
-                            >
-                                {array.map((item, index) => {
-                                    return (
-                                        <Link
-                                            key={index}
-                                            to={item.link1}
-                                            style={{
-                                                cursor: "pointer",
-                                                textDecoration: "none",
-                                                padding: "10px",
-                                                borderRadius: "5px",
-                                                fontSize: "12px",
-                                                textTransform: "capitalize",
-                                                color: theme.palette.primary.main,
-                                                alignItems: "center",
-                                                fontWeight: "700",
-                                            }}
-                                            className="cool-link"
-                                        >
-                                            {item.name.toUpperCase()}
-                                        </Link>
-                                    );
-                                })}
-
-                                <a
-                                    href="/whitePaper.pdf"
-                                    style={{
-                                        cursor: "pointer",
-                                        textDecoration: "none",
-                                        padding: "10px",
-                                        borderRadius: "5px",
-                                        fontSize: "12px",
-                                        textTransform: "capitalize",
-                                        color: theme.palette.primary.main,
-                                        alignItems: "center",
-                                        fontWeight: "700",
-                                    }}
-                                    className="cool-link"
-                                    target="_blanck"
-                                >
-                                    WHITE PAPER
-                                </a>
-                                <a
-                                    href="/audit.pdf"
-                                    style={{
-                                        cursor: "pointer",
-                                        textDecoration: "none",
-                                        padding: "10px",
-                                        borderRadius: "5px",
-                                        fontSize: "12px",
-                                        textTransform: "capitalize",
-                                        color: theme.palette.primary.main,
-                                        alignItems: "center",
-                                        fontWeight: "700",
-                                    }}
-                                    className="cool-link"
-                                    target="_blanck"
-                                >
-                                    AUDIT
-                                </a>
-                            </Stack>
-                        </Box>
-                    </Box>
-                )}
 
                 <Box
                     sx={{

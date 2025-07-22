@@ -83,7 +83,7 @@ const Login = () => {
         setTimeout(() => {
             dispatch(setUser({ name: "user", id: 1, address: "" }));
             setIsLoading(false);
-            navigate("/vote");
+            navigate("/");
         }, 2000);
     };
     if (isLoading) return <Loading isLoading={true} />;

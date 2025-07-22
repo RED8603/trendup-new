@@ -19,7 +19,7 @@ const Vote = () => {
                         <Tab label="HODL" value={3} />
                     </TabList>
                 </Box>
-                <TabPanel value={1}>
+                <TabPanel value={1} sx={{ px: { md: 2, xs: 0 } }}>
                     <GenrelVoting />{" "}
                 </TabPanel>
                 <TabPanel value={2}>Item Two</TabPanel>
