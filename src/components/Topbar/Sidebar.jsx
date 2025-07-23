@@ -26,6 +26,8 @@ import { useMediaQuery } from "@mui/material";
 import Header from "./Header";
 import Navbar from "./Navbar";
 import { ChatIcon, ChevronLeftIcon, HomeIcon, LiveIcon, MenuIcon, VoteIcon } from "@/assets/icons";
+import { motion } from "framer-motion";
+import Logo from "../common/Logo/Logo";
 
 const drawerWidth = 240;
 
@@ -130,13 +132,22 @@ const array = [
         Icon: LiveIcon,
     },
 ];
+const MotionListItemButton = motion(ListItemButton);
+const MotionIcon = motion.div;
+const MotionTypography = motion(Typography);
 
 const CustomDrawer = ({ handleDrawerClose, open }) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
     console.log(selectedIndex, "selectedIndex");
     const theme = useTheme();
     const { isDarkMode } = useGenrelContext();
-    ``;
+    // Color palettes
+    const darkColors = { c1: "#e12e24", c2: "#a61d66" };
+    const lightColors = { c1: "#16b48e", c2: "#fff" };
+
+    const { c1, c2 } = isDarkMode ? darkColors : lightColors;
+
+    const gradient = `linear-gradient(45deg, ${c1}, ${c2})`;
 
     return (
         <Drawer
@@ -164,16 +175,26 @@ const CustomDrawer = ({ handleDrawerClose, open }) => {
                 {array.map(({ name, link1, Icon: ImageIcon }, index) => (
                     <ListItem key={index} disablePadding sx={{ display: "block" }}>
                         <Link to={link1} style={{ textDecoration: "none", color: "inherit" }}>
-                            <ListItemButton
-                                style={{ margin: "0px 10px" }}
+                            <MotionListItemButton
                                 onClick={() => setSelectedIndex(index)}
+                                whileHover={{
+                                    scale: 1.05,
+                                    transition: { type: "spring", stiffness: 300 },
+                                }}
+                                initial={false}
+                                animate={{
+                                    background: selectedIndex === index ? gradient : "transparent",
+                                }}
+                                transition={{ duration: 0.3 }}
                                 sx={[
                                     {
                                         minHeight: 48,
                                         px: open ? 2.5 : 1.5,
                                         display: "flex",
                                         gap: 5,
-                                        mx: 0,
+                                        // mx: 0,
+                                        borderRadius: 5,
+                                        mx: open ? 3 : 1,
                                     },
                                     open
                                         ? {
@@ -182,55 +203,46 @@ const CustomDrawer = ({ handleDrawerClose, open }) => {
                                         : {
                                               justifyContent: "center",
                                           },
-
-                                    selectedIndex === index
-                                        ? {
-                                              background: "linear-gradient(to right, #e12e24, #a61d66)",
-                                              borderRadius: 5,
-                                              mx: 3,
-                                          }
-                                        : {
-                                              borderRadius: 5,
-                                              mx: 3,
-                                          },
                                 ]}
                             >
                                 <ListItemIcon
-                                    sx={[
-                                        {
-                                            minWidth: 0,
-                                            justifyContent: "center",
-                                        },
-                                    ]}
+                                    sx={{
+                                        minWidth: 0,
+                                        justifyContent: "center",
+                                    }}
                                 >
-                                    {" "}
-                                    <ImageIcon
-                                        sx={{
-                                            color:
-                                                selectedIndex === index
-                                                    ? theme.palette.primary.main
-                                                    : theme.palette.text.secondary,
+                                    <MotionIcon
+                                        key={selectedIndex === index ? "active" : "inactive"}
+                                        initial={{ scale: 1 }}
+                                        animate={{
+                                            scale: selectedIndex === index ? [1, 1.3, 1] : 1,
                                         }}
-                                    />{" "}
+                                        transition={{ duration: 0.5 }}
+                                    >
+                                        <ImageIcon
+                                            sx={{
+                                                color:
+                                                    selectedIndex === index
+                                                        ? !isDarkMode
+                                                            ? "#fff"
+                                                            : theme.palette.primary.main
+                                                        : theme.palette.text.secondary,
+                                            }}
+                                        />
+                                    </MotionIcon>
                                 </ListItemIcon>
 
                                 {open && (
-                                    <Typography
+                                    <MotionTypography
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.3, delay: 0.1 }}
                                         color={theme.palette.text.secondary}
-                                        sx={[
-                                            open
-                                                ? {
-                                                      opacity: 1,
-                                                  }
-                                                : {
-                                                      opacity: 0,
-                                                  },
-                                        ]}
                                     >
                                         {name}
-                                    </Typography>
+                                    </MotionTypography>
                                 )}
-                            </ListItemButton>
+                            </MotionListItemButton>
                         </Link>
                     </ListItem>
                 ))}
@@ -282,16 +294,7 @@ const Sidebar = ({ children }) => {
                                         >
                                             <MenuIcon />
                                         </IconButton>
-                                        <Stack direction="row" alignItems="center" gap={"0px"}>
-                                            <img width="60px" src={lightLogo} alt="logo" srcSet="" />
-                                            <Typography
-                                                color={theme.palette.text.secondary}
-                                                fontWeight="700"
-                                                fontSize={{ md: "24px", xs: "20px" }}
-                                            >
-                                                TRENDUP
-                                            </Typography>
-                                        </Stack>
+                                        <Logo />
                                     </Box>
 
                                     <Box

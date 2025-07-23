@@ -10,20 +10,43 @@ const MotionDiv = motion.div;
 
 const AppWrapper = ({ children }) => {
     const { isDarkMode } = useGenrelContext();
+
+    const duration = 0.3; // match 300ms from theme
     return (
         <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
             <CssBaseline />
             {/* <Topbar /> */}
             <Sidebar>
-                <Box sx={{ overflowX: "hidden" }}>
+                <Box sx={{ overflowX: "hidden", position: "relative" }}>
                     <AnimatePresence mode="wait">
                         <MotionDiv
-                            key={isDarkMode} // triggers animation on mode change
-                            initial={{ x: isDarkMode === "light" ? -100 : 100, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: isDarkMode === "light" ? 100 : -100, opacity: 0 }}
-                            transition={{ duration: 0.4 }}
-                            // style={{ padding: 20 }}
+                            key={isDarkMode}
+                            initial={{
+                                opacity: 0,
+                                scale: 0.98,
+                                y: 10,
+                                filter: "blur(4px)",
+                            }}
+                            animate={{
+                                opacity: 1,
+                                scale: 1,
+                                y: 0,
+                                filter: "blur(0px)",
+                                transition: {
+                                    duration,
+                                    ease: "easeInOut",
+                                },
+                            }}
+                            exit={{
+                                opacity: 0,
+                                scale: 0.98,
+                                y: -10,
+                                filter: "blur(4px)",
+                                transition: {
+                                    duration,
+                                    ease: "easeInOut",
+                                },
+                            }}
                         >
                             <Container maxWidth="xl">{children}</Container>
                         </MotionDiv>

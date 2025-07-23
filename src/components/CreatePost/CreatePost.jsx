@@ -2,6 +2,9 @@ import { PollIcon, PostIcon, VideoIcon } from "@/assets/icons";
 import { Box, IconButton, Input, Stack, Typography, useTheme } from "@mui/material";
 import React from "react";
 import BoxConatner from "@components/common/BoxContainer/BoxConatner";
+import GoLiveButton from "../common/GoLiveButton/GoLiveButton";
+import ButtonBorder from "../common/ButtonBorder";
+import MainButton from "../common/MainButton/MainButton";
 
 const CreatePost = () => {
     const theme = useTheme();
@@ -39,9 +42,12 @@ const CreatePost = () => {
                     </IconButton>
                 </Stack>
 
-                <IconButton>
-                    <Typography fontWeight={600}>Post</Typography>
-                </IconButton>
+                <Stack direction="row" alignItems={"center"} spacing={3}>
+                    <GoLiveButton />
+                    <MainButton className="hvr-bounce-to-right" >
+                        <Typography fontWeight={600} color="textSecondary" >Post</Typography>
+                    </MainButton>
+                </Stack>
             </Stack>
         </BoxConatner>
     );

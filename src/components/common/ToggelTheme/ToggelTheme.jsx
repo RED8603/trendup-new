@@ -1,9 +1,5 @@
 // src/components/ThemeToggle.js
 import { styled } from "@mui/material/styles";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { useGenrelContext } from "../../../context/GenrelContext";
 import { Switch } from "@mui/material";
 
@@ -11,54 +7,60 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
     width: 62,
     height: 34,
     padding: 7,
+    transition: theme.transitions.create(["background-color"], {
+        duration: theme.transitions.duration.standard,
+    }),
     "& .MuiSwitch-switchBase": {
         margin: 1,
         padding: 0,
         transform: "translateX(6px)",
+        transition: theme.transitions.create(["transform"], {
+            duration: theme.transitions.duration.standard,
+        }),
         "&.Mui-checked": {
-            color: theme.palette.primary.main,
             transform: "translateX(22px)",
-            "& .MuiSwitch-thumb:before": {
-                backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
-                    "#fff"
-                )}" d="M4.2 2.5l-.7 1.8-1.8.7 1.8.7.7 1.8.6-1.8L6.7 5l-1.9-.7-.6-1.8zm15 8.3a6.7 6.7 0 11-6.6-6.6 5.8 5.8 0 006.6 6.6z"/></svg>')`,
+            color: theme.palette.primary.main,
+            "& .MuiSwitch-thumb": {
+                backgroundColor: "#FFC107", // golden glow for moon
+                boxShadow: "0 0 8px rgba(255, 193, 7, 0.5)",
+                "&::before": {
+                    transform: "rotate(360deg)",
+                    transition: "transform 0.4s ease",
+                    backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="${encodeURIComponent(
+                        "#fff"
+                    )}" height="20" width="20" viewBox="0 0 24 24"><path d="M12 2a9.9 9.9 0 0 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16A8 8 0 0 1 12 4z"/></svg>')`,
+                },
             },
             "& + .MuiSwitch-track": {
-                opacity: 1,
                 backgroundColor: theme.palette.secondary.main,
-                ...theme.applyStyles("dark", {
-                    backgroundColor: "#8796A5",
-                }),
             },
         },
     },
     "& .MuiSwitch-thumb": {
-        backgroundColor: "#001e3c",
+        backgroundColor: "#fff",
         width: 32,
         height: 32,
+        position: "relative",
+        transition: "background-color 0.3s ease, box-shadow 0.3s ease",
         "&::before": {
             content: "''",
             position: "absolute",
             width: "100%",
             height: "100%",
-            left: 0,
-            top: 0,
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center",
-            backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
-                "#fff"
-            )}" d="M9.305 1.667V3.75h1.389V1.667h-1.39zm-4.707 1.95l-.982.982L5.09 6.072l.982-.982-1.473-1.473zm10.802 0L13.927 5.09l.982.982 1.473-1.473-.982-.982zM10 5.139a4.872 4.872 0 00-4.862 4.86A4.872 4.872 0 0010 14.862 4.872 4.872 0 0014.86 10 4.872 4.872 0 0010 5.139zm0 1.389A3.462 3.462 0 0113.471 10a3.462 3.462 0 01-3.473 3.472A3.462 3.462 0 016.527 10 3.462 3.462 0 0110 6.528zM1.665 9.305v1.39h2.083v-1.39H1.666zm14.583 0v1.39h2.084v-1.39h-2.084zM5.09 13.928L3.616 15.4l.982.982 1.473-1.473-.982-.982zm9.82 0l-.982.982 1.473 1.473.982-.982-1.473-1.473zM9.305 16.25v2.083h1.389V16.25h-1.39z"/></svg>')`,
+            backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="${encodeURIComponent(
+                "#ffb300"
+            )}" height="20" width="20" viewBox="0 0 24 24"><path d="M6.76 4.84l-1.8-1.79L2.2 5.8l1.79 1.8L6.76 4.84zM1 12h4v-2H1v2zm10-9h2V1h-2v2zm10.79 2.21l-1.8-1.79-1.8 1.8 1.79 1.79 1.81-1.8zM17.24 4.84l1.8-1.79 2.76 2.75-1.8 1.8-2.76-2.76zM23 12h-4v2h4v-2zm-2.21 7.79l-1.79-1.8-1.8 1.8 1.8 1.79 1.79-1.79zM13 22h-2v2h2v-2zM4.22 19.78l-1.8-1.8-1.8 1.8 1.8 1.79 1.8-1.79z"/></svg>')`,
+            transition: "transform 0.4s ease",
         },
-        ...theme.applyStyles("dark", {
-            backgroundColor: "#003892",
-        }),
     },
     "& .MuiSwitch-track": {
         opacity: 1,
         backgroundColor: "#aab4be",
         borderRadius: 20 / 2,
-        ...theme.applyStyles("dark", {
-            backgroundColor: "#8796A5",
+        transition: theme.transitions.create(["background-color"], {
+            duration: theme.transitions.duration.standard,
         }),
     },
 }));
@@ -66,11 +68,5 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 export const ThemeToggle = () => {
     const { isDarkMode, toggleTheme } = useGenrelContext();
 
-    return (
-        <MaterialUISwitch
-            sx={{ m: 1 }}
-            checked={isDarkMode}
-            onChange={toggleTheme}
-        />
-    );
+    return <MaterialUISwitch sx={{ m: 1 }} checked={isDarkMode} onChange={toggleTheme} />;
 };
