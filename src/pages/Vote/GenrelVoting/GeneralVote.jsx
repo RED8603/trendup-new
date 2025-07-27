@@ -99,23 +99,15 @@ export default function VotingComponent() {
           {/* Voting Buttons */}
           <Stack direction="row" spacing={2}>
             <ButtonMain fullWidth>YES</ButtonMain>
-            <Button
+            <ButtonMain
               variant="contained"
               fullWidth
               sx={{
                 backgroundColor: "#ff4444",
-                color: "white",
-                fontWeight: "bold",
-                fontSize: "1.1rem",
-                py: 1.5,
-                borderRadius: 2,
-                "&:hover": {
-                  backgroundColor: "#cc3333",
-                },
               }}
             >
               NO
-            </Button>
+            </ButtonMain>
           </Stack>
         </Stack>
       </Box>
