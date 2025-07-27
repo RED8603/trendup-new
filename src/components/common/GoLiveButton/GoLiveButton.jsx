@@ -72,7 +72,7 @@ const GoLiveButton = ({ onClick }) => {
                     padding: "12px 30px",
                     borderRadius: "999px",
                     fontWeight: "bold",
-                    fontSize: "16px",
+                    fontSize: { md: "16px", xs: "14px" },
                     textTransform: "none",
                     color: "#fff",
                     background: gradient,

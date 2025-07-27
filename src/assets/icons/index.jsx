@@ -20,3 +20,8 @@ export { default as LikeIcon } from "@mui/icons-material/ThumbUpAlt";
 export { default as CommentBorderIcon } from "@mui/icons-material/ModeCommentOutlined";
 export { default as CommentIcon } from "@mui/icons-material/ModeComment";
 export { default as LiveIcon } from "@mui/icons-material/PlayCircle";
+
+export { default as FeedIcon } from "@mui/icons-material/Feed";
+export { default as NewspaperIcon } from "@mui/icons-material/Newspaper";
+export { default as TimelineIcon } from "@mui/icons-material/Timeline";
+export { default as CryptoMarketIcon } from "@mui/icons-material/CurrencyBitcoin";

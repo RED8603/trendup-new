@@ -15,18 +15,18 @@ const CreatePost = () => {
                 style={{
                     background: theme.palette.primary.light,
                     backdropFilter: "blur(8px)",
-                    color: "white",
                     padding: "12px",
                     width: "100%",
                     outline: "none",
                     resize: "none",
                     borderRadius: "8px",
                     border: "none",
+                    color: theme.palette.text.secondary,
                 }}
                 rows={4}
             />
 
-            <Stack direction="row" justifyContent="space-between" mt={4}>
+            <Stack direction="row" justifyContent="space-between" mt={4} flexWrap={"wrap"} gap={2} >
                 <Stack direction="row" alignItems={"center"} spacing={2}>
                     <IconButton>
                         {" "}
@@ -44,8 +44,10 @@ const CreatePost = () => {
 
                 <Stack direction="row" alignItems={"center"} spacing={3}>
                     <GoLiveButton />
-                    <MainButton className="hvr-bounce-to-right" >
-                        <Typography fontWeight={600} color="textSecondary" >Post</Typography>
+                    <MainButton className="hvr-bounce-to-right">
+                        <Typography fontWeight={600} color="textSecondary">
+                            Post
+                        </Typography>
                     </MainButton>
                 </Stack>
             </Stack>
