@@ -1,8 +1,9 @@
-import React from "react";
-import { Card, CardContent, Typography, Stack, Box, useTheme, IconButton } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Card, CardContent, Typography, Stack, Box, useTheme, IconButton, CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LaunchIcon from "@mui/icons-material/Launch";
+import { useGetCryptoNewsQuery } from "@/api/slices/cryptoApi";
 
 const MotionBox = motion(Box);
 
@@ -24,8 +25,19 @@ const formatDate = (isoDate) => {
     });
 };
 
-const CryptoNewsList = ({ news = [] }) => {
+const CryptoNewsList = () => {
+    const [news, setNews] = useState([]);
+    const { data, isLoading, error } = useGetCryptoNewsQuery();
+    console.log(data, isLoading, error, "LIST");
+
+    useEffect(() => {
+        if (data && data.results) {
+            setNews(data.results?.slice(0, 5) || []);
+        }
+    }, [data]);
     const theme = useTheme();
+
+    if (isLoading) return <CircularProgress />;
 
     return (
         <Stack spacing={2}>
