@@ -25,3 +25,8 @@ export { default as FeedIcon } from "@mui/icons-material/Feed";
 export { default as NewspaperIcon } from "@mui/icons-material/Newspaper";
 export { default as TimelineIcon } from "@mui/icons-material/Timeline";
 export { default as CryptoMarketIcon } from "@mui/icons-material/CurrencyBitcoin";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+export { AccountBalanceWalletIcon as WalletIcon };
+
+export { default as AppleIcon } from "@mui/icons-material/Apple";
+export { default as GoogleIcon } from "@mui/icons-material/Google";

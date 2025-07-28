@@ -24,7 +24,7 @@ const MotionButton = motion(
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: theme.palette.mode === "light" ? "#16b48e" : "#e12e24",
+            backgroundColor: theme.palette.mode === "light" ? "#16b48e" : "#16b48e",
             transform: "scaleX(0)",
             transformOrigin: "0 50%",
             transition: "transform 0.5s cubic-bezier(0.52, 1.64, 0.37, 0.66)",
@@ -42,14 +42,16 @@ const MotionButton = motion(
     }))
 );
 
-const MainButton = ({ onClick, children }) => {
+const MainButton = ({ onClick, children, startIcon, ...props }) => {
     return (
         <MotionButton
             onClick={onClick}
             whileTap={{ scale: 0.95 }}
             whileHover={{ scale: 1.03 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            sx={{px: 4}}
+            sx={{ px: 4 }}
+            startIcon={startIcon}
+            {...props}
         >
             {children}
         </MotionButton>
