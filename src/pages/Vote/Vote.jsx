@@ -1,43 +1,12 @@
 import React, { useState } from "react";
-import { TabContext, TabList, TabPanel } from "@mui/lab";
+import { TabContext, TabPanel } from "@mui/lab";
 import { Box, Container, Tab } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import VotingComponent from "./GenrelVoting/GeneralVote";
 import DemoCrating from "./DemoCrating/DemoCrating";
 import HodleVoting from "./Hodl/HodlVoting";
 import { EmojiPeopleIcon, HowToVoteIcon, SecurityIcon } from "@/assets/icons";
-
-const getIcon = (label) => {
-    switch (label) {
-        case "Genrel":
-            return <HowToVoteIcon />;
-        case "Democratic":
-            return <EmojiPeopleIcon />;
-        case "HODL":
-            return <SecurityIcon />;
-        default:
-            return null;
-    }
-};
-
-const GradientTab = styled(Tab, {
-    shouldForwardProp: (prop) => prop !== "selected",
-})(({ theme, selected }) => ({
-    borderRadius: "10px",
-    textTransform: "none",
-    fontWeight: 600,
-    color: selected ? "#fff" : "#555",
-    background: selected ? "linear-gradient(135deg, #e12e24, #a61d66)" : "transparent",
-    transition: "all 0.3s ease",
-    "& .MuiTab-iconWrapper": {
-        marginRight: 8,
-    },
-    minWidth: 120,
-    [theme.breakpoints.up("md")]: {
-        minWidth: 140,
-    },
-    minHeight: 48,
-}));
+import CustomTabs from "@/components/common/CustomTabs/CustomTabs";
+import CustomTab from "@/components/common/CustomTabs/CustomTab";
 
 const Vote = () => {
     const [tabId, setTabId] = useState("1");
@@ -45,12 +14,6 @@ const Vote = () => {
     const handleChange = (event, newValue) => {
         setTabId(newValue);
     };
-
-    const tabs = [
-        { label: "Genrel", value: "1" },
-        { label: "Democratic", value: "2" },
-        { label: "HODL", value: "3" },
-    ];
 
     return (
         <Container>
@@ -64,34 +27,38 @@ const Vote = () => {
                         mb: 2,
                     }}
                 >
-                    <TabList
-                        onChange={handleChange}
-                        aria-label="Voting tabs"
-                        sx={{
-                            ".MuiTabs-indicator": {
-                                display: "none",
-                            },
-                        }}
-                    >
-                        {tabs.map((tab) => (
-                            <GradientTab
-                                key={tab.value}
-                                icon={getIcon(tab.label)}
-                                label={tab.label}
-                                value={tab.value}
-                                selected={tabId === tab.value}
-                            />
-                        ))}
-                    </TabList>
+                    <CustomTabs onChange={handleChange} aria-label="home tabs">
+                        <CustomTab
+                            icon={<HowToVoteIcon />}
+                            label="Genrel"
+                            value={"1"}
+                            selected={tabId}
+                            sx={{ minWidth: { xs: "120", md: "140px" } }}
+                        />
+                        <CustomTab
+                            icon={<EmojiPeopleIcon />}
+                            label="Democratic"
+                            value={"2"}
+                            selected={tabId}
+                            sx={{ minWidth: { xs: "120", md: "140px" } }}
+                        />
+                        <CustomTab
+                            icon={<SecurityIcon />}
+                            label="HODL"
+                            value={"3"}
+                            selected={tabId}
+                            sx={{ minWidth: { xs: "120", md: "140px" } }}
+                        />
+                    </CustomTabs>
                 </Box>
 
-                <TabPanel value="1" sx={{ px: 0 }}>
+                <TabPanel value="1" sx={{ px: { md: 2, xs: 0 }, py: 2 }}>
                     <VotingComponent />
                 </TabPanel>
-                <TabPanel value="2" sx={{ px: 0 }}>
+                <TabPanel value="2" sx={{ px: { md: 2, xs: 0 }, py: 2 }}>
                     <DemoCrating />
                 </TabPanel>
-                <TabPanel value="3" sx={{ px: 0 }}>
+                <TabPanel value="3" sx={{ px: { md: 2, xs: 0 }, py: 2 }}>
                     <HodleVoting />
                 </TabPanel>
             </TabContext>

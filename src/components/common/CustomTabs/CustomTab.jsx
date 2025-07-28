@@ -5,7 +5,7 @@ import { useTheme } from "@mui/material/styles";
 
 const MotionTab = motion(Tab);
 
-const CustomTab = styled(({ icon, selected, label, ...props }) => {
+const CustomTab = styled(({ icon, selected, label,sx, ...props }) => {
     const theme = useTheme();
     const isDarkMode = theme.palette.mode === "dark";
 
@@ -35,7 +35,11 @@ const CustomTab = styled(({ icon, selected, label, ...props }) => {
             label={
                 <motion.span
                     initial={{ opacity: 0, x: -6 }}
-                    animate={{ opacity: selected ? 1 : 0, x: selected ? 0 : -6 }}
+                    animate={{
+            opacity: 1,
+            x: selected ? 0 : 0,
+            color: selected ? colors.text : colors.muted,
+        }}
                     transition={{ duration: 0.3 }}
                     style={{
                         fontWeight: selected ? 600 : 500,
@@ -59,6 +63,7 @@ const CustomTab = styled(({ icon, selected, label, ...props }) => {
                     marginRight: selected ? theme.spacing(1) : 0,
                     transition: "margin-right 0.3s ease",
                 },
+                ...sx
             }}
         />
     );
