@@ -1,4 +1,3 @@
-"use client";
 import {
   Typography,
   LinearProgress,
@@ -6,6 +5,7 @@ import {
   Box,
   Stack,
   useTheme,
+  Container,
 } from "@mui/material";
 import BoxConatner from "@/components/common/BoxContainer/BoxConatner";
 import ButtonMain from "@/components/common/ButtonMain";
@@ -14,6 +14,7 @@ export default function HodleVoting() {
   const theme = useTheme();
 
   return (
+    <Container  maxWidth="md">
     <BoxConatner
       sx={{
         maxWidth: "100%",
@@ -165,5 +166,6 @@ export default function HodleVoting() {
         </Stack>
       </Box>
     </BoxConatner>
+    </Container>
   );
 }

@@ -1,14 +1,12 @@
 import BoxConatner from "@/components/common/BoxContainer/BoxConatner";
 import ButtonMain from "@/components/common/ButtonMain";
 import {
-  Card,
-  CardContent,
   Typography,
   LinearProgress,
-  Button,
   Box,
   Stack,
   useTheme,
+  Container,
 } from "@mui/material";
 
 const votingOptions = [
@@ -20,6 +18,7 @@ const votingOptions = [
 export default function GeneralVotingComponent() {
   const theme = useTheme();
   return (
+    <Container  maxWidth="md">
     <BoxConatner
       sx={{
         maxWidth: "100%",
@@ -135,5 +134,6 @@ export default function GeneralVotingComponent() {
         </Stack>
       </Box>
     </BoxConatner>
+    </Container>
   );
 }

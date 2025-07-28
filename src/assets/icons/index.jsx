@@ -25,3 +25,7 @@ export { default as FeedIcon } from "@mui/icons-material/Feed";
 export { default as NewspaperIcon } from "@mui/icons-material/Newspaper";
 export { default as TimelineIcon } from "@mui/icons-material/Timeline";
 export { default as CryptoMarketIcon } from "@mui/icons-material/CurrencyBitcoin";
+
+export { default as HowToVoteIcon } from "@mui/icons-material/HowToVote";
+export { default as EmojiPeopleIcon }from "@mui/icons-material/EmojiPeople";
+export { default as SecurityIcon } from "@mui/icons-material/Security";
