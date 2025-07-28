@@ -8,7 +8,6 @@ const lightTheme = createTheme({
             main: "#16b48e", //
             dark: "#f9f9f9",
             light: "#f9f9f9",
-           
         },
         secondary: {
             main: "#616161", //
@@ -30,6 +29,10 @@ const lightTheme = createTheme({
         },
         h2: {
             fontSize: "2rem",
+            fontWeight: 500,
+        },
+        h3: {
+            fontSize: "1.8rem",
             fontWeight: 500,
         },
         // Add more typography settings as needed
@@ -90,6 +93,10 @@ const darkTheme = createTheme({
         },
         h2: {
             fontSize: "2rem",
+            fontWeight: 500,
+        },
+        h3: {
+            fontSize: "1.8rem",
             fontWeight: 500,
         },
         // Add more typography settings as needed
