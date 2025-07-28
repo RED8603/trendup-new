@@ -32,13 +32,10 @@ const GradientTab = styled(Tab, {
     "& .MuiTab-iconWrapper": {
         marginRight: 8,
     },
-
-    // 👇 Responsive minWidth
     minWidth: 120,
     [theme.breakpoints.up("md")]: {
         minWidth: 140,
     },
-
     minHeight: 48,
 }));
 

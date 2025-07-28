@@ -1,8 +1,9 @@
-import { ArrowForwardIcon, Visibility, VisibilityOff } from "@/assets/icons";
-import ButtonBorder from "@/components/common/ButtonBorder";
-import ButtonMain from "@/components/common/ButtonMain";
+import { AppleIcon, GoogleIcon, Visibility, VisibilityOff, WalletIcon } from "@/assets/icons";
+
 import InputFeild from "@/components/common/InputFeild/InputFeild";
 import Loading from "@/components/common/loading";
+import Logo from "@/components/common/Logo/Logo";
+import MainButton from "@/components/common/MainButton/MainButton";
 import { setUser } from "@/store/slices/userSlices";
 import { Box, Checkbox, Container, IconButton, InputAdornment, Stack, Typography } from "@mui/material";
 import { useState } from "react";
@@ -16,6 +17,7 @@ const Login = () => {
     const [email, setEmail] = useState({ email: "", error: "" });
     const [password, setPassword] = useState({ password: "", error: "" });
     const [showPassword, setShowPassword] = useState(false);
+    const [loginWithEmail, setLoginWithEmail] = useState(false);
 
     const [checked, setChecked] = useState(false);
 
@@ -98,20 +100,10 @@ const Login = () => {
                         padding: { md: 4, xs: 1.5 },
                     })}
                 >
-                    <Typography
-                        sx={(theme) => ({
-                            fontSize: {
-                                md: "22px",
-                                xs: "18px",
-                            },
-                            textAlign: "center",
-                            color: theme.palette.text.primary,
-                            fontWeight: 700,
-                        })}
-                    >
-                        {" "}
-                        Trend-Up{" "}
-                    </Typography>
+                    <Box sx={{ display: "flex", justifyContent: "center" }}>
+                        <Logo />
+                    </Box>
+
                     <Typography
                         sx={(theme) => ({
                             fontSize: {
@@ -121,7 +113,7 @@ const Login = () => {
                             textAlign: "center",
                             color: theme.palette.text.secondary,
                             fontWeight: 700,
-                            mt: 1,
+                            mt: { md: 2, xs: 1.5 },
                         })}
                     >
                         Welcome Back!
@@ -136,64 +128,82 @@ const Login = () => {
                         Login to continue
                     </Typography>
 
-                    <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            handleSubmit();
-                        }}
-                    >
-                        <InputFeild
-                            placeholder="Email"
-                            lable="Email"
-                            name="email"
-                            type="email"
-                            onChange={handleEmailChange}
-                            value={email.email}
-                            error={email.error}
-                        />
-                        <InputFeild
-                            placeholder="Password"
-                            lable="Password"
-                            name="password"
-                            type={showPassword ? "text" : "password"}
-                            endAdornment={endAdornment}
-                            onChange={handlePasswordChange}
-                            value={password.password}
-                            error={password.error}
-                        />
-                        <Stack direction="row" justifyContent="space-between" alignItems={"center"}>
-                            <Checkbox
-                                checked={checked}
-                                onChange={handleChange}
-                                inputProps={{ "aria-label": "controlled" }}
+                    {loginWithEmail ? (
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                handleSubmit();
+                            }}
+                        >
+                            <InputFeild
+                                placeholder="Email"
+                                lable="Email"
+                                name="email"
+                                type="email"
+                                onChange={handleEmailChange}
+                                value={email.email}
+                                error={email.error}
                             />
+                            <InputFeild
+                                placeholder="Password"
+                                lable="Password"
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                endAdornment={endAdornment}
+                                onChange={handlePasswordChange}
+                                value={password.password}
+                                error={password.error}
+                            />
+                            <Stack direction="row" justifyContent="space-between" alignItems={"center"}>
+                                <Checkbox
+                                    checked={checked}
+                                    onChange={handleChange}
+                                    slotProps={{ "aria-label": "controlled" }}
+                                />
 
-                            <Typography
-                                sx={(theme) => ({
-                                    color: theme.palette.text.primary,
-                                    fontWeight: 500,
-                                    fontSize: "14px",
-                                })}
-                            >
-                                {" "}
-                                Forgot Password?{" "}
-                            </Typography>
-                        </Stack>
+                                <Typography
+                                    sx={(theme) => ({
+                                        color: theme.palette.text.primary,
+                                        fontWeight: 500,
+                                        fontSize: "14px",
+                                    })}
+                                >
+                                    {" "}
+                                    Forgot Password?{" "}
+                                </Typography>
+                            </Stack>
+                            <Stack direction="column" alignItems={"center"} justifyContent={"center"} mt={2}>
+                                <MainButton
+                                    sx={{ width: "230px" }}
+                                    type="submit"
+                                    onClick={() => setLoginWithEmail(true)}
+                                >
+                                    Login 
+                                </MainButton>
+                            </Stack>
+                        </form>
+                    ) : (
                         <Stack
-                            direction="row"
-                            sx={{ gap: { md: "50px", xs: "10px" } }}
+                            direction="column"
+                            sx={{ gap: { xs: "10px" } }}
                             alignItems={"center"}
                             justifyContent={"center"}
-                            mt={2}
+                            mt={4}
                         >
-                            <ButtonMain sx={{ width: "150px" }} type="submit" onClick={handleSubmit}>
-                                Login
-                            </ButtonMain>
-                            <ButtonBorder sx={{ width: "150px" }}>
-                                Wallet <ArrowForwardIcon />{" "}
-                            </ButtonBorder>
+                            <MainButton sx={{ width: "230px" }} startIcon={<WalletIcon />} onClick={handleSubmit}>
+                                Connect Wallet{" "}
+                            </MainButton>
+                            <MainButton sx={{ width: "230px" }} startIcon={<GoogleIcon />} onClick={handleSubmit}>
+                                Log in with Goggle{" "}
+                            </MainButton>
+                            <MainButton sx={{ width: "230px" }} startIcon={<AppleIcon />} onClick={handleSubmit}>
+                                Wallet with Apple
+                            </MainButton>
+                            <MainButton sx={{ width: "230px" }} onClick={() => setLoginWithEmail(true)}>
+                                Login with Email
+                            </MainButton>
                         </Stack>
-                    </form>
+                    )}
                 </Box>
             </Container>
         </Box>
