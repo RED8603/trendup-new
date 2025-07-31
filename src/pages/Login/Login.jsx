@@ -1,11 +1,12 @@
-import { AppleIcon, GoogleIcon, Visibility, VisibilityOff, WalletIcon } from "@/assets/icons";
+import { AppleIcon, GoogleIcon, ReplyIcon, Visibility, VisibilityOff, WalletIcon } from "@/assets/icons";
 
 import InputFeild from "@/components/common/InputFeild/InputFeild";
 import Loading from "@/components/common/loading";
 import Logo from "@/components/common/Logo/Logo";
 import MainButton from "@/components/common/MainButton/MainButton";
 import { setUser } from "@/store/slices/userSlices";
-import { Box, Checkbox, Container, IconButton, InputAdornment, Stack, Typography } from "@mui/material";
+import { Box, Checkbox, Container, IconButton, InputAdornment, Stack, Typography, useTheme } from "@mui/material";
+import { useAppKit } from "@reown/appkit/react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +14,8 @@ import { useNavigate } from "react-router-dom";
 const Login = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { open } = useAppKit();
+    const theme = useTheme();
 
     const [email, setEmail] = useState({ email: "", error: "" });
     const [password, setPassword] = useState({ password: "", error: "" });
@@ -98,8 +101,21 @@ const Login = () => {
                         border: `2px solid ${theme.palette.secondary.main}`,
                         borderRadius: "15px",
                         padding: { md: 4, xs: 1.5 },
+                        position: "relative",
                     })}
                 >
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            top: 0,
+                            left: "10px",
+                        }}
+                    >
+                        <IconButton sx={{ display: "flex", alignItems: "center", gap: "5px" }} onClick={handleSubmit}>
+                            <ReplyIcon color={theme.palette.text.primary} />{" "}
+                            <Typography color="textPrimary"> Skip </Typography>
+                        </IconButton>
+                    </Box>
                     <Box sx={{ display: "flex", justifyContent: "center" }}>
                         <Logo />
                     </Box>
@@ -178,7 +194,7 @@ const Login = () => {
                                     type="submit"
                                     onClick={() => setLoginWithEmail(true)}
                                 >
-                                    Login 
+                                    Login
                                 </MainButton>
                             </Stack>
                         </form>
@@ -190,7 +206,7 @@ const Login = () => {
                             justifyContent={"center"}
                             mt={4}
                         >
-                            <MainButton sx={{ width: "230px" }} startIcon={<WalletIcon />} onClick={handleSubmit}>
+                            <MainButton sx={{ width: "230px" }} startIcon={<WalletIcon />} onClick={open}>
                                 Connect Wallet{" "}
                             </MainButton>
                             <MainButton sx={{ width: "230px" }} startIcon={<GoogleIcon />} onClick={handleSubmit}>

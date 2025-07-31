@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { TabContext, TabPanel } from "@mui/lab";
-import { Box, Container,  } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import VotingComponent from "./GenrelVoting/GeneralVote";
 import DemoCrating from "./DemoCrating/DemoCrating";
 import HodleVoting from "./Hodl/HodlVoting";
@@ -53,7 +53,6 @@ const Vote = () => {
                 </Box>
 
                 <TabPanel value="1" sx={{ px: { md: 2, xs: 0 }, py: 2 }}>
-                 
                     <VotingComponent />
                 </TabPanel>
                 <TabPanel value="2" sx={{ px: { md: 2, xs: 0 }, py: 2 }}>

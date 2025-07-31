@@ -73,7 +73,7 @@ const Home = () => {
     const theme = useTheme();
     const isMdup = useMediaQuery(theme.breakpoints.up("lg"));
 
-    console.log(isMdup, "ISMDUPHOME");
+
 
     const [tabId, setTabId] = useState(1);
 

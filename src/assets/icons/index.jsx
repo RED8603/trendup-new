@@ -34,3 +34,5 @@ export { AccountBalanceWalletIcon as WalletIcon };
 
 export { default as AppleIcon } from "@mui/icons-material/Apple";
 export { default as GoogleIcon } from "@mui/icons-material/Google";
+
+export { default as ReplyIcon} from '@mui/icons-material/Reply';

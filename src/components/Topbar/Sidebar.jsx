@@ -28,6 +28,7 @@ import Navbar from "./Navbar";
 import { ChatIcon, ChevronLeftIcon, HomeIcon, LiveIcon, MenuIcon, VoteIcon } from "@/assets/icons";
 import { motion } from "framer-motion";
 import Logo from "../common/Logo/Logo";
+import AnimatedSearchInput from "../common/SearchInput/SearchInput";
 
 const drawerWidth = 240;
 
@@ -267,6 +268,9 @@ const Sidebar = ({ children }) => {
     const handleDrawerClose = () => {
         setOpen(false);
     };
+    const handleSearch = (term) => {
+        console.log("Search:", term);
+    };
     return (
         <Box sx={{ display: isMdUp && user ? "flex" : "block" }}>
             {user ? (
@@ -305,6 +309,7 @@ const Sidebar = ({ children }) => {
                                             gap: "20px",
                                         }}
                                     >
+                                        <AnimatedSearchInput onSearch={handleSearch} />
                                         <ThemeToggle />
 
                                         {user && (
