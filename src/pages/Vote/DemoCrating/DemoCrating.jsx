@@ -9,23 +9,27 @@ import { useGenrelContext } from "@/context/GenrelContext";
 import { Typography, LinearProgress, Box, Stack, useTheme, Container, AvatarGroup, Avatar } from "@mui/material";
 import { useAppKit } from "@reown/appkit/react";
 import { useState } from "react";
-const votingOptions = [
-    { id: 1, label: "1% - Reduce fees", percentage: 23 },
-    { id: 2, label: "2% - Keep current fees", percentage: 62 },
-    { id: 3, label: "3% - Increase fees", percentage: 15 },
-];
+const votingOptions = [{ id: 1, label: "1% - Reduce fees", percentage: 0 }];
 
 const participents = [
-    { img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/250px-User_icon_2.svg.png" },
-    { img: "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?semt=ais_hybrid&w=740" },
     {
-        img: "https://static.vecteezy.com/system/resources/thumbnails/004/607/791/small_2x/man-face-emotive-icon-smiling-male-character-in-blue-shirt-flat-illustration-isolated-on-white-happy-human-psychological-portrait-positive-emotions-user-avatar-for-app-web-design-vector.jpg",
+        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/250px-User_icon_2.svg.png",
+    },
+    {
+        img: "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?semt=ais_hybrid&w=740",
     },
     {
         img: "https://static.vecteezy.com/system/resources/thumbnails/004/607/791/small_2x/man-face-emotive-icon-smiling-male-character-in-blue-shirt-flat-illustration-isolated-on-white-happy-human-psychological-portrait-positive-emotions-user-avatar-for-app-web-design-vector.jpg",
     },
-    { img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRI9lRck6miglY0SZF_BZ_sK829yiNskgYRUg&s" },
-    { img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSA1zygA3rubv-VK0DrVcQ02Po79kJhXo_A&s" },
+    {
+        img: "https://static.vecteezy.com/system/resources/thumbnails/004/607/791/small_2x/man-face-emotive-icon-smiling-male-character-in-blue-shirt-flat-illustration-isolated-on-white-happy-human-psychological-portrait-positive-emotions-user-avatar-for-app-web-design-vector.jpg",
+    },
+    {
+        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRI9lRck6miglY0SZF_BZ_sK829yiNskgYRUg&s",
+    },
+    {
+        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSA1zygA3rubv-VK0DrVcQ02Po79kJhXo_A&s",
+    },
 ];
 export default function GeneralVotingComponent() {
     const theme = useTheme();
@@ -45,7 +49,11 @@ export default function GeneralVotingComponent() {
     const onTextChange = (e) => {
         const text = e.target.value?.trim();
 
-        setTitle((prev) => ({ ...prev, text: text, error: text?.length < 2 ? "Minimum two chrachters allowed" : "" }));
+        setTitle((prev) => ({
+            ...prev,
+            text: text,
+            error: text?.length < 2 ? "Minimum two chrachters allowed" : "",
+        }));
     };
     const showToast = (msg, type) => {
         return setAlertState({
@@ -84,11 +92,13 @@ export default function GeneralVotingComponent() {
             <Toastify setAlertState={setAlertState} alertState={alertState} />
 
             <Container maxWidth="md">
-                <Box sx={{
+                <Box
+                    sx={{
                         border: `2px solid ${theme.palette.secondary.main}`,
                         borderRadius: "15px",
                         padding: { md: 3, xs: 1.5 },
-                    }}>
+                    }}
+                >
                     <Box sx={{ p: 2 }}>
                         <Stack spacing={2}>
                             <Typography variant="h3" color={theme.palette.text.secondary}>
@@ -106,8 +116,7 @@ export default function GeneralVotingComponent() {
                                     lineHeight: 1.4,
                                 }}
                             >
-                                Cast your vote Below.{"\n"}
-                                Voting period lasts for 7 days.
+                                Democratic Voting is described wrong total, this description belongs to general
                             </Typography>
 
                             {/* Question */}
@@ -181,7 +190,7 @@ export default function GeneralVotingComponent() {
                                     mt: 3,
                                 }}
                             >
-                               Your Balance: 0
+                                Your Balance: 0
                             </Typography>
 
                             <Stack
@@ -227,7 +236,6 @@ export default function GeneralVotingComponent() {
                                     Connect Wallet
                                 </MainButton>
                             )}
-                           
                         </Stack>
                     </Box>
                 </Box>
