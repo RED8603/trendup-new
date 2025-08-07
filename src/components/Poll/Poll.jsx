@@ -2,7 +2,7 @@ import BoxConatner from "@/components/common/BoxContainer/BoxConatner";
 import ButtonMain from "@/components/common/ButtonMain";
 import { Typography, LinearProgress, Box, Stack, useTheme, Container } from "@mui/material";
 
-export default function VotingComponent() {
+export default function Poll() {
     const theme = useTheme();
     return (
         <Container maxWidth="md">

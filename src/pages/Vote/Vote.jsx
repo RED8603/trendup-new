@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { TabContext, TabPanel } from "@mui/lab";
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
 import VotingComponent from "./GenrelVoting/GeneralVote";
-import DemoCrating from "./DemoCrating/DemoCrating";
 import HodleVoting from "./Hodl/HodlVoting";
 import { EmojiPeopleIcon, HowToVoteIcon, SecurityIcon } from "@/assets/icons";
 import CustomTabs from "@/components/common/CustomTabs/CustomTabs";
 import CustomTab from "@/components/common/CustomTabs/CustomTab";
-import DemocraticVoting from "./DemoCrating/DemoCrating";
+import DemocraticVoting from "./DemocraticVoting/DemocraticVoting";
 
 const Vote = () => {
     const [tabId, setTabId] = useState("1");

@@ -12,7 +12,7 @@ import {
 } from "@/assets/icons";
 import UserUI from "../common/UserUi/UserUI";
 import { motion } from "framer-motion";
-import VotingComponent from "@/pages/Vote/GenrelVoting/vote-1";
+import Poll from "../Poll/Poll";
 
 const MotionIconButton = motion(IconButton);
 const bounceEffect = {
@@ -61,7 +61,7 @@ const Post = ({ data }) => {
                         alt="post"
                     />
                 ) : (
-                    <VotingComponent />
+                    <Poll />
                 )}
 
                 <Stack direction="row" spacing={2} mt={2} alignItems="center">
