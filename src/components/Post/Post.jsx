@@ -41,75 +41,73 @@ const Post = ({ data }) => {
 
     return (
         <BoxConatner sx={{ mb: 2 }}>
-            {data?.type === "poll" ? (
-                <VotingComponent />
-            ) : (
-                <>
-                    <Stack direction="row" justifyContent="space-between">
-                        <UserUI username={data.username} userImage={data.userImage} />
-                        <IconButton color={theme.palette.secondary.main}>
-                            <MoreHorizIcon color={theme.palette.secondary.main} />
-                        </IconButton>
+            <>
+                <Stack direction="row" justifyContent="space-between">
+                    <UserUI username={data.username} userImage={data.userImage} />
+                    <IconButton color={theme.palette.secondary.main}>
+                        <MoreHorizIcon color={theme.palette.secondary.main} />
+                    </IconButton>
+                </Stack>
+
+                <Typography color={theme.palette.text.secondary} fontWeight={400} mt={2}>
+                    {data.description}
+                </Typography>
+
+                {data?.type !== "poll" ? (
+                    <img
+                        src={data.postImage}
+                        width="100%"
+                        style={{ marginTop: "10px", borderRadius: "10px" }}
+                        alt="post"
+                    />
+                ) : (
+                    <VotingComponent />
+                )}
+
+                <Stack direction="row" spacing={2} mt={2} alignItems="center">
+                    {/* Heart */}
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                        <MotionIconButton
+                            onClick={() => handleLike("heart")}
+                            sx={{ color: getColor("heart") }}
+                            {...bounceEffect}
+                        >
+                            {isLiked.heart ? <HeartIcon /> : <HeartBorderIcon />}
+                        </MotionIconButton>
+                        <Typography color={theme.palette.secondary.main} fontWeight={600}>
+                            100
+                        </Typography>
                     </Stack>
 
-                    <Typography color={theme.palette.text.secondary} fontWeight={400} mt={2}>
-                        {data.description}
-                    </Typography>
-
-                    {data.postImage && (
-                        <img
-                            src={data.postImage}
-                            width="100%"
-                            style={{ marginTop: "10px", borderRadius: "10px" }}
-                            alt="post"
-                        />
-                    )}
-
-                    <Stack direction="row" spacing={2} mt={2} alignItems="center">
-                        {/* Heart */}
-                        <Stack direction="row" spacing={0.5} alignItems="center">
-                            <MotionIconButton
-                                onClick={() => handleLike("heart")}
-                                sx={{ color: getColor("heart") }}
-                                {...bounceEffect}
-                            >
-                                {isLiked.heart ? <HeartIcon /> : <HeartBorderIcon />}
-                            </MotionIconButton>
-                            <Typography color={theme.palette.secondary.main} fontWeight={600}>
-                                100
-                            </Typography>
-                        </Stack>
-
-                        {/* Comment */}
-                        <Stack direction="row" spacing={0.5} alignItems="center">
-                            <MotionIconButton
-                                onClick={() => handleLike("comment")}
-                                sx={{ color: getColor("comment") }}
-                                {...bounceEffect}
-                            >
-                                {isLiked.comment ? <CommentIcon /> : <CommentBorderIcon />}
-                            </MotionIconButton>
-                            <Typography color={theme.palette.secondary.main} fontWeight={600}>
-                                8347
-                            </Typography>
-                        </Stack>
-
-                        {/* Like */}
-                        <Stack direction="row" spacing={0.5} alignItems="center">
-                            <MotionIconButton
-                                onClick={() => handleLike("like")}
-                                sx={{ color: getColor("like") }}
-                                {...bounceEffect}
-                            >
-                                {isLiked.like ? <LikeIcon /> : <LikeBorderIcon />}
-                            </MotionIconButton>
-                            <Typography color={theme.palette.secondary.main} fontWeight={600}>
-                                73
-                            </Typography>
-                        </Stack>
+                    {/* Comment */}
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                        <MotionIconButton
+                            onClick={() => handleLike("comment")}
+                            sx={{ color: getColor("comment") }}
+                            {...bounceEffect}
+                        >
+                            {isLiked.comment ? <CommentIcon /> : <CommentBorderIcon />}
+                        </MotionIconButton>
+                        <Typography color={theme.palette.secondary.main} fontWeight={600}>
+                            8347
+                        </Typography>
                     </Stack>
-                </>
-            )}
+
+                    {/* Like */}
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                        <MotionIconButton
+                            onClick={() => handleLike("like")}
+                            sx={{ color: getColor("like") }}
+                            {...bounceEffect}
+                        >
+                            {isLiked.like ? <LikeIcon /> : <LikeBorderIcon />}
+                        </MotionIconButton>
+                        <Typography color={theme.palette.secondary.main} fontWeight={600}>
+                            73
+                        </Typography>
+                    </Stack>
+                </Stack>
+            </>
         </BoxConatner>
     );
 };

@@ -21,7 +21,7 @@ const postData = [
       "Ethereum’s gas fees drop as layer 2 adoption rises. Is it time to dive in? ⚙️🔥 #Ethereum",
     postImage: "https://images.pexels.com/photos/6771900/pexels-photo-6771900.jpeg",
     date: "2025-08-06",
-    type: "post",
+    type: "poll",
   },
   {
     id: 3,
@@ -61,7 +61,7 @@ const postData = [
       "Dogecoin just surged 12% on Elon’s tweet. Never underestimate meme power! 🐶🚀 #DOGE",
     postImage: "https://assets.coingecko.com/coins/images/5/large/dogecoin.png",
     date: "2025-08-04",
-    type: "post",
+    type: "poll",
   },
   {
     id: 7,
