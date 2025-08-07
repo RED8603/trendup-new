@@ -7,6 +7,7 @@ import HodleVoting from "./Hodl/HodlVoting";
 import { EmojiPeopleIcon, HowToVoteIcon, SecurityIcon } from "@/assets/icons";
 import CustomTabs from "@/components/common/CustomTabs/CustomTabs";
 import CustomTab from "@/components/common/CustomTabs/CustomTab";
+import DemocraticVoting from "./DemoCrating/DemoCrating";
 
 const Vote = () => {
     const [tabId, setTabId] = useState("1");
@@ -16,7 +17,7 @@ const Vote = () => {
     };
 
     return (
-        <Container>
+  
             <TabContext value={tabId}>
                 <Box
                     sx={{
@@ -56,13 +57,13 @@ const Vote = () => {
                     <VotingComponent />
                 </TabPanel>
                 <TabPanel value="2" sx={{ px: { md: 2, xs: 0 }, py: 2 }}>
-                    <DemoCrating />
+                    <DemocraticVoting />
                 </TabPanel>
                 <TabPanel value="3" sx={{ px: { md: 2, xs: 0 }, py: 2 }}>
                     <HodleVoting />
                 </TabPanel>
             </TabContext>
-        </Container>
+      
     );
 };
 

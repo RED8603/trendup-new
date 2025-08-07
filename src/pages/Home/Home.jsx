@@ -9,6 +9,7 @@ import { TabContext, TabPanel } from "@mui/lab";
 import CustomTabs from "@/components/common/CustomTabs/CustomTabs";
 import CustomTab from "@/components/common/CustomTabs/CustomTab";
 import { CryptoMarketIcon, FeedIcon, TimelineIcon } from "@/assets/icons";
+import TrendingTabs from "./TrendingTabs/TrendingTabs";
 
 const DesktopScreen = () => (
     <Box>
@@ -22,7 +23,7 @@ const DesktopScreen = () => (
 
             <Grid2 size={{ xs: 12, md: 6 }} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <CreatePost />
-                <Posts />
+                <TrendingTabs />
             </Grid2>
 
             <Grid2 size={{ xs: 12, md: 3 }} sx={{ display: { xs: "none", md: "block" } }}>
@@ -55,7 +56,7 @@ const MobileScreen = ({ handleChange, tabId }) => {
                 <TabPanel value={2} sx={{ px: { md: 2, xs: 0 }, py: 2 }}>
                     {" "}
                     <CreatePost />
-                    <Posts />
+                    <TrendingTabs />
                 </TabPanel>
                 <TabPanel value={3} sx={{ px: { md: 2, xs: 0 }, py: 2 }}>
                     {" "}

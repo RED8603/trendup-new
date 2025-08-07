@@ -1,37 +1,36 @@
-import BoxConatner from "@/components/common/BoxContainer/BoxConatner";
-import ButtonMain from "@/components/common/ButtonMain";
-import InputFeild from "@/components/common/InputFeild/InputFeild";
+import { useState } from "react";
+import {
+    Box,
+    Typography,
+    Stack,
+    Avatar,
+    AvatarGroup,
+    Container,
+    useTheme,
+    LinearProgress,
+    Divider,
+    Fade,
+} from "@mui/material";
 import Loading from "@/components/common/loading";
 import MainButton from "@/components/common/MainButton/MainButton";
 import Toastify from "@/components/common/Toastify";
+import InputFeild from "@/components/common/InputFeild/InputFeild";
 import { useTokenWriteFunction } from "@/connectivityAssets/hooks";
 import { useGenrelContext } from "@/context/GenrelContext";
-import { Typography, LinearProgress, Box, Stack, useTheme, Container, AvatarGroup, Avatar } from "@mui/material";
 import { useAppKit } from "@reown/appkit/react";
-import { useState } from "react";
+
 const votingOptions = [{ id: 1, label: "1% - Reduce fees", percentage: 0 }];
 
-const participents = [
-    {
-        img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/250px-User_icon_2.svg.png",
-    },
-    {
-        img: "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?semt=ais_hybrid&w=740",
-    },
-    {
-        img: "https://static.vecteezy.com/system/resources/thumbnails/004/607/791/small_2x/man-face-emotive-icon-smiling-male-character-in-blue-shirt-flat-illustration-isolated-on-white-happy-human-psychological-portrait-positive-emotions-user-avatar-for-app-web-design-vector.jpg",
-    },
-    {
-        img: "https://static.vecteezy.com/system/resources/thumbnails/004/607/791/small_2x/man-face-emotive-icon-smiling-male-character-in-blue-shirt-flat-illustration-isolated-on-white-happy-human-psychological-portrait-positive-emotions-user-avatar-for-app-web-design-vector.jpg",
-    },
-    {
-        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRI9lRck6miglY0SZF_BZ_sK829yiNskgYRUg&s",
-    },
-    {
-        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSA1zygA3rubv-VK0DrVcQ02Po79kJhXo_A&s",
-    },
+const participants = [
+    { img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/250px-User_icon_2.svg.png" },
+    { img: "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?semt=ais_hybrid&w=740" },
+    { img: "https://static.vecteezy.com/system/resources/thumbnails/004/607/791/small_2x/man-face-emotive-icon.jpg" },
+    { img: "https://static.vecteezy.com/system/resources/thumbnails/004/607/791/small_2x/man-face-emotive-icon.jpg" },
+    { img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRI9lRck6miglY0SZF_BZ_sK829yiNskgYRUg&s" },
+    { img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSA1zygA3rubv-VK0DrVcQ02Po79kJhXo_A&s" },
 ];
-export default function GeneralVotingComponent() {
+
+export default function DemocraticVoting() {
     const theme = useTheme();
     const { address } = useGenrelContext();
     const { open } = useAppKit();
@@ -39,141 +38,87 @@ export default function GeneralVotingComponent() {
 
     const [title, setTitle] = useState({ text: "", error: "" });
     const [isLoading, setIsLoading] = useState(false);
-
-    const [alertState, setAlertState] = useState({
-        open: false,
-        message: "",
-        severity: undefined,
-    });
+    const [alertState, setAlertState] = useState({ open: false, message: "", severity: undefined });
 
     const onTextChange = (e) => {
-        const text = e.target.value?.trim();
-
-        setTitle((prev) => ({
-            ...prev,
-            text: text,
-            error: text?.length < 2 ? "Minimum two chrachters allowed" : "",
-        }));
-    };
-    const showToast = (msg, type) => {
-        return setAlertState({
-            open: true,
-            message: msg,
-            severity: type,
+        const text = e.target.value;
+        setTitle({
+            text,
+            error: text?.trim().length < 2 ? "Minimum two characters required" : "",
         });
     };
 
+    const showToast = (msg, type) => {
+        setAlertState({ open: true, message: msg, severity: type });
+    };
+
     const vote = async () => {
-        if (title.text?.trim()?.length < 2) {
-            showToast("Minimum two chrachters allowed", "error");
+        if (title.text.trim().length < 2) {
+            showToast("Minimum two characters allowed", "error");
             return;
         }
         try {
             setIsLoading(true);
-
             await handleWriteContract("createDemocraticVote", [title.text], address);
-
-            setIsLoading(false);
         } catch (error) {
+            const errMsg = error?.data?.message || error?.reason || error?.message || "Voting failed";
+            showToast(errMsg, "error");
+        } finally {
             setIsLoading(false);
-
-            if (error?.data?.message) {
-                showToast(error?.data?.message, "error");
-            } else if (error?.reason) {
-                showToast(error?.reason, "error");
-            } else {
-                showToast(error?.message, "error");
-            }
         }
     };
+
     return (
         <>
             <Loading isLoading={isLoading} />
             <Toastify setAlertState={setAlertState} alertState={alertState} />
-
             <Container maxWidth="md">
                 <Box
                     sx={{
-                        border: `2px solid ${theme.palette.secondary.main}`,
-                        borderRadius: "15px",
-                        padding: { md: 3, xs: 1.5 },
+                        border: `2px solid ${theme.palette.divider}`,
+                        borderRadius: 3,
+                        p: { xs: 2, md: 4 },
+                        background: theme.palette.background.paper,
+                        transition: "all 0.3s ease-in-out",
+                        boxShadow: theme.palette.mode === "dark" ? "0 0 15px #111" : "0 0 10px #e0e0e0",
                     }}
                 >
-                    <Box sx={{ p: 2 }}>
+                    <Fade in timeout={300}>
                         <Stack spacing={2}>
-                            <Typography variant="h3" color={theme.palette.text.secondary}>
-                                Democratic VotingView Results:
+                            <Typography variant="h4" fontWeight={600} color="text.primary">
+                                🗳️ Democratic Voting
                             </Typography>
 
-                            {/* Subtitle */}
-                            <Typography
-                                variant="body1"
-                                color={theme.palette.text.primary}
-                                sx={{
-                                    fontSize: "1rem",
-                                    fontWeight: 700,
-                                    mb: 1,
-                                    lineHeight: 1.4,
-                                }}
-                            >
-                                Democratic Voting is described wrong total, this description belongs to general
+                            <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                                View results and participate in democratic voting
                             </Typography>
 
-                            {/* Question */}
-                            <Typography
-                                variant="h6"
-                                sx={{
-                                    color: theme.palette.text.secondary,
-                                    fontWeight: "500",
-                                    fontSize: "1.1rem",
-                                    mt: 2,
-                                }}
-                            >
+                            <Divider sx={{ my: 2, borderColor: theme.palette.divider }} />
+
+                            <Typography variant="h6" fontWeight={500} color="text.secondary">
                                 What should the transaction fees be set to?
                             </Typography>
 
-                            {/* Voting Options */}
-                            <Stack spacing={2.5} sx={{ mt: 2 }}>
+                            <Stack spacing={2}>
                                 {votingOptions.map((option) => (
                                     <Box key={option.id}>
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                justifyContent: "space-between",
-                                                alignItems: "center",
-                                                mb: 1,
-                                            }}
-                                        >
-                                            <Typography
-                                                color={theme.palette.text.secondary}
-                                                variant="body2"
-                                                sx={{
-                                                    fontSize: "0.9rem",
-                                                }}
-                                            >
+                                        <Stack direction="row" justifyContent="space-between">
+                                            <Typography variant="body2" color="text.primary">
                                                 {option.label}
                                             </Typography>
-                                            <Typography
-                                                variant="body2"
-                                                color={theme.palette.text.primary}
-                                                sx={{
-                                                    fontWeight: "bold",
-                                                    mb: 1,
-                                                }}
-                                            >
+                                            <Typography variant="body2" fontWeight={600} color="text.secondary">
                                                 {option.percentage}%
                                             </Typography>
-                                        </Box>
+                                        </Stack>
                                         <LinearProgress
                                             variant="determinate"
                                             value={option.percentage}
                                             sx={{
-                                                height: 15,
-                                                borderRadius: 4,
-                                                backgroundColor: theme.palette.background.paper,
+                                                height: 12,
+                                                borderRadius: 3,
+                                                backgroundColor: theme.palette.background.default,
                                                 "& .MuiLinearProgress-bar": {
-                                                    backgroundColor: theme.palette.text.primary,
-                                                    borderRadius: 4,
+                                                    backgroundColor: theme.palette.primary.main,
                                                 },
                                             }}
                                         />
@@ -181,63 +126,46 @@ export default function GeneralVotingComponent() {
                                 ))}
                             </Stack>
 
-                            {/* Countdown Timer */}
-                            <Typography
-                                variant="h6"
-                                sx={{
-                                    color: "#a0a0a0",
-                                    textAlign: "center",
-                                    mt: 3,
-                                }}
-                            >
+                            <Typography variant="body2" color="text.secondary" textAlign="center" mt={2}>
                                 Your Balance: 0
                             </Typography>
 
-                            <Stack
-                                direction={"row"}
-                                alignItems={"center"}
-                                justifyContent={"center"}
-                                mt={5}
-                                gap={"40px"}
-                            >
+                            <Stack direction="row" justifyContent="center" alignItems="center" spacing={2} mt={3}>
                                 <AvatarGroup max={4}>
-                                    {participents.map((item, i) => (
-                                        <Avatar src={item.img} key={i} sizes="small" />
+                                    {participants.map((p, i) => (
+                                        <Avatar key={i} src={p.img} />
                                     ))}
                                 </AvatarGroup>
-
-                                <Typography
-                                    sx={(theme) => ({
-                                        textAlign: "center",
-                                        color: theme.palette.secondary.main,
-                                    })}
-                                >
-                                    People
+                                <Typography variant="body2" color="text.secondary">
+                                    {participants.length} Participants
                                 </Typography>
                             </Stack>
-                            {/* Vote Button */}
+
                             <InputFeild
-                                placeholder="Vote Id"
+                                placeholder="Vote ID"
                                 name="voteId"
                                 type="text"
-                                onChange={onTextChange}
                                 value={title.text}
+                                onChange={onTextChange}
                                 error={title.error}
                             />
-                            {address ? (
-                                <>
-                                    {" "}
-                                    <MainButton onClick={vote} sx={{ mt: 2, width: "100%" }}>
-                                        Vote
-                                    </MainButton>
-                                </>
-                            ) : (
-                                <MainButton onClick={open} sx={{ mt: 2, width: "100%" }}>
-                                    Connect Wallet
-                                </MainButton>
-                            )}
+
+                            <MainButton
+                                onClick={address ? vote : open}
+                                fullWidth
+                                sx={{
+                                    mt: 2,
+                                    fontWeight: 600,
+                                    background: theme.palette.primary.main,
+                                    ":hover": {
+                                        background: theme.palette.primary.dark,
+                                    },
+                                }}
+                            >
+                                {address ? "Submit Vote" : "Connect Wallet"}
+                            </MainButton>
                         </Stack>
-                    </Box>
+                    </Fade>
                 </Box>
             </Container>
         </>

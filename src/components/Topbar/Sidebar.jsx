@@ -18,7 +18,6 @@ import {
 import { Link } from "react-router-dom";
 
 import { useGenrelContext } from "@/context/GenrelContext";
-import { lightLogo } from "@/assets";
 import { ThemeToggle } from "../common/ToggelTheme/ToggelTheme";
 import { useSelector } from "react-redux";
 import { useState } from "react";
@@ -29,6 +28,8 @@ import { ChatIcon, ChevronLeftIcon, HomeIcon, LiveIcon, MenuIcon, VoteIcon } fro
 import { motion } from "framer-motion";
 import Logo from "../common/Logo/Logo";
 import AnimatedSearchInput from "../common/SearchInput/SearchInput";
+import NotificationBell from "../common/Notifictions/Notifications";
+import { mockNotifications } from "@/constants";
 
 const drawerWidth = 240;
 
@@ -133,6 +134,7 @@ const array = [
         Icon: LiveIcon,
     },
 ];
+
 const MotionListItemButton = motion(ListItemButton);
 const MotionIcon = motion.div;
 const MotionTypography = motion(Typography);
@@ -317,6 +319,7 @@ const Sidebar = ({ children }) => {
                                                 <Avatar src="https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes.png" />
                                             </Link>
                                         )}
+                                        <NotificationBell notifications={mockNotifications} />
                                     </Box>
                                 </Toolbar>
                             </AppBar>{" "}

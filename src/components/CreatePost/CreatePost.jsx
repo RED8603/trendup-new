@@ -26,7 +26,7 @@ const CreatePost = () => {
                 rows={4}
             />
 
-            <Stack direction="row" justifyContent="space-between" mt={4} flexWrap={"wrap"} gap={2} >
+            <Stack direction="row" justifyContent="space-between" mt={4} flexWrap={"wrap"} gap={2}>
                 <Stack direction="row" alignItems={"center"} spacing={2}>
                     <IconButton>
                         {" "}
@@ -42,13 +42,20 @@ const CreatePost = () => {
                     </IconButton>
                 </Stack>
 
-                <Stack direction="row" alignItems={"center"} spacing={3}>
+                <Stack
+                    direction="row"
+                    alignItems={"center"}
+                    spacing={3}
+                    gap={3}
+                    flexWrap={"wrap"}
+                    sx={{ justifyContent: { md: "left", xs: "center" } }}
+                >
                     <GoLiveButton />
-                     <MainButton className="hvr-bounce-to-right">
+                    {/* <MainButton className="hvr-bounce-to-right">
                         <Typography fontWeight={600} color="textSecondary">
                             Create Poll
                         </Typography>
-                    </MainButton>
+                    </MainButton> */}
                     <MainButton className="hvr-bounce-to-right">
                         <Typography fontWeight={600} color="textSecondary">
                             Post
