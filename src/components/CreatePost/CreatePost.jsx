@@ -44,6 +44,11 @@ const CreatePost = () => {
 
                 <Stack direction="row" alignItems={"center"} spacing={3}>
                     <GoLiveButton />
+                     <MainButton className="hvr-bounce-to-right">
+                        <Typography fontWeight={600} color="textSecondary">
+                            Create Poll
+                        </Typography>
+                    </MainButton>
                     <MainButton className="hvr-bounce-to-right">
                         <Typography fontWeight={600} color="textSecondary">
                             Post
