@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import BoxConatner from "../common/BoxContainer/BoxConatner";
-import { Box, IconButton, Stack, Typography, useTheme } from "@mui/material";
+import {IconButton, Stack, Typography, useTheme } from "@mui/material";
 import {
     CommentBorderIcon,
     CommentIcon,

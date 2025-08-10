@@ -28,3 +28,5 @@ export const mockNotifications = [
         time: "1 hour ago",
     },
 ];
+
+export const emojiIcon= ["😀", "😂", "😍", "🤔", "👍", "👎", "❤️", "🔥", "💯", "😢", "😡", "🎉", "👏", "🙌", "💪", "🤝"];
