@@ -20,6 +20,10 @@ import { useTokenWriteFunction } from "@/connectivityAssets/hooks";
 import { useGenrelContext } from "@/context/GenrelContext";
 import { useAppKit } from "@reown/appkit/react";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
+import { motion } from "framer-motion";
+import VoteContainer from "@/components/common/VoteContainer/VoteContainer";
+
+const MotionBox = motion(Box);
 
 const votingOptions = [
     { id: 1, label: "1% - Reduce fees", percentage: 20 },
@@ -78,16 +82,7 @@ export default function GeneralVotingComponent() {
             <Loading isLoading={isLoading} />
             <Toastify setAlertState={setAlertState} alertState={alertState} />
             <Container maxWidth="md">
-                <Box
-                    sx={{
-                        border: `2px solid ${theme.palette.divider}`,
-                        borderRadius: 3,
-                        p: { xs: 2, md: 4 },
-                        background: theme.palette.background.paper,
-                        transition: "all 0.3s ease-in-out",
-                        boxShadow: theme.palette.mode === "dark" ? "0 0 15px #111" : "0 0 10px #e0e0e0",
-                    }}
-                >
+                <VoteContainer>
                     <Fade in timeout={300}>
                         <Stack spacing={2}>
                             <Typography variant="h4" fontWeight={600} color="text.primary">
@@ -119,11 +114,12 @@ export default function GeneralVotingComponent() {
                                             variant="determinate"
                                             value={option.percentage}
                                             sx={{
-                                                height: 12,
-                                                borderRadius: 3,
+                                                height: 10,
+                                                borderRadius: 5,
                                                 backgroundColor: theme.palette.background.default,
                                                 "& .MuiLinearProgress-bar": {
-                                                    backgroundColor: theme.palette.primary.main,
+                                                    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
+                                                    boxShadow: `0 0 8px ${theme.palette.primary.main}`,
                                                 },
                                             }}
                                         />
@@ -181,7 +177,7 @@ export default function GeneralVotingComponent() {
                             </MainButton>
                         </Stack>
                     </Fade>
-                </Box>
+                </VoteContainer>
             </Container>
         </>
     );

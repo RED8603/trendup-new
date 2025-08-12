@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { baseApi } from "@api/baseApi";
 import userReducer from "./slices/userSlices";
+import chatReducer from "./slices/chatSlice"; 
 import { cryptoMarketApi } from "@/api/coinGeckoApi";
 import { cryptoNewsApi } from "@/api/cryptoNewsApi";
 
@@ -11,6 +12,7 @@ export const store = configureStore({
         [cryptoMarketApi.reducerPath]: cryptoMarketApi.reducer,
         [cryptoNewsApi.reducerPath]: cryptoNewsApi.reducer,
         user: userReducer,
+          chat: chatReducer, // Add chat reducer
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(baseApi.middleware, cryptoMarketApi.middleware , cryptoNewsApi.middleware),
 });

@@ -133,7 +133,7 @@ const array = [
         id: 3,
     },
     {
-        name: "Go Live",
+        name: "Live Forum",
         link1: "/live",
         Icon: LiveIcon,
         id: 4,

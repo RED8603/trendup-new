@@ -7,7 +7,7 @@ const SecureRoutes = () => {
     return (
         <Routes>
             <Route element={<Home />} path="/" />
-            <Route element={<Vote/>} path="/vote" />
+            <Route element={<Vote />} path="/vote" />
             <Route element={<Chat />} path="/chat" />
         </Routes>
     );

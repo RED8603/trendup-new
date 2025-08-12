@@ -1,481 +1,754 @@
-import { useRef, useEffect, useCallback } from "react"
+import { useRef, useEffect, useCallback } from "react";
 import {
-  Box,
-  Paper,
-  Typography,
-  TextField,
-  IconButton,
-  Avatar,
-  Chip,
-  LinearProgress,
-  Tooltip,
-  Badge,
-} from "@mui/material"
+    Box,
+    Paper,
+    Typography,
+    TextField,
+    IconButton,
+    Avatar,
+    Chip,
+    LinearProgress,
+    Tooltip,
+    Badge,
+    ButtonGroup,
+    Divider,
+    styled,
+    useTheme,
+    alpha,
+} from "@mui/material";
 import {
-  Send as SendIcon,
-  EmojiEmotions as EmojiIcon,
-  AttachFile as AttachIcon,
-  Image as ImageIcon,
-  Description as FileIcon,
-  Close as CloseIcon,
-  Reply as ReplyIcon,
-  MoreVert as MoreIcon,
-  Menu as MenuIcon,
-} from "@mui/icons-material"
-import EmojiPicker from "../../components/common/EmojiPicker/EmojiPicker"
-import BoxConatner from "@/components/common/BoxContainer/BoxConatner"
- 
+    Send as SendIcon,
+    EmojiEmotions as EmojiIcon,
+    AttachFile as AttachIcon,
+    Image as ImageIcon,
+    Description as FileIcon,
+    Close as CloseIcon,
+    Reply as ReplyIcon,
+    MoreVert as MoreIcon,
+    Menu as MenuIcon,
+    Call as CallIcon,
+    Videocam as VideoIcon,
+    Info as InfoIcon,
+    Verified,
+} from "@mui/icons-material";
+import { motion, AnimatePresence } from "framer-motion";
+import EmojiPicker from "../../components/common/EmojiPicker/EmojiPicker";
+
+// Modern styled components
+const MessageContainer = styled(Box)(({ theme }) => ({
+    display: "flex",
+    alignItems: "flex-start",
+    gap: theme.spacing(1.5),
+    padding: theme.spacing(1.5),
+    borderRadius: theme.shape.borderRadius * 2,
+    transition: theme.transitions.create(["background-color", "transform"]),
+    "&:hover": {
+        backgroundColor: alpha(theme.palette.primary.main, 0.05),
+    },
+    marginBottom: theme.spacing(0.5),
+}));
+
+const ChatBubble = styled(Box)(({ theme, iscurrentuser }) => ({
+    backgroundColor: iscurrentuser ? alpha(theme.palette.primary.main, 0.15) : theme.palette.background.paper,
+    borderRadius: iscurrentuser
+        ? `${theme.shape.borderRadius * 3}px ${theme.shape.borderRadius * 3}px 0 ${theme.shape.borderRadius * 3}px`
+        : `${theme.shape.borderRadius * 3}px ${theme.shape.borderRadius * 3}px ${theme.shape.borderRadius * 3}px 0`,
+    padding: theme.spacing(1.5, 2),
+    maxWidth: "75%",
+    boxShadow: theme.shadows[1],
+    position: "relative",
+    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+    backdropFilter: "blur(8px)",
+}));
+
+const ActionButtons = styled(Box)(({ theme }) => ({
+    opacity: 0,
+    transition: theme.transitions.create("opacity"),
+    "&:hover, .MuiBox-root:hover &": {
+        opacity: 1,
+    },
+    display: "flex",
+    gap: theme.spacing(0.5),
+    position: "absolute",
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    backgroundColor: alpha(theme.palette.background.default, 0.9),
+    borderRadius: theme.shape.borderRadius * 2,
+    padding: theme.spacing(0.5),
+    backdropFilter: "blur(4px)",
+    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+}));
+
+const ChatContainer = styled(Box)(({ theme }) => ({
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
+    background: `radial-gradient(circle at 20% 30%, ${alpha(theme.palette.primary.light, 0.1)} 0%, transparent 40%)`,
+    borderRadius: theme.shape.borderRadius,
+    overflow: "hidden",
+    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+    boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.1)}`,
+}));
 
 export default function ChatDetail({
-  currentUser,
-  messages,
-  newMessage,
-  selectedFiles,
-  emojiAnchor,
-  reactionAnchor,
-  uploadProgress,
-  replyTo,
-  isMobile,
-  onOpenDrawer,
-  onMessageChange,
-  onFileSelect,
-  onRemoveFile,
-  onSendMessage,
-  onKeyDown,
-  onEmojiClick,
-  onEmojiClose,
-  onEmojiSelect,
-  onReactionClick,
-  onReactionClose,
-  onAddReaction,
-  onReply,
-  onCancelReply,
+    currentUser,
+    messages,
+    newMessage,
+    selectedFiles,
+    emojiAnchor,
+    reactionAnchor,
+    uploadProgress,
+    replyTo,
+    isMobile,
+    onOpenDrawer,
+    onMessageChange,
+    onFileSelect,
+    onRemoveFile,
+    onSendMessage,
+    onKeyDown,
+    onEmojiClick,
+    onEmojiClose,
+    onEmojiSelect,
+    onReactionClick,
+    onReactionClose,
+    onAddReaction,
+    onReply,
+    onCancelReply,
 }) {
-  const fileInputRef = useRef(null)
-  const messagesEndRef = useRef(null)
+    const theme = useTheme();
+    const fileInputRef = useRef(null);
+    const messagesEndRef = useRef(null);
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [])
+    const scrollToBottom = useCallback(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, []);
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages, scrollToBottom])
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages, scrollToBottom]);
 
-  const formatFileSize = useCallback((bytes) => {
-    if (bytes === 0) return "0 Bytes"
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-  }, [])
+    const formatFileSize = useCallback((bytes) => {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    }, []);
 
-  const formatTime = useCallback((date) => {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  }, [])
+    const formatTime = useCallback((date) => {
+        return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }, []);
 
-  const getReplyMessage = useCallback(
-    (messageId) => {
-      return messages.find((msg) => msg.id === messageId)
-    },
-    [messages],
-  )
+    const getReplyMessage = useCallback((messageId) => messages.find((msg) => msg.id === messageId), [messages]);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "online":
-        return "#43b581"
-      case "away":
-        return "#faa61a"
-      case "busy":
-        return "#f04747"
-      case "offline":
-        return "#747f8d"
-      default:
-        return "#747f8d"
-    }
-  }
+    const handleCall = () => {
+        console.log("Initiating voice call");
+    };
 
-  return (
-    <BoxConatner
-      sx={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-       
-        borderRadius: 0,
-      }}
-    >
-      {/* Header */}
-      <Box
-        sx={{
-          p: 2,
-          borderBottom: 1,
-          // borderColor: "rgba(255,255,255,0.1)",
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-        }}
-      >
-        {isMobile && (
-          <IconButton onClick={onOpenDrawer} sx={{ color: "#b9bbbe" }}>
-            <MenuIcon />
-          </IconButton>
-        )}
-        {currentUser && (
-          <>
-            <Badge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              badgeContent={
-                <Box
-                  sx={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: "50%",
-                    bgcolor: getStatusColor(currentUser.status),
-                    border: "2px solid #36393f",
-                  }}
-                />
-              }
-            >
-              <Avatar src={currentUser.avatar} sx={{ bgcolor: currentUser.color, width: 32, height: 32 }}>
-                {currentUser.name[0]}
-              </Avatar>
-            </Badge>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: "#dcddde" }}>
-                {currentUser.name}
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{ color: getStatusColor(currentUser.status), textTransform: "capitalize" }}
-              >
-                {currentUser.status}
-              </Typography>
-            </Box>
-          </>
-        )}
-      </Box>
+    const handleVideoCall = () => {
+        console.log("Initiating video call");
+    };
 
-      {/* Messages */}
-      <Box sx={{display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        overflowY: "auto",
-        p: 1,
-       
-        }}>
-        {messages.map((message, index) => {
-          const showAvatar = index === 0 || messages[index - 1].user.name !== message.user.name
-          const replyMessage = message.replyTo ? getReplyMessage(message.replyTo) : null
-
-          return (
-            <Box key={message.id} sx={{ mb: showAvatar ? 2 : 0.5 }}>
-              {replyMessage && (
-                <Box sx={{ ml: 6, mb: 0.5, display: "flex", alignItems: "center", opacity: 0.7 }}>
-                  <ReplyIcon sx={{ fontSize: 16, mr: 1, color: "#b9bbbe" }} />
-                  <Typography variant="caption" sx={{ mr: 1, color: "#b9bbbe" }}>
-                    Replying to {replyMessage.user.name}:
-                  </Typography>
-                  <Typography variant="caption" sx={{ fontStyle: "italic", color: "#b9bbbe" }}>
-                    {replyMessage.content.substring(0, 50)}...
-                  </Typography>
-                </Box>
-              )}
-
-              <Box
+    return (
+        <ChatContainer>
+            {/* Header with call buttons */}
+            <Box
                 sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 1,
-                  px: 1,
-                  py: 0.5,
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.02)" },
-                  position: "relative",
-                  group: true,
-              
+                    padding: theme.spacing(2),
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                    backdropFilter: "blur(12px)",
                 }}
-              >
-                {showAvatar ? (
-                  <Avatar src={message.user.avatar} sx={{ width: 40, height: 40, bgcolor: message.user.color }}>
-                    {message.user.name[0]}
-                  </Avatar>
-                ) : (
-                  <Box sx={{ width: 40, display: "flex", justifyContent: "center", alignItems: "center" }}>
-                    <Typography variant="caption" sx={{ fontSize: "0.7rem", color: "#b9bbbe" }}>
-                      {formatTime(message.timestamp)}
-                    </Typography>
-                  </Box>
-                )}
+            >
+                <Box sx={{ display: "flex", alignItems: "center", gap: theme.spacing(2) }}>
+                    {isMobile && (
+                        <IconButton
+                            onClick={onOpenDrawer}
+                            sx={{
+                                backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                                backdropFilter: "blur(8px)",
+                                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                            }}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    )}
+                    {currentUser && (
+                        <>
+                            <Badge
+                                overlap="circular"
+                                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                                variant="dot"
+                                color={
+                                    currentUser.status === "online"
+                                        ? "success"
+                                        : currentUser.status === "away"
+                                        ? "warning"
+                                        : currentUser.status === "busy"
+                                        ? "error"
+                                        : "default"
+                                }
+                                sx={{
+                                    "& .MuiBadge-dot": {
+                                        width: 12,
+                                        height: 12,
+                                        borderRadius: "50%",
+                                        border: `2px solid ${theme.palette.background.paper}`,
+                                    },
+                                }}
+                            >
+                                <Avatar
+                                    src={currentUser.avatar}
+                                    sx={{
+                                        bgcolor: currentUser.color,
+                                        width: 44,
+                                        height: 44,
+                                        border: `2px solid ${alpha(theme.palette.background.paper, 0.8)}`,
+                                        boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`,
+                                    }}
+                                >
+                                    {currentUser.name[0]}
+                                </Avatar>
+                            </Badge>
+                            <Box>
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                                    <Typography variant="subtitle1" fontWeight={700}>
+                                        {currentUser.name}
+                                    </Typography>
+                                    {currentUser.verified && <Verified fontSize="small" color="primary" />}
+                                </Box>
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        color:
+                                            currentUser.status === "online"
+                                                ? theme.palette.success.main
+                                                : currentUser.status === "away"
+                                                ? theme.palette.warning.main
+                                                : currentUser.status === "busy"
+                                                ? theme.palette.error.main
+                                                : theme.palette.text.secondary,
+                                        textTransform: "capitalize",
+                                        fontWeight: 500,
+                                    }}
+                                >
+                                    {currentUser.status}
+                                </Typography>
+                            </Box>
+                        </>
+                    )}
+                </Box>
 
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  {showAvatar && (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                      <Typography variant="subtitle2" sx={{ color: message.user.color, fontWeight: 600 }}>
-                        {message.user.name}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: "#b9bbbe" }}>
-                        {formatTime(message.timestamp)}
-                      </Typography>
-                    </Box>
-                  )}
+                <ButtonGroup variant="text" size="small">
+                    <Tooltip title="Voice call">
+                        <IconButton
+                            onClick={handleCall}
+                            sx={{
+                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                "&:hover": {
+                                    backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                                },
+                            }}
+                        >
+                            <CallIcon color="primary" />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Video call">
+                        <IconButton
+                            onClick={handleVideoCall}
+                            sx={{
+                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                "&:hover": {
+                                    backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                                },
+                            }}
+                        >
+                            <VideoIcon color="primary" />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="User info">
+                        <IconButton>
+                            <InfoIcon />
+                        </IconButton>
+                    </Tooltip>
+                </ButtonGroup>
+            </Box>
 
-                  {message.content && (
-                    <Typography variant="body2" sx={{ wordBreak: "break-word", mb: 1, color: "#dcddde" }}>
-                      {message.content}
-                    </Typography>
-                  )}
+            {/* Messages area */}
+            <Box
+                sx={{
+                    flex: 1,
+                    overflowY: "auto",
+                    padding: theme.spacing(2),
+                    background: `linear-gradient(${alpha(theme.palette.background.default, 0.8)}, ${alpha(
+                        theme.palette.background.default,
+                        0.9
+                    )})`,
+                    backdropFilter: "blur(8px)",
+                    "&::-webkit-scrollbar": {
+                        width: "6px",
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                        background: `linear-gradient(${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                        borderRadius: theme.shape.borderRadius,
+                    },
+                }}
+            >
+                {messages.map((message, index) => {
+                    const showAvatar = index === 0 || messages[index - 1].user.name !== message.user.name;
+                    const replyMessage = message.replyTo ? getReplyMessage(message.replyTo) : null;
+                    const isCurrentUser = message.user.name === "You";
 
-                  {message.attachments && (
-                    <Box sx={{ mb: 1 }}>
-                      {message.attachments.map((attachment, idx) => (
-                        <Box key={idx} sx={{ mb: 1 }}>
-                          {attachment.type === "image" ? (
-                            <Box
-                              component="img"
-                              src={attachment.url}
-                              alt={attachment.name}
-                              sx={{
-                                maxWidth: 400,
-                                maxHeight: 300,
-                                borderRadius: 1,
-                                cursor: "pointer",
-                              }}
-                              onError={(e) => {
-                                const target = e.target 
-                                target.src = "/abstract-colorful-swirls.png"
-                              }}
-                            />
-                          ) : (
-                            <Paper
-                              sx={{
-                                p: 2,
-                                maxWidth: 300,
+                    return (
+                        <motion.div
+                            key={message.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.2 }}
+                            layout
+                        >
+                            <MessageContainer
+                                sx={{
+                                    justifyContent: isCurrentUser ? "flex-end" : "flex-start",
+                                    flexDirection: isCurrentUser ? "row-reverse" : "row",
+                                }}
+                            >
+                                {showAvatar ? (
+                                    <Avatar
+                                        src={message.user.avatar}
+                                        sx={{
+                                            width: 40,
+                                            height: 40,
+                                            bgcolor: message.user.color,
+                                            fontWeight: 600,
+                                            border: `2px solid ${alpha(theme.palette.background.paper, 0.8)}`,
+                                            boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.1)}`,
+                                        }}
+                                    >
+                                        {message.user.name[0]}
+                                    </Avatar>
+                                ) : (
+                                    <Box sx={{ width: 40, textAlign: "center" }}>
+                                        <Typography variant="caption" color="text.secondary">
+                                            {formatTime(message.timestamp)}
+                                        </Typography>
+                                    </Box>
+                                )}
+
+                                <Box
+                                    sx={{
+                                        flex: 1,
+                                        position: "relative",
+                                        maxWidth: "80%",
+                                    }}
+                                >
+                                    {showAvatar && (
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 1,
+                                                mb: 0.5,
+                                                flexDirection: isCurrentUser ? "row-reverse" : "row",
+                                            }}
+                                        >
+                                            <Typography
+                                                variant="subtitle2"
+                                                sx={{
+                                                    fontWeight: 600,
+                                                    background: `linear-gradient(90deg, ${message.user.color}, ${theme.palette.secondary.main})`,
+                                                    WebkitBackgroundClip: "text",
+                                                    WebkitTextFillColor: "transparent",
+                                                }}
+                                            >
+                                                {message.user.name}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {formatTime(message.timestamp)}
+                                            </Typography>
+                                        </Box>
+                                    )}
+
+                                    {replyMessage && (
+                                        <Box
+                                            sx={{
+                                                mb: 1,
+                                                padding: theme.spacing(1),
+                                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                                borderRadius: theme.shape.borderRadius,
+                                                borderLeft: `3px solid ${theme.palette.primary.main}`,
+                                            }}
+                                        >
+                                            <Typography variant="caption" color="text.secondary">
+                                                Replying to {replyMessage.user.name}
+                                            </Typography>
+                                            <Typography variant="body2" noWrap>
+                                                {replyMessage.content.substring(0, 50)}
+                                                {replyMessage.content.length > 50 ? "..." : ""}
+                                            </Typography>
+                                        </Box>
+                                    )}
+
+                                    {message.content && (
+                                        <ChatBubble iscurrentuser={isCurrentUser}>
+                                            <Typography variant="body2" color="text.primary">
+                                                {message.content}
+                                            </Typography>
+                                        </ChatBubble>
+                                    )}
+
+                                    {message.attachments && (
+                                        <Box sx={{ mt: 1 }}>
+                                            {message.attachments.map((attachment, idx) => (
+                                                <Box key={idx} sx={{ mb: 1 }}>
+                                                    {attachment.type === "image" ? (
+                                                        <Box
+                                                            component={motion.img}
+                                                            src={attachment.url}
+                                                            alt={attachment.name}
+                                                            sx={{
+                                                                maxWidth: "100%",
+                                                                maxHeight: 300,
+                                                                borderRadius: theme.shape.borderRadius * 2,
+                                                                cursor: "pointer",
+                                                                border: `1px solid ${alpha(
+                                                                    theme.palette.divider,
+                                                                    0.2
+                                                                )}`,
+                                                                boxShadow: `0 4px 12px ${alpha(
+                                                                    theme.palette.primary.main,
+                                                                    0.1
+                                                                )}`,
+                                                            }}
+                                                            whileHover={{ scale: 1.02 }}
+                                                            onError={(e) => {
+                                                                e.target.src = "/abstract-colorful-swirls.png";
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <Paper
+                                                            component={motion.div}
+                                                            whileHover={{ scale: 1.01 }}
+                                                            sx={{
+                                                                padding: theme.spacing(1.5),
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                gap: theme.spacing(1),
+                                                                backgroundColor: alpha(
+                                                                    theme.palette.background.paper,
+                                                                    0.8
+                                                                ),
+                                                                backdropFilter: "blur(8px)",
+                                                                borderRadius: theme.shape.borderRadius * 2,
+                                                                border: `1px solid ${alpha(
+                                                                    theme.palette.divider,
+                                                                    0.2
+                                                                )}`,
+                                                            }}
+                                                        >
+                                                            <FileIcon color="primary" />
+                                                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                                <Typography variant="body2" noWrap>
+                                                                    {attachment.name}
+                                                                </Typography>
+                                                                <Typography variant="caption" color="text.secondary">
+                                                                    {formatFileSize(attachment.size)}
+                                                                </Typography>
+                                                            </Box>
+                                                        </Paper>
+                                                    )}
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    )}
+
+                                    {message.reactions.length > 0 && (
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                flexWrap: "wrap",
+                                                gap: 0.5,
+                                                mt: 1,
+                                                justifyContent: isCurrentUser ? "flex-end" : "flex-start",
+                                            }}
+                                        >
+                                            {message.reactions.map((reaction, idx) => (
+                                                <Chip
+                                                    key={idx}
+                                                    label={`${reaction.emoji} ${reaction.count}`}
+                                                    size="small"
+                                                    variant={reaction.users.includes("You") ? "filled" : "outlined"}
+                                                    onClick={() => onAddReaction(message.id, reaction.emoji)}
+                                                    sx={{
+                                                        "&.MuiChip-filled": {
+                                                            backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                                                            color: theme.palette.primary.main,
+                                                            border: `1px solid ${theme.palette.primary.main}`,
+                                                        },
+                                                        "&.MuiChip-outlined": {
+                                                            backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                                                            backdropFilter: "blur(4px)",
+                                                        },
+                                                    }}
+                                                />
+                                            ))}
+                                        </Box>
+                                    )}
+
+                                    <ActionButtons
+                                        sx={{
+                                            right: isCurrentUser ? "auto" : theme.spacing(1),
+                                            left: isCurrentUser ? theme.spacing(1) : "auto",
+                                        }}
+                                    >
+                                        <Tooltip title="Add reaction">
+                                            <IconButton
+                                                size="small"
+                                                onClick={(e) => onReactionClick(e, message.id)}
+                                                sx={{
+                                                    "&:hover": {
+                                                        color: theme.palette.primary.main,
+                                                    },
+                                                }}
+                                            >
+                                                <EmojiIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                        <Tooltip title="Reply">
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => onReply(message.id)}
+                                                sx={{
+                                                    "&:hover": {
+                                                        color: theme.palette.primary.main,
+                                                    },
+                                                }}
+                                            >
+                                                <ReplyIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </ActionButtons>
+                                </Box>
+                            </MessageContainer>
+                        </motion.div>
+                    );
+                })}
+                <div ref={messagesEndRef} />
+            </Box>
+
+            {/* Upload Progress */}
+            {uploadProgress !== null && (
+                <LinearProgress
+                    variant="determinate"
+                    value={uploadProgress}
+                    sx={{
+                        height: 2,
+                        "& .MuiLinearProgress-bar": {
+                            background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                        },
+                    }}
+                />
+            )}
+
+            {/* Reply Preview */}
+            <AnimatePresence>
+                {replyTo && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <Box
+                            sx={{
+                                padding: theme.spacing(1, 2),
                                 display: "flex",
                                 alignItems: "center",
-                                gap: 1,
-                                bgcolor: "#2f3136",
-                                color: "#dcddde",
-                              }}
+                                justifyContent: "space-between",
+                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                backdropFilter: "blur(8px)",
+                            }}
+                        >
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                <ReplyIcon fontSize="small" color="primary" />
+                                <Typography variant="caption">
+                                    Replying to {getReplyMessage(replyTo)?.user.name}
+                                </Typography>
+                            </Box>
+                            <IconButton
+                                size="small"
+                                onClick={onCancelReply}
+                                sx={{
+                                    "&:hover": {
+                                        color: theme.palette.error.main,
+                                    },
+                                }}
                             >
-                              <FileIcon sx={{ color: "#5865F2" }} />
-                              <Box sx={{ flex: 1, minWidth: 0 }}>
-                                <Typography variant="body2" noWrap sx={{ color: "#dcddde" }}>
-                                  {attachment.name}
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: "#b9bbbe" }}>
-                                  {formatFileSize(attachment.size)}
-                                </Typography>
-                              </Box>
-                            </Paper>
-                          )}
+                                <CloseIcon fontSize="small" />
+                            </IconButton>
                         </Box>
-                      ))}
-                    </Box>
-                  )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-                  {message.reactions.length > 0 && (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 1 }}>
-                      {message.reactions.map((reaction, idx) => (
-                        <Chip
-                          key={idx}
-                          label={`${reaction.emoji} ${reaction.count}`}
-                          size="small"
-                          variant={reaction.users.includes("You") ? "filled" : "outlined"}
-                          onClick={() => onAddReaction(message.id, reaction.emoji)}
-                          sx={{
-                            height: 24,
-                            "&:hover": { bgcolor: "rgba(255,255,255,0.1)" },
-                            bgcolor: reaction.users.includes("You") ? "#5865F2" : "transparent",
-                            color: "#dcddde",
-                            borderColor: "rgba(255,255,255,0.2)",
-                          }}
-                        />
-                      ))}
-                      <IconButton
-                        size="small"
-                        onClick={(e) => onReactionClick(e, message.id)}
-                        sx={{ width: 24, height: 24, color: "#b9bbbe" }}
-                      >
-                        <EmojiIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Box>
-                  )}
-                </Box>
-
+            {/* File Preview */}
+            {selectedFiles.length > 0 && (
                 <Box
-                  sx={{
-                    opacity: 0,
-                    "&:hover": { opacity: 1 },
-                    ".MuiBox-root:hover &": { opacity: 1 },
-                    display: "flex",
-                    gap: 0.5,
-                    position: "absolute",
-                    right: 8,
-                    top: 8,
-                    bgcolor: "#36393f",
-                    borderRadius: 1,
-                    p: 0.5,
-                  }}
+                    sx={{
+                        padding: theme.spacing(1, 2),
+                        borderTop: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                        backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                        backdropFilter: "blur(8px)",
+                    }}
                 >
-                  <Tooltip title="Add reaction">
-                    <IconButton size="small" onClick={(e) => onReactionClick(e, message.id)} sx={{ color: "#b9bbbe" }}>
-                      <EmojiIcon sx={{ fontSize: 16 }} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Reply">
-                    <IconButton size="small" onClick={() => onReply(message.id)} sx={{ color: "#b9bbbe" }}>
-                      <ReplyIcon sx={{ fontSize: 16 }} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="More">
-                    <IconButton size="small" sx={{ color: "#b9bbbe" }}>
-                      <MoreIcon sx={{ fontSize: 16 }} />
-                    </IconButton>
-                  </Tooltip>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                        Attachments ({selectedFiles.length})
+                    </Typography>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                        {selectedFiles.map((file, index) => (
+                            <Chip
+                                key={index}
+                                label={`${file.name.substring(0, 15)}... (${formatFileSize(file.size)})`}
+                                onDelete={() => onRemoveFile(index)}
+                                icon={file.type.startsWith("image/") ? <ImageIcon /> : <FileIcon />}
+                                variant="outlined"
+                                sx={{
+                                    maxWidth: 200,
+                                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                                    backdropFilter: "blur(4px)",
+                                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                                }}
+                            />
+                        ))}
+                    </Box>
                 </Box>
-              </Box>
-            </Box>
-          )
-        })}
-        <div ref={messagesEndRef} />
-      </Box>
+            )}
 
-      {/* Upload Progress */}
-      {uploadProgress !== null && (
-        <Box sx={{ px: 2 }}>
-          <LinearProgress variant="determinate" value={uploadProgress} sx={{ bgcolor: "#2f3136" }} />
-        </Box>
-      )}
-
-      {/* Reply Preview */}
-      {replyTo && (
-        <Box sx={{ px: 2, py: 1, bgcolor: "rgba(255,255,255,0.05)" }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <ReplyIcon sx={{ fontSize: 16, color: "#b9bbbe" }} />
-              <Typography variant="caption" sx={{ color: "#b9bbbe" }}>
-                Replying to {getReplyMessage(replyTo)?.user.name}
-              </Typography>
-            </Box>
-            <IconButton size="small" onClick={onCancelReply} sx={{ color: "#b9bbbe" }}>
-              <CloseIcon sx={{ fontSize: 16 }} />
-            </IconButton>
-          </Box>
-        </Box>
-      )}
-
-      {/* File Preview */}
-      {selectedFiles.length > 0 && (
-        <Box sx={{ p: 2, borderTop: 1, borderColor: "rgba(255,255,255,0.1)" }}>
-          <Typography variant="subtitle2" sx={{ mb: 1, color: "#dcddde" }}>
-            Attachments ({selectedFiles.length})
-          </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {selectedFiles.map((file, index) => (
-              <Chip
-                key={index}
-                label={`${file.name} (${formatFileSize(file.size)})`}
-                onDelete={() => onRemoveFile(index)}
-                icon={file.type.startsWith("image/") ? <ImageIcon /> : <FileIcon />}
-                variant="outlined"
+            {/* Message Input */}
+            <Box
                 sx={{
-                  color: "#dcddde",
-                  borderColor: "rgba(255,255,255,0.2)",
-                  "& .MuiChip-deleteIcon": { color: "#b9bbbe" },
+                    padding: theme.spacing(2),
+                    borderTop: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                    backdropFilter: "blur(12px)",
                 }}
-              />
-            ))}
-          </Box>
-        </Box>
-      )}
+            >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={onFileSelect}
+                        multiple
+                        style={{ display: "none" }}
+                        accept="image/*,application/*,text/*"
+                    />
 
-      {/* Message Input */}
-      <Box sx={{ p: 2, borderTop: 1, borderColor: "rgba(255,255,255,0.1)" }}>
-        <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={onFileSelect}
-            multiple
-            style={{ display: "none" }}
-            accept="image/*,application/*,text/*"
-          />
+                    <Tooltip title="Attach file">
+                        <IconButton
+                            onClick={() => fileInputRef.current?.click()}
+                            sx={{
+                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                "&:hover": {
+                                    backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                                },
+                            }}
+                        >
+                            <AttachIcon color="primary" />
+                        </IconButton>
+                    </Tooltip>
 
-          <IconButton onClick={() => fileInputRef.current?.click()} sx={{ mb: 0.5, color: "#b9bbbe" }}>
-            <AttachIcon />
-          </IconButton>
+                    <TextField
+                        fullWidth
+                        multiline
+                        maxRows={4}
+                        value={newMessage}
+                        onChange={(e) => onMessageChange(e.target.value)}
+                        placeholder={replyTo ? "Reply..." : `Message ${currentUser?.name || ""}`}
+                        variant="outlined"
+                        size="small"
+                        onKeyDown={onKeyDown}
+                        sx={{
+                            "& .MuiOutlinedInput-root": {
+                                backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                                backdropFilter: "blur(8px)",
+                                borderRadius: theme.shape.borderRadius * 2,
+                                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                                "&:hover": {
+                                    borderColor: alpha(theme.palette.primary.main, 0.5),
+                                },
+                                "&.Mui-focused": {
+                                    borderColor: theme.palette.primary.main,
+                                    boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+                                },
+                            },
+                        }}
+                    />
 
-          <TextField
-            fullWidth
-            multiline
-            maxRows={4}
-            value={newMessage}
-            onChange={(e) => onMessageChange(e.target.value)}
-            placeholder={replyTo ? "Reply..." : `Message ${currentUser?.name || ""}`}
-            variant="outlined"
-            size="small"
-            onKeyDown={onKeyDown}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                bgcolor: "#40444b",
-                color: "#dcddde",
-                "& fieldset": {
-                  borderColor: "rgba(255,255,255,0.1)",
-                },
-                "&:hover fieldset": {
-                  borderColor: "rgba(255,255,255,0.2)",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "#5865F2",
-                },
-              },
-              "& .MuiInputBase-input::placeholder": {
-                color: "#72767d",
-                opacity: 1,
-              },
-            }}
-          />
+                    <Tooltip title="Emoji">
+                        <IconButton
+                            onClick={onEmojiClick}
+                            sx={{
+                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                "&:hover": {
+                                    backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                                },
+                            }}
+                        >
+                            <EmojiIcon color="primary" />
+                        </IconButton>
+                    </Tooltip>
 
-          <IconButton onClick={onEmojiClick} sx={{ mb: 0.5, color: "#b9bbbe" }}>
-            <EmojiIcon />
-          </IconButton>
+                    <Tooltip title="Send message">
+                        <span>
+                            <IconButton
+                                onClick={onSendMessage}
+                                disabled={!newMessage.trim() && selectedFiles.length === 0}
+                                sx={{
+                                    backgroundColor:
+                                        !newMessage.trim() && selectedFiles.length === 0
+                                            ? alpha(theme.palette.action.disabled, 0.1)
+                                            : alpha(theme.palette.primary.main, 0.2),
+                                    color:
+                                        !newMessage.trim() && selectedFiles.length === 0
+                                            ? theme.palette.text.disabled
+                                            : theme.palette.primary.main,
+                                    "&:hover": {
+                                        backgroundColor:
+                                            !newMessage.trim() && selectedFiles.length === 0
+                                                ? alpha(theme.palette.action.disabled, 0.1)
+                                                : alpha(theme.palette.primary.main, 0.3),
+                                    },
+                                }}
+                            >
+                                <SendIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                </Box>
+            </Box>
 
-          <IconButton
-            onClick={onSendMessage}
-            disabled={!newMessage.trim() && selectedFiles.length === 0}
-            sx={{
-              mb: 0.5,
-              color: "#5865F2",
-              "&:disabled": { color: "rgba(255,255,255,0.3)" },
-            }}
-          >
-            <SendIcon />
-          </IconButton>
-        </Box>
-      </Box>
+            {/* Emoji Pickers */}
+            <EmojiPicker
+                anchorEl={emojiAnchor}
+                open={Boolean(emojiAnchor)}
+                onClose={onEmojiClose}
+                onEmojiSelect={onEmojiSelect}
+            />
 
-      {/* Emoji Picker for Message Input */}
-      <EmojiPicker
-        anchorEl={emojiAnchor}
-        open={Boolean(emojiAnchor)}
-        onClose={onEmojiClose}
-        onEmojiSelect={onEmojiSelect}
-      />
-
-      {/* Emoji Picker for Reactions */}
-      <EmojiPicker
-        anchorEl={reactionAnchor?.element || null}
-        open={Boolean(reactionAnchor)}
-        onClose={onReactionClose}
-        onEmojiSelect={(emoji) => {
-          if (reactionAnchor) {
-            onAddReaction(reactionAnchor.messageId, emoji)
-          }
-        }}
-      />
-    </BoxConatner>
-  )
+            <EmojiPicker
+                anchorEl={reactionAnchor?.element || null}
+                open={Boolean(reactionAnchor)}
+                onClose={onReactionClose}
+                onEmojiSelect={(emoji) => {
+                    if (reactionAnchor) {
+                        onAddReaction(reactionAnchor.messageId, emoji);
+                    }
+                }}
+            />
+        </ChatContainer>
+    );
 }

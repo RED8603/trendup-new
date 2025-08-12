@@ -6,6 +6,7 @@ import Toastify from "@/components/common/Toastify";
 import { useTokenWriteFunction } from "@/connectivityAssets/hooks";
 import { useGenrelContext } from "@/context/GenrelContext";
 import { useAppKit } from "@reown/appkit/react";
+import VoteContainer from "@/components/common/VoteContainer/VoteContainer";
 
 export default function HodleVoting() {
     const theme = useTheme();
@@ -42,16 +43,7 @@ export default function HodleVoting() {
             <Loading isLoading={isLoading} />
             <Toastify setAlertState={setAlertState} alertState={alertState} />
             <Container maxWidth="md">
-                <Box
-                    sx={{
-                        border: `2px solid ${theme.palette.divider}`,
-                        borderRadius: 3,
-                        p: { xs: 2, md: 4 },
-                        background: theme.palette.background.paper,
-                        transition: "all 0.3s ease-in-out",
-                        boxShadow: theme.palette.mode === "dark" ? "0 0 15px #111" : "0 0 10px #e0e0e0",
-                    }}
-                >
+                <VoteContainer>
                     <Fade in timeout={300}>
                         <Stack spacing={2}>
                             <Typography variant="h4" fontWeight={600} color="text.primary">
@@ -82,11 +74,12 @@ export default function HodleVoting() {
                                         variant="determinate"
                                         value={40}
                                         sx={{
-                                            height: 12,
-                                            borderRadius: 3,
+                                            height: 10,
+                                            borderRadius: 5,
                                             backgroundColor: theme.palette.background.default,
                                             "& .MuiLinearProgress-bar": {
-                                                backgroundColor: theme.palette.primary.main,
+                                                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
+                                                boxShadow: `0 0 8px ${theme.palette.primary.main}`,
                                             },
                                         }}
                                     />
@@ -105,7 +98,12 @@ export default function HodleVoting() {
                                 <Typography variant="body2" color="text.secondary" textAlign="center">
                                     Accepted Currencies: ETH, Trendup
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary" textAlign="center" sx={{wordBreak: "break-word"}} >
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    textAlign="center"
+                                    sx={{ wordBreak: "break-word" }}
+                                >
                                     Token address TUP: 0x52c06a62d9495bee1dadf2ba0f5c0588a4f3c14c
                                 </Typography>
                             </Stack>
@@ -126,7 +124,7 @@ export default function HodleVoting() {
                             </MainButton>
                         </Stack>
                     </Fade>
-                </Box>
+                </VoteContainer>
             </Container>
         </>
     );
