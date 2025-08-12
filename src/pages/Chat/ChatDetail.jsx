@@ -22,7 +22,7 @@ import {
   MoreVert as MoreIcon,
   Menu as MenuIcon,
 } from "@mui/icons-material"
-import EmojiPicker from "./EmojiPicker"
+import EmojiPicker from "../../components/common/EmojiPicker/EmojiPicker"
 import BoxConatner from "@/components/common/BoxContainer/BoxConatner"
  
 
@@ -160,7 +160,13 @@ export default function ChatDetail({
       </Box>
 
       {/* Messages */}
-      <Box sx={{ flex: 1, overflow: "auto", p: 1 }}>
+      <Box sx={{display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        overflowY: "auto",
+        p: 1,
+       
+        }}>
         {messages.map((message, index) => {
           const showAvatar = index === 0 || messages[index - 1].user.name !== message.user.name
           const replyMessage = message.replyTo ? getReplyMessage(message.replyTo) : null
@@ -189,6 +195,7 @@ export default function ChatDetail({
                   "&:hover": { bgcolor: "rgba(255,255,255,0.02)" },
                   position: "relative",
                   group: true,
+              
                 }}
               >
                 {showAvatar ? (

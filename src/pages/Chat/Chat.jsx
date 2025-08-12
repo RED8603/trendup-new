@@ -4,134 +4,9 @@ import UserList from "./UserList";
 import ChatDetail from "./ChatDetail";
 import WelcomeScreen from "./WelcomeScreen";
 import BoxConatner from "@/components/common/BoxContainer/BoxConatner";
-import abstract_design_elements from "../../assets/images/abstract-design-elements.png"
+import { initialConversations, users } from "@/constants";
 
 const DRAWER_WIDTH = 280;
-const users = [
-    {
-        id: "general",
-        name: "# general",
-        avatar: "/abstract-geometric-shapes.png",
-        color: "#5865F2",
-        status: "online",
-    },
-    {
-        id: "alice",
-        name: "Alice",
-        avatar: "/alice-in-wonderland.png",
-        color: "#ff6b6b",
-        status: "online",
-    },
-    {
-        id: "bob",
-        name: "Bob",
-        avatar: "/bob-portrait.png",
-        color: "#4ecdc4",
-        status: "away",
-    },
-    {
-        id: "charlie",
-        name: "Charlie",
-        avatar: "/abstract-figure-charlie.png",
-        color: "#45b7d1",
-        status: "online",
-    },
-    {
-        id: "david",
-        name: "David",
-        avatar: "/abstract-colorful-swirls.png",
-        color: "#f39c12",
-        status: "busy",
-    },
-    {
-        id: "eve",
-        name: "Eve",
-        avatar: abstract_design_elements,
-        color: "#e74c3c",
-        status: "offline",
-        lastSeen: new Date(Date.now() - 3600000),
-    },
-];
-
-// Initial conversations
-const initialConversations = [
-    {
-        userId: "general",
-        unreadCount: 0,
-        messages: [
-            {
-                id: "1",
-                user: { name: "Alice", avatar: "/alice-in-wonderland.png", color: "#ff6b6b" },
-                content: "Hey everyone! How's it going?",
-                timestamp: new Date(Date.now() - 3600000),
-                reactions: [
-                    { emoji: "👋", count: 3, users: ["Bob", "Charlie", "David"] },
-                    { emoji: "😊", count: 1, users: ["Bob"] },
-                ],
-            },
-            {
-                id: "2",
-                user: { name: "Bob", avatar: "/bob-portrait.png", color: "#4ecdc4" },
-                content: "Pretty good! Just working on some new features.",
-                timestamp: new Date(Date.now() - 3000000),
-                reactions: [{ emoji: "💪", count: 2, users: ["Alice", "Charlie"] }],
-            },
-            {
-                id: "3",
-                user: { name: "Charlie", avatar: "/abstract-figure-charlie.png", color: "#45b7d1" },
-                content: "Check out this cool design I made!",
-                timestamp: new Date(Date.now() - 1800000),
-                reactions: [
-                    { emoji: "🔥", count: 4, users: ["Alice", "Bob", "David", "Eve"] },
-                    { emoji: "👏", count: 2, users: ["Alice", "David"] },
-                ],
-                attachments: [
-                    { name: "design-mockup.png", url: abstract_design_elements, type: "image", size: 245760 },
-                ],
-            },
-        ],
-    },
-    {
-        userId: "alice",
-        unreadCount: 2,
-        messages: [
-            {
-                id: "alice-1",
-                user: { name: "Alice", avatar: "/alice-in-wonderland.png", color: "#ff6b6b" },
-                content: "Hey! How are you doing?",
-                timestamp: new Date(Date.now() - 1800000),
-                reactions: [],
-            },
-            {
-                id: "alice-2",
-                user: { name: "Alice", avatar: "/alice-in-wonderland.png", color: "#ff6b6b" },
-                content: "I wanted to ask you about that project we discussed.",
-                timestamp: new Date(Date.now() - 1200000),
-                reactions: [],
-            },
-        ],
-    },
-    {
-        userId: "bob",
-        unreadCount: 0,
-        messages: [
-            {
-                id: "bob-1",
-                user: { name: "You", avatar: "/abstract-geometric-shapes.png", color: "#5865F2" },
-                content: "Hey Bob, how's the development going?",
-                timestamp: new Date(Date.now() - 2400000),
-                reactions: [],
-            },
-            {
-                id: "bob-2",
-                user: { name: "Bob", avatar: "/bob-portrait.png", color: "#4ecdc4" },
-                content: "Going well! Almost finished with the new features.",
-                timestamp: new Date(Date.now() - 2100000),
-                reactions: [{ emoji: "👍", count: 1, users: ["You"] }],
-            },
-        ],
-    },
-];
 
 export default function Chat() {
     const theme = useTheme();
@@ -295,7 +170,12 @@ export default function Chat() {
     );
 
     return (
-        <Box sx={{ display: "flex", height: "100vh", }}>
+        <Box
+            sx={{
+                display: "flex",
+                height: "100%",
+            }}
+        >
             {/* Sidebar */}
             <Drawer
                 variant={isMobile ? "temporary" : "permanent"}
@@ -307,10 +187,10 @@ export default function Chat() {
                     "& .MuiDrawer-paper": {
                         width: DRAWER_WIDTH,
                         boxSizing: "border-box",
-                        bgcolor: "#2f3136",
-                        borderRight: "1px solid rgba(255,255,255,0.1)",
+                        bgcolor: "transparent",
+                        borderRight: "none",
+                        backdropFilter: "blur(10px)",
                     },
-                   
                 }}
             >
                 <UserList
@@ -331,7 +211,22 @@ export default function Chat() {
                     display: "flex",
                     flexDirection: "column",
                     width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-                    height: "100vh",
+                    height: "84vh",
+                    overflow: "auto",
+                  
+                    // Custom scrollbar styles
+                    "&::-webkit-scrollbar": {
+                        width: "8px",
+                        background: "transparent",
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                        background: "#333",
+                        borderRadius: "8px",
+                    },
+                    "&": {
+                        scrollbarColor: "#333 transparent",
+                        scrollbarWidth: "thin",
+                    },
                 }}
             >
                 {!activeUserId ? (
