@@ -15,12 +15,12 @@ import {
     List,
     Drawer as MuiDrawer,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { useGenrelContext } from "@/context/GenrelContext";
 import { ThemeToggle } from "../common/ToggelTheme/ToggelTheme";
 import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMediaQuery } from "@mui/material";
 import Header from "./Header";
 import Navbar from "./Navbar";
@@ -30,6 +30,7 @@ import Logo from "../common/Logo/Logo";
 import AnimatedSearchInput from "../common/SearchInput/SearchInput";
 import NotificationBell from "../common/Notifictions/Notifications";
 import { mockNotifications } from "@/constants";
+import MiniVotingCard from "../common/MiniVoting/MiniVoting";
 
 const drawerWidth = 240;
 
@@ -117,21 +118,25 @@ const array = [
         name: "Home",
         link1: "/",
         Icon: HomeIcon,
+        id: 1,
     },
     {
         name: "Vote",
         link1: "/vote",
         Icon: VoteIcon,
+        id: 2,
     },
     {
         name: "Chats",
         link1: "/chat",
         Icon: ChatIcon,
+        id: 3,
     },
     {
         name: "Go Live",
         link1: "/live",
         Icon: LiveIcon,
+        id: 4,
     },
 ];
 
@@ -140,8 +145,9 @@ const MotionIcon = motion.div;
 const MotionTypography = motion(Typography);
 
 const CustomDrawer = ({ handleDrawerClose, open }) => {
-    const [selectedIndex, setSelectedIndex] = useState(0);
-    console.log(selectedIndex, "selectedIndex");
+    const [selectedIndex, setSelectedIndex] = useState(array[0].id);
+    const location = useLocation();
+
     const theme = useTheme();
     const { isDarkMode } = useGenrelContext();
     // Color palettes
@@ -151,6 +157,13 @@ const CustomDrawer = ({ handleDrawerClose, open }) => {
     const { c1, c2 } = isDarkMode ? darkColors : lightColors;
 
     const gradient = `linear-gradient(45deg, ${c1}, ${c2})`;
+
+    useEffect(() => {
+        const matchedRoute = array.find((item) => item.link1 === location.pathname);
+        if (matchedRoute) {
+            setSelectedIndex(matchedRoute.id);
+        }
+    }, [location.pathname]);
 
     return (
         <Drawer
@@ -171,85 +184,94 @@ const CustomDrawer = ({ handleDrawerClose, open }) => {
                 </IconButton>
             </DrawerHeader>
             <Divider />
-            <List>
-                {/**
-                 *  eslint-disable-next-line no-unused-vars
-                 */}
-                {array.map(({ name, link1, Icon: ImageIcon }, index) => (
-                    <ListItem key={index} disablePadding sx={{ display: "block" }}>
-                        <Link to={link1} style={{ textDecoration: "none", color: "inherit" }}>
-                            <MotionListItemButton
-                                onClick={() => setSelectedIndex(index)}
-                                whileHover={{
-                                    scale: 1.05,
-                                    transition: { type: "spring", stiffness: 300 },
-                                }}
-                                initial={false}
-                                animate={{
-                                    background: selectedIndex === index ? gradient : "transparent",
-                                }}
-                                transition={{ duration: 0.3 }}
-                                sx={[
-                                    {
-                                        minHeight: 48,
-                                        px: open ? 2.5 : 1.5,
-                                        display: "flex",
-                                        gap: 5,
-                                        // mx: 0,
-                                        borderRadius: 5,
-                                        mx: open ? 3 : 1,
-                                    },
-                                    open
-                                        ? {
-                                              justifyContent: "initial",
-                                          }
-                                        : {
-                                              justifyContent: "center",
-                                          },
-                                ]}
-                            >
-                                <ListItemIcon
-                                    sx={{
-                                        minWidth: 0,
-                                        justifyContent: "center",
-                                    }}
-                                >
-                                    <MotionIcon
-                                        key={selectedIndex === index ? "active" : "inactive"}
-                                        initial={{ scale: 1 }}
-                                        animate={{
-                                            scale: selectedIndex === index ? [1, 1.3, 1] : 1,
-                                        }}
-                                        transition={{ duration: 0.5 }}
-                                    >
-                                        <ImageIcon
-                                            sx={{
-                                                color:
-                                                    selectedIndex === index
-                                                        ? !isDarkMode
-                                                            ? "#fff"
-                                                            : theme.palette.primary.main
-                                                        : theme.palette.text.secondary,
-                                            }}
-                                        />
-                                    </MotionIcon>
-                                </ListItemIcon>
 
-                                {open && (
-                                    <MotionTypography
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ duration: 0.3, delay: 0.1 }}
-                                        color={theme.palette.text.secondary}
+            <Stack gap={2} justifyContent={"space-between"} height={"100%"}>
+                <List>
+                    {array.map(({ name, link1, Icon: ImageIcon, id }, index) => (
+                        <ListItem key={index} disablePadding sx={{ display: "block" }}>
+                            <Link to={link1} style={{ textDecoration: "none", color: "inherit" }}>
+                                <MotionListItemButton
+                                    onClick={() => setSelectedIndex(id)}
+                                    whileHover={{
+                                        scale: 1.05,
+                                        transition: { type: "spring", stiffness: 300 },
+                                    }}
+                                    initial={false}
+                                    animate={{
+                                        background: selectedIndex === id ? gradient : "transparent",
+                                    }}
+                                    transition={{ duration: 0.3 }}
+                                    sx={[
+                                        {
+                                            minHeight: 48,
+                                            px: open ? 2.5 : 1.5,
+                                            display: "flex",
+                                            gap: 5,
+                                            // mx: 0,
+                                            borderRadius: 5,
+                                            mx: open ? 3 : 1,
+                                        },
+                                        open
+                                            ? {
+                                                  justifyContent: "initial",
+                                              }
+                                            : {
+                                                  justifyContent: "center",
+                                              },
+                                    ]}
+                                >
+                                    <ListItemIcon
+                                        sx={{
+                                            minWidth: 0,
+                                            justifyContent: "center",
+                                        }}
                                     >
-                                        {name}
-                                    </MotionTypography>
-                                )}
-                            </MotionListItemButton>
-                        </Link>
-                    </ListItem>
-                ))}
-            </List>
+                                        <MotionIcon
+                                            key={selectedIndex === id ? "active" : "inactive"}
+                                            initial={{ scale: 1 }}
+                                            animate={{
+                                                scale: selectedIndex === id ? [1, 1.3, 1] : 1,
+                                            }}
+                                            transition={{ duration: 0.5 }}
+                                        >
+                                            <ImageIcon
+                                                sx={{
+                                                    color:
+                                                        selectedIndex === id
+                                                            ? !isDarkMode
+                                                                ? "#fff"
+                                                                : theme.palette.primary.main
+                                                            : theme.palette.text.secondary,
+                                                }}
+                                            />
+                                        </MotionIcon>
+                                    </ListItemIcon>
+
+                                    {open && (
+                                        <MotionTypography
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ duration: 0.3, delay: 0.1 }}
+                                            color={theme.palette.text.secondary}
+                                        >
+                                            {name}
+                                        </MotionTypography>
+                                    )}
+                                </MotionListItemButton>
+                            </Link>
+                        </ListItem>
+                    ))}
+                </List>
+                <Box p={2}>
+                    <MiniVotingCard
+                        title={"HOLD Voting"}
+                        yesPercent={30}
+                        noPercent={70}
+                        endsIn={"10 days"}
+                        to={"/vote"}
+                    />
+                </Box>
+            </Stack>
         </Drawer>
     );
 };
