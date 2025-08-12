@@ -218,10 +218,10 @@ const TrendingTabs = () => {
                 }}
             >
                 <CustomTabs onChange={handleChange} aria-label="trending tabs">
-                    <CustomTab icon={<StreamIcon />} label="Stream" value="1" selected={tabId} />
-                    <CustomTab icon={<ExploreIcon />} label="Explore" value="2" selected={tabId} />
-                    <CustomTab icon={<FollowingIcon />} label="Following" value="3" selected={tabId} />
-                    <CustomTab icon={<ForYouIcon />} label="For You" value="4" selected={tabId} />
+                    <CustomTab icon={<StreamIcon />} label="Stream" value="1" selected={tabId} sx={{ px: 0.5 }} />
+                    <CustomTab icon={<ExploreIcon />} label="Explore" value="2" selected={tabId} sx={{ px: 0.5 }} />
+                    <CustomTab icon={<FollowingIcon />} label="Following" value="3" selected={tabId} sx={{ px: 0.5 }} />
+                    <CustomTab icon={<ForYouIcon />} label="For You" value="4" selected={tabId} sx={{ px: 0.5 }} />
                 </CustomTabs>
             </Box>
 

@@ -63,6 +63,7 @@ const CustomTab = styled(({ icon, selected, label,sx, ...props }) => {
                     marginRight: selected ? theme.spacing(1) : 0,
                     transition: "margin-right 0.3s ease",
                 },
+                mx: 0.5,
                 ...sx
             }}
         />
