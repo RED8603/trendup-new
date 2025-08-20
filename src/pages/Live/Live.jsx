@@ -1,33 +1,47 @@
 import { useState, useEffect } from "react";
-import { Box, Button, Typography, Modal, styled, useTheme, Fade, Zoom, Slide, IconButton, alpha } from "@mui/material";
+import {
+    Box,
+    Button,
+    Typography,
+    Modal,
+    styled,
+    useTheme,
+    Fade,
+    Zoom,
+    Slide,
+    IconButton,
+    alpha,
+    Card,
+    CardContent,
+    Avatar,
+    Chip,
+    Stack,
+    Grid2,
+} from "@mui/material";
 import {
     LiveTv as VideoIcon,
     Mic as AudioIcon,
     Podcasts as PodcastIcon,
     Close as CloseIcon,
+    Visibility as ViewersIcon,
+    PlayArrow as WatchIcon,
+    PlayArrow as PlayArrowIcon,
+    
 } from "@mui/icons-material";
 import { motion, useAnimation } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 // Styled components
 const FullScreenContainer = styled(Box)(() => ({
-    height: "calc(100vh - 120px)",
+    // height: "calc(100vh - 120px)",
     width: "100%",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    // background:
-    //     theme.palette.mode === "dark"
-    //         ? `radial-gradient(circle at 20% 30%, ${alpha(theme.palette.primary.dark, 0.3)} 0%, ${
-    //               theme.palette.background.default
-    //           } 70%)`
-    //         : `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${alpha(
-    //               theme.palette.primary.light,
-    //               0.1
-    //           )} 100%)`,
     position: "relative",
     overflow: "hidden",
+    padding: "20px 0",
 }));
 
 const GlowButtonContainer = styled("div")({
@@ -36,7 +50,7 @@ const GlowButtonContainer = styled("div")({
     margin: "16px",
 });
 
-const GlowButton = styled(motion(Button))(({  color }) => ({
+const GlowButton = styled(motion(Button))(({ color }) => ({
     position: "relative",
     zIndex: 1,
     padding: "16px 40px",
@@ -91,11 +105,65 @@ const StepItem = styled(Box)(({ theme }) => ({
     backgroundColor: alpha(theme.palette.primary.main, 0.1),
 }));
 
+const LiveStreamCard = styled(Card)(({ theme }) => ({
+    background: alpha(theme.palette.background.paper, 0.8),
+    backdropFilter: "blur(10px)",
+    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+    borderRadius: theme.shape.borderRadius * 2,
+    transition: "all 0.3s ease",
+    cursor: "pointer",
+    "&:hover": {
+        transform: "translateY(-4px)",
+        boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.2)}`,
+        borderColor: alpha(theme.palette.primary.main, 0.4),
+    },
+}));
+
 const GoLiveView = () => {
     const theme = useTheme();
     const [openModal, setOpenModal] = useState(null);
     const controls = useAnimation();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+
+    // Sample live streams data
+    const [liveStreams, setLiveStreams] = useState([
+        {
+            id: 1,
+            title: "Tech Talk Live",
+            host: "Sarah Johnson",
+            viewers: 1247,
+            category: "Technology",
+            isLive: true,
+            thumbnail: "/tech-stream.jpg",
+        },
+        {
+            id: 2,
+            title: "Music Production Session",
+            host: "Mike Chen",
+            viewers: 892,
+            category: "Music",
+            isLive: true,
+            thumbnail: "/music-stream.jpg",
+        },
+        {
+            id: 3,
+            title: "Gaming Marathon",
+            host: "Alex Rodriguez",
+            viewers: 2156,
+            category: "Gaming",
+            isLive: true,
+            thumbnail: "/gaming-stream.jpg",
+        },
+        {
+            id: 4,
+            title: "Cooking Show Live",
+            host: "Emma Wilson",
+            viewers: 567,
+            category: "Food",
+            isLive: true,
+            thumbnail: "/cooking-stream.jpg",
+        },
+    ]);
 
     const options = [
         {
@@ -143,6 +211,18 @@ const GoLiveView = () => {
             opacity: [0.8, 1, 0.8],
             transition: { duration: 8, ease: "easeInOut" },
         });
+
+        // Simulate viewer count changes
+        const interval = setInterval(() => {
+            setLiveStreams((prev) =>
+                prev.map((stream) => ({
+                    ...stream,
+                    viewers: stream.viewers + Math.floor(Math.random() * 20) - 10,
+                }))
+            );
+        }, 10000);
+
+        return () => clearInterval(interval);
     }, [controls]);
 
     const handleOpen = (optionId) => {
@@ -154,12 +234,16 @@ const GoLiveView = () => {
     };
 
     const handleGoLive = () => {
-        navigate('/live/stream')
+        navigate("/live/stream");
+    };
+
+    const handleWatchStream = (streamId) => {
+        navigate(`/live/stream`);
     };
 
     return (
         <FullScreenContainer>
-            {/* Animated background elements (one-time animation) */}
+            {/* Animated background elements */}
             <motion.div
                 animate={controls}
                 style={{
@@ -216,7 +300,7 @@ const GoLiveView = () => {
             <Typography
                 variant="h2"
                 sx={{
-                    mb: 6,
+                    mb: 4,
                     fontWeight: 800,
                     background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                     WebkitBackgroundClip: "text",
@@ -235,11 +319,11 @@ const GoLiveView = () => {
                     justifyContent: "center",
                     zIndex: 1,
                     gap: 4,
+                    mb: 6,
                 }}
             >
                 {options.map((option) => (
                     <GlowButtonContainer key={option.id}>
-                        {/* Animated glow effect */}
                         <motion.div
                             initial={{ opacity: 0.4, scale: 1 }}
                             animate={{
@@ -290,6 +374,159 @@ const GoLiveView = () => {
                         </GlowButton>
                     </GlowButtonContainer>
                 ))}
+            </Box>
+
+            {/* Currently Live Streams Section */}
+            <Box sx={{ width: "100%", maxWidth: 1200, zIndex: 1, px: 2 }}>
+                <Typography
+                    variant="h4"
+                    sx={{
+                        mb: 3,
+                        fontWeight: 700,
+                        textAlign: "center",
+                        color: theme.palette.text.primary,
+                    }}
+                >
+                    🔥 Currently Live Streams
+                </Typography>
+
+                <Grid2 container spacing={3} justifyContent="center">
+                    {liveStreams.map((stream) => (
+                        <Grid2 key={stream.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                            <LiveStreamCard onClick={() => handleWatchStream(stream.id)}>
+                                <Box
+                                    sx={{
+                                        position: "relative",
+                                        height: 200,
+                                        background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
+                                        borderRadius: `${theme.shape.borderRadius * 2}px ${
+                                            theme.shape.borderRadius * 2
+                                        }px 0 0`,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        overflow: "hidden",
+                                    }}
+                                >
+                                    <motion.div
+                                        animate={{ scale: [1, 1.1, 1] }}
+                                        transition={{ repeat: Infinity, duration: 2 }}
+                                        style={{
+                                            position: "absolute",
+                                            top: 12,
+                                            left: 12,
+                                        }}
+                                    >
+                                        <Chip
+                                            label="LIVE"
+                                            color="error"
+                                            size="small"
+                                            icon={
+                                                <motion.div
+                                                    animate={{ scale: [1, 1.2, 1] }}
+                                                    transition={{ repeat: Infinity, duration: 1.5 }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            width: 6,
+                                                            height: 6,
+                                                            borderRadius: "50%",
+                                                            backgroundColor: theme.palette.error.contrastText,
+                                                        }}
+                                                    />
+                                                </motion.div>
+                                            }
+                                        />
+                                    </motion.div>
+
+                                    <Box
+                                        sx={{
+                                            position: "absolute",
+                                            top: 12,
+                                            right: 12,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 0.5,
+                                            backgroundColor: alpha(theme.palette.grey[900], 0.7),
+                                            padding: "4px 8px",
+                                            borderRadius: 12,
+                                            color: theme.palette.common.white,
+                                            fontSize: 12,
+                                        }}
+                                    >
+                                        <ViewersIcon fontSize="small" />
+                                        {stream.viewers.toLocaleString()}
+                                    </Box>
+
+                                    <PlayArrowIcon
+                                        sx={{
+                                            fontSize: 48,
+                                            color: theme.palette.common.white,
+                                            opacity: 0.8,
+                                        }}
+                                    />
+                                </Box>
+
+                                <CardContent>
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            fontWeight: 600,
+                                            mb: 1,
+                                            lineHeight: 1.2,
+                                        }}
+                                    >
+                                        {stream.title}
+                                    </Typography>
+
+                                    <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1 }}>
+                                        <Avatar
+                                            sx={{
+                                                width: 24,
+                                                height: 24,
+                                                fontSize: "0.8rem",
+                                                bgcolor: theme.palette.primary.main,
+                                            }}
+                                        >
+                                            {stream.host[0]}
+                                        </Avatar>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {stream.host}
+                                        </Typography>
+                                    </Box>
+
+                                    <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                                        <Chip
+                                            label={stream.category}
+                                            size="small"
+                                            variant="outlined"
+                                            sx={{
+                                                fontSize: "0.7rem",
+                                                borderColor: alpha(theme.palette.primary.main, 0.3),
+                                                color: theme.palette.primary.main,
+                                            }}
+                                        />
+                                    </Stack>
+
+                                    <Button
+                                        fullWidth
+                                        variant="contained"
+                                        startIcon={<WatchIcon />}
+                                        sx={{
+                                            background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                                            "&:hover": {
+                                                transform: "translateY(-1px)",
+                                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+                                            },
+                                        }}
+                                    >
+                                        Watch Now
+                                    </Button>
+                                </CardContent>
+                            </LiveStreamCard>
+                        </Grid2>
+                    ))}
+                </Grid2>
             </Box>
 
             {options.map((option) => (
