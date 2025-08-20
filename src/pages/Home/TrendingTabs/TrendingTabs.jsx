@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TabContext, TabPanel } from "@mui/lab";
 import { Box, Container } from "@mui/material";
 import CustomTabs from "@/components/common/CustomTabs/CustomTabs";
@@ -10,6 +10,7 @@ import FollowingIcon from "@mui/icons-material/PeopleAlt";
 import ForYouIcon from "@mui/icons-material/Stars";
 
 import Posts from "@/components/Post/Posts";
+import { useLocation } from "react-router-dom";
 
 const postData = [
     {
@@ -197,14 +198,25 @@ const postData2 = [
         type: "post",
     },
 ];
+const tabObj = {
+    stream: { tabId: "1" },
+    explore: { tabId: "2" },
+    following: { tabId: "3" },
+    foryou: { tabId: "4" },
+};
 
 const TrendingTabs = () => {
+    const location = useLocation();
     const [tabId, setTabId] = useState("1");
 
     const handleChange = (event, newValue) => {
         setTabId(newValue);
     };
 
+    useEffect(() => {
+        const matchedRoute = tabObj[location.pathname.split("/")[2]] || { tabId: "1" };
+        setTabId(matchedRoute.tabId);
+    }, [location.pathname]);
     return (
         <TabContext value={tabId}>
             <Box

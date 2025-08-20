@@ -36,5 +36,11 @@ export { default as AppleIcon } from "@mui/icons-material/Apple";
 export { default as GoogleIcon } from "@mui/icons-material/Google";
 
 export { default as ReplyIcon } from "@mui/icons-material/Reply";
+import StreamIcon from "@mui/icons-material/Podcasts";
+import ExploreIcon from "@mui/icons-material/TravelExplore";
+import FollowingIcon from "@mui/icons-material/PeopleAlt";
+import ForYouIcon from "@mui/icons-material/Stars";
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
+export { StreamIcon, ExploreIcon, FollowingIcon, ForYouIcon,AccountBoxIcon };
 
 export { GoogleSvg } from "@/assets/svg/index";
