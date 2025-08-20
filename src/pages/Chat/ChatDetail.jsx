@@ -62,23 +62,23 @@ const ChatBubble = styled(Box)(({ theme, iscurrentuser }) => ({
 }));
 
 const ActionButtons = styled(Box)(({ theme }) => ({
-    opacity: 0,
-    transition: theme.transitions.create("opacity"),
-    "&:hover, .MuiBox-root:hover &": {
-        opacity: 1,
-    },
-    display: "flex",
-    gap: theme.spacing(0.5),
-    position: "absolute",
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    backgroundColor: alpha(theme.palette.background.default, 0.9),
-    borderRadius: theme.shape.borderRadius * 2,
-    padding: theme.spacing(0.5),
-    backdropFilter: "blur(4px)",
-    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-}));
+  opacity: 0,
+  transition: theme.transitions.create("opacity"),
+  display: "flex",
+  gap: theme.spacing(0.5),
+  position: "absolute",
+  right: theme.spacing(1),
+  top: theme.spacing(1),
+  backgroundColor: alpha(theme.palette.background.default, 0.9),
+  borderRadius: theme.shape.borderRadius * 2,
+  padding: theme.spacing(0.5),
+  backdropFilter: "blur(4px)",
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
 
+  ".message-container:hover &": {
+    opacity: 1,
+  },
+}));
 const ChatContainer = styled(Box)(({ theme }) => ({
     flex: 1,
     display: "flex",
@@ -345,6 +345,7 @@ export default function ChatDetail({
                                         position: "relative",
                                         maxWidth: "80%",
                                     }}
+                                    className="message-container"
                                 >
                                     {showAvatar && (
                                         <Box
@@ -393,13 +394,57 @@ export default function ChatDetail({
                                         </Box>
                                     )}
 
+                                    {/* chat content */}
                                     {message.content && (
-                                        <ChatBubble iscurrentuser={isCurrentUser}>
-                                            <Typography variant="body2" color="text.primary">
-                                                {message.content}
-                                            </Typography>
-                                        </ChatBubble>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                justifyContent: isCurrentUser ? "flex-end" : "flex-start",
+                                                marginBottom: theme.spacing(1),
+                                            }}
+                                        >
+                                            <ChatBubble iscurrentuser={isCurrentUser}>
+                                                <Typography variant="body2" color="text.primary">
+                                                    {message.content}
+                                                </Typography>
+                                            </ChatBubble>
+                                        </Box>
                                     )}
+
+                                    {/* Action button && reaction button  */}
+                                    <ActionButtons
+                                        sx={{
+                                            right: isCurrentUser ? "auto" : theme.spacing(1),
+                                            left: isCurrentUser ? theme.spacing(1) : "auto",
+                                        }}
+                                    >
+                                        <Tooltip title="Add reaction">
+                                            <IconButton
+                                                size="small"
+                                                onClick={(e) => onReactionClick(e, message.id)}
+                                                sx={{
+                                                    "&:hover": {
+                                                        color: theme.palette.primary.main,
+                                                    },
+                                                }}
+                                            >
+                                                <EmojiIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                        <Tooltip title="Reply">
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => onReply(message.id)}
+                                                sx={{
+                                                    "&:hover": {
+                                                        color: theme.palette.primary.main,
+                                                    },
+                                                }}
+                                            >
+                                                <ReplyIcon fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </ActionButtons>
 
                                     {message.attachments && (
                                         <Box sx={{ mt: 1 }}>
@@ -498,40 +543,6 @@ export default function ChatDetail({
                                             ))}
                                         </Box>
                                     )}
-
-                                    <ActionButtons
-                                        sx={{
-                                            right: isCurrentUser ? "auto" : theme.spacing(1),
-                                            left: isCurrentUser ? theme.spacing(1) : "auto",
-                                        }}
-                                    >
-                                        <Tooltip title="Add reaction">
-                                            <IconButton
-                                                size="small"
-                                                onClick={(e) => onReactionClick(e, message.id)}
-                                                sx={{
-                                                    "&:hover": {
-                                                        color: theme.palette.primary.main,
-                                                    },
-                                                }}
-                                            >
-                                                <EmojiIcon fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip title="Reply">
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => onReply(message.id)}
-                                                sx={{
-                                                    "&:hover": {
-                                                        color: theme.palette.primary.main,
-                                                    },
-                                                }}
-                                            >
-                                                <ReplyIcon fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </ActionButtons>
                                 </Box>
                             </MessageContainer>
                         </motion.div>

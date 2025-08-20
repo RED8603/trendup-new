@@ -24,7 +24,7 @@ import { useEffect, useState } from "react";
 import { useMediaQuery } from "@mui/material";
 import Header from "./Header";
 import Navbar from "./Navbar";
-import { ChatIcon, ChevronLeftIcon, HomeIcon, LiveIcon, MenuIcon, VoteIcon } from "@/assets/icons";
+import { ChatIcon, ChevronLeftIcon, HomeIcon, LiveIcon, MenuIcon, VoteIcon , StreamIcon, ExploreIcon, FollowingIcon, ForYouIcon, AccountBoxIcon} from "@/assets/icons";
 import { motion } from "framer-motion";
 import Logo from "../common/Logo/Logo";
 import AnimatedSearchInput from "../common/SearchInput/SearchInput";
@@ -116,7 +116,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== "open" 
 const array = [
     {
         name: "Home",
-        link1: "/",
+        link1: "/home/*",
         Icon: HomeIcon,
         id: 1,
     },
@@ -137,6 +137,36 @@ const array = [
         link1: "/live",
         Icon: LiveIcon,
         id: 4,
+    },
+    {
+        name: "Stream",
+        link1: "/home/stream",
+        Icon: StreamIcon,
+        id: 5,
+    },
+    {
+        name: "Explore",
+        link1: "/home/explore",
+        Icon: ExploreIcon,
+        id: 6,
+    },
+    {
+        name: "Following",
+        link1: "/home/following",
+        Icon: FollowingIcon,
+        id: 7,
+    },
+    {
+        name: "For You",
+        link1: "/home/foryou",
+        Icon: ForYouIcon,
+        id: 8,
+    },
+     {
+        name: "Profile",
+        link1: "/profile",
+        Icon: AccountBoxIcon,
+        id:9,
     },
 ];
 
