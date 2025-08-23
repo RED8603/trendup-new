@@ -2,6 +2,8 @@ import Chat from "@/pages/Chat/Chat";
 import Home from "@/pages/Home/Home";
 import GoLiveView from "@/pages/Live/Live";
 import LiveStreamView from "@/pages/Live/LiveStream";
+import EditProfilePage from "@/pages/profile/Edit/EditProfile";
+import Profile from "@/pages/profile/UserProfile";
 import Vote from "@/pages/Vote/Vote";
 import { Route, Routes } from "react-router-dom";
 
@@ -13,6 +15,10 @@ const SecureRoutes = () => {
             <Route element={<Chat />} path="/chat" />
             <Route element={<GoLiveView />} path="/live" />
             <Route element={<LiveStreamView />} path="/live/stream" />
+            <Route element={<Profile />} path="/profile" />
+            <Route element={<EditProfilePage />} path="/edit-profile" />
+
+
         </Routes>
     );
 };
