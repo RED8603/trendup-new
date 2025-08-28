@@ -5,6 +5,7 @@ import BoxConatner from "@components/common/BoxContainer/BoxConatner";
 import GoLiveButton from "../common/GoLiveButton/GoLiveButton";
 import ButtonBorder from "../common/ButtonBorder";
 import MainButton from "../common/MainButton/MainButton";
+import { Link } from "react-router-dom";
 
 const CreatePost = () => {
     const theme = useTheme();
@@ -50,7 +51,11 @@ const CreatePost = () => {
                     flexWrap={"wrap"}
                     sx={{ justifyContent: { md: "left", xs: "center" } }}
                 >
-                    <GoLiveButton />
+                    <Link to={"/live"}>
+                        {" "}
+                        <GoLiveButton />
+                    </Link>
+
                     {/* <MainButton className="hvr-bounce-to-right">
                         <Typography fontWeight={600} color="textSecondary">
                             Create Poll
