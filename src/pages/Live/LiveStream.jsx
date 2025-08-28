@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, styled, alpha, useTheme } from "@mui/material";
-import { motion } from "framer-motion";
+import { Box, styled, alpha } from "@mui/material";
 
 // Import components
 import VideoGridComponent from "./components/VideoGrid";
@@ -25,7 +24,6 @@ const LiveContainer = styled(Box)(({ theme }) => ({
 }));
 
 const LiveStreamView = () => {
-    const theme = useTheme();
     
     // Camera hook
     const { cameraActive, cameraError, isInitializing, videoRef, toggleCamera } = useCamera();
@@ -233,6 +231,7 @@ const LiveStreamView = () => {
                     cameraActive={cameraActive}
                     cameraError={cameraError}
                     isInitializing={isInitializing}
+                    videoRef={videoRef}
                     viewers={viewers}
                 />
 

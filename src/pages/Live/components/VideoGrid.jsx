@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import {  useRef, useEffect } from "react";
 import {
     Box,
     Typography,
@@ -147,11 +147,12 @@ const VideoGridComponent = ({
     cameraActive, 
     cameraError, 
     isInitializing,
-    viewers 
+    viewers ,
+    videoRef: propRef
 }) => {
     const theme = useTheme();
     const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const videoRef = useRef(null);
+    const videoRef = useRef(propRef);
 
     const getGridSize = (count) => {
         if (count === 1) return { xs: 12, sm: 12, md: 12 };

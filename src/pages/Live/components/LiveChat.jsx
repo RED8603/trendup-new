@@ -25,7 +25,6 @@ import {
     PersonAdd as PersonAddIcon,
     CardGiftcard as CardGiftcardIcon,
 } from "@mui/icons-material";
-import { motion } from "framer-motion";
 import EmojiPicker from "emoji-picker-react";
 
 // Styled components

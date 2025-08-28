@@ -97,7 +97,7 @@ const AnimationContainer = styled(motion.div)(({ theme, type }) => ({
     textAlign: "center",
 }));
 
-const EmojiContainer = styled(motion.div)(({ theme }) => ({
+const EmojiContainer = styled(motion.div)(() => ({
     fontSize: "3rem",
     marginBottom: "15px",
     filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
