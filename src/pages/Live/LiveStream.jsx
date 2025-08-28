@@ -27,7 +27,7 @@ import {
     ScreenShare as ScreenShareIcon,
     Menu as MenuIcon,
     Chat as ChatIcon,
-    Close as CloseIcon
+    Close as CloseIcon,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import EmojiPicker from "emoji-picker-react";
@@ -253,6 +253,7 @@ const LiveStreamView = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const emojiButtonRef = useRef(null);
+    const videoRef = useRef(null);
     const [message, setMessage] = useState("");
     const [viewers, setViewers] = useState(1254);
     const [messages, setMessages] = useState([
@@ -337,11 +338,93 @@ const LiveStreamView = () => {
 
     const emojiOpen = Boolean(emojiAnchor);
 
-    const getGridColumns = (count) => {
-        if (isSmallMobile) return 12;
-        if (count <= 2) return 6;
-        if (count <= 4) return 4;
-        return 3;
+    const getGridSize = (count) => {
+        if (count === 1) return { xs: 12, sm: 12, md: 12 };
+        if (count === 2) return { xs: 12, sm: 6, md: 6 };
+        if (count <= 4) return { xs: 12, sm: 6, md: 6 };
+        if (count <= 6) return { xs: 12, sm: 6, md: 4 };
+        if (count <= 9) return { xs: 12, sm: 6, md: 4 };
+        if (count <= 16) return { xs: 12, sm: 6, md: 3 };
+        return { xs: 12, sm: 6, md: 3, lg: 2 }; // for very large groups
+    };
+    const [cameraActive, setCameraActive] = useState(true);
+    const [cameraError, setCameraError] = useState(null);
+
+    console.log("Camera Active:", cameraActive);
+
+    // Initialize camera on component mount
+    useEffect(() => {
+        const initializeCamera = async () => {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    setCameraError("Camera access not supported in this browser");
+                    return;
+                }
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "user", // Use front camera
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                    },
+                    audio: true,
+                });
+
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                    setCameraActive(true);
+                }
+            } catch (error) {
+                console.error("Error accessing camera:", error);
+                setCameraError("Unable to access camera. Please check permissions.");
+            }
+        };
+
+        initializeCamera();
+
+        // Cleanup function to stop camera when component unmounts
+        return () => {
+            if (videoRef.current && videoRef.current.srcObject) {
+                const tracks = videoRef.current.srcObject.getTracks();
+                tracks.forEach((track) => track.stop());
+            }
+        };
+    }, []);
+
+    const toggleCamera = async () => {
+        try {
+            if (cameraActive) {
+                // Stop all tracks & reset ref
+                if (videoRef.current && videoRef.current.srcObject) {
+                    const stream = videoRef.current.srcObject;
+                    stream.getTracks().forEach((track) => track.stop());
+                    videoRef.current.srcObject = null;
+                }
+                setCameraActive(false);
+            } else {
+                // Request new stream
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "user",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                    },
+                    audio: true,
+                });
+
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                    // Required for autoplay in some browsers
+                    videoRef.current.play().catch((err) => console.warn("Autoplay prevented:", err));
+                }
+
+                setCameraActive(true);
+                setCameraError(null);
+            }
+        } catch (error) {
+            console.error("Error toggling camera:", error);
+            setCameraError("Failed to access camera");
+        }
     };
 
     return (
@@ -355,97 +438,106 @@ const LiveStreamView = () => {
                 {/* Dynamic Video Grid */}
                 <VideoFeedContainer>
                     <VideoGrid container spacing={isSmallMobile ? 1 : 2}>
-                        {liveUsers.map((user) => (
-                            <Grid2
-                                key={user.id}
-                                size={{
-                                    xs: 12,
-                                    sm: getGridColumns(liveUsers.length),
-                                    md: liveUsers.length <= 2 ? 6 : 4,
-                                }}
-                            >
-                                <VideoTile
-                                    isActive={user.isActive}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => handleUserClick(user.id)}
-                                >
-                                    <UserVideo>
-                                        {user.hasVideo ? (
-                                            <Box
-                                                sx={{
+                        {liveUsers.map((user, i) => {
+                            const size = getGridSize(liveUsers.length);
+
+                            return (
+                                <Grid2 key={i} size={size} justifyContent="center">
+                                    <VideoTile
+                                        isActive={user.isActive}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => handleUserClick(user.id)}
+                                    >
+                                        {/* Camera feed with fallback */}
+                                        {cameraActive && i === 0 ? (
+                                            <video
+                                                ref={videoRef}
+                                                autoPlay
+                                                muted
+                                                playsInline
+                                                style={{
                                                     width: "100%",
                                                     height: "100%",
-                                                    background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
-                                                    display: "flex",
-                                                    justifyContent: "center",
-                                                    alignItems: "center",
+                                                    objectFit: "cover",
+                                                    transform: "scaleX(-1)", // mirror for front camera
                                                 }}
-                                            >
-                                                <Typography variant={isSmallMobile ? "body1" : "h6"}>
-                                                    {user.name}'s Video
-                                                </Typography>
-                                            </Box>
+                                            />
                                         ) : (
+                                            <UserVideo>
+                                                <Avatar
+                                                    sx={{
+                                                        width: isSmallMobile ? 60 : 80,
+                                                        height: isSmallMobile ? 60 : 80,
+                                                        bgcolor: theme.palette.primary.main,
+                                                        fontSize: isSmallMobile ? "1.5rem" : "2rem",
+                                                    }}
+                                                >
+                                                    You
+                                                </Avatar>
+                                                {cameraError && (
+                                                    <Typography
+                                                        variant="caption"
+                                                        color="error"
+                                                        sx={{
+                                                            mt: 1,
+                                                            textAlign: "center",
+                                                            maxWidth: "80%",
+                                                        }}
+                                                    >
+                                                        {cameraError}
+                                                    </Typography>
+                                                )}
+                                            </UserVideo>
+                                        )}
+
+                                        <UserInfo>
                                             <Avatar
                                                 sx={{
-                                                    width: isSmallMobile ? 60 : 80,
-                                                    height: isSmallMobile ? 60 : 80,
-                                                    bgcolor: theme.palette.primary.main,
-                                                    fontSize: isSmallMobile ? "1.5rem" : "2rem",
+                                                    width: 20,
+                                                    height: 20,
+                                                    fontSize: "0.7rem",
+                                                    bgcolor: user.isSpeaking
+                                                        ? theme.palette.success.main
+                                                        : theme.palette.grey[500],
                                                 }}
                                             >
                                                 {user.name[0]}
                                             </Avatar>
-                                        )}
-                                    </UserVideo>
+                                            <Typography variant="caption">{user.name}</Typography>
+                                        </UserInfo>
 
-                                    <UserInfo>
-                                        <Avatar
-                                            sx={{
-                                                width: 20,
-                                                height: 20,
-                                                fontSize: "0.7rem",
-                                                bgcolor: user.isSpeaking
-                                                    ? theme.palette.success.main
-                                                    : theme.palette.grey[500],
-                                            }}
-                                        >
-                                            {user.name[0]}
-                                        </Avatar>
-                                        <Typography variant="caption">{user.name}</Typography>
-                                    </UserInfo>
+                                        <LiveBadge
+                                            label="LIVE"
+                                            icon={
+                                                <motion.div
+                                                    animate={{ scale: [1, 1.2, 1] }}
+                                                    transition={{ repeat: Infinity, duration: 1.5 }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            width: 4,
+                                                            height: 4,
+                                                            borderRadius: "50%",
+                                                            backgroundColor: theme.palette.error.contrastText,
+                                                        }}
+                                                    />
+                                                </motion.div>
+                                            }
+                                        />
 
-                                    <LiveBadge
-                                        label="LIVE"
-                                        icon={
-                                            <motion.div
-                                                animate={{ scale: [1, 1.2, 1] }}
-                                                transition={{ repeat: Infinity, duration: 1.5 }}
-                                            >
-                                                <Box
-                                                    sx={{
-                                                        width: 4,
-                                                        height: 4,
-                                                        borderRadius: "50%",
-                                                        backgroundColor: theme.palette.error.contrastText,
-                                                    }}
-                                                />
-                                            </motion.div>
-                                        }
-                                    />
-
-                                    <ControlsOverlay>
-                                        {!user.hasVideo && (
-                                            <VideoIcon sx={{ fontSize: 14, color: theme.palette.error.main }} />
-                                        )}
-                                        {!user.hasAudio && (
-                                            <MicIcon sx={{ fontSize: 14, color: theme.palette.error.main }} />
-                                        )}
-                                    </ControlsOverlay>
-                                </VideoTile>
-                            </Grid2>
-                        ))}
+                                        <ControlsOverlay>
+                                            {!user.hasVideo && (
+                                                <VideoIcon sx={{ fontSize: 14, color: theme.palette.error.main }} />
+                                            )}
+                                            {!user.hasAudio && (
+                                                <MicIcon sx={{ fontSize: 14, color: theme.palette.error.main }} />
+                                            )}
+                                        </ControlsOverlay>
+                                    </VideoTile>
+                                </Grid2>
+                            );
+                        })}
                     </VideoGrid>
 
                     <ViewerCount>
@@ -463,6 +555,7 @@ const LiveStreamView = () => {
 
                     <Stack direction="row" spacing={1} sx={{ position: "absolute", bottom: 8, left: 8 }}>
                         <IconButton
+                            onClick={toggleCamera}
                             sx={{
                                 backgroundColor: alpha(theme.palette.error.main, 0.8),
                                 color: theme.palette.error.contrastText,

@@ -192,16 +192,22 @@ const Login = () => {
                                     slotProps={{ "aria-label": "controlled" }}
                                 />
 
-                                <Typography
-                                    sx={(theme) => ({
-                                        color: theme.palette.text.primary,
-                                        fontWeight: 500,
-                                        fontSize: "14px",
-                                    })}
-                                >
-                                    {" "}
-                                    Forgot Password?{" "}
-                                </Typography>
+                                <Link to="/forgot-password" style={{ textDecoration: "none" }}>
+                                    <Typography
+                                        sx={(theme) => ({
+                                            color: theme.palette.text.primary,
+                                            fontWeight: 500,
+                                            fontSize: "14px",
+                                            cursor: "pointer",
+                                            "&:hover": {
+                                                color: theme.palette.primary.main,
+                                            },
+                                        })}
+                                    >
+                                        {" "}
+                                        Forgot Password?{" "}
+                                    </Typography>
+                                </Link>
                             </Stack>
                             <Stack direction="column" alignItems={"center"} justifyContent={"center"} mt={2}>
                                 <MainButton
