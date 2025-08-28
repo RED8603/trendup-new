@@ -1,36 +1,15 @@
-import { useState, useRef, useEffect } from "react";
-import {
-    Box,
-    Typography,
-    IconButton,
-    TextField,
-    Avatar,
-    Chip,
-    Stack,
-    styled,
-    alpha,
-    useTheme,
-    Popover,
-    Grid2,
-    useMediaQuery,
-} from "@mui/material";
-import {
-    Send as SendIcon,
-    VideocamOff as StopIcon,
-    MoreVert as MoreIcon,
-    Favorite as LikeIcon,
-    Share as ShareIcon,
-    AttachMoney as DonateIcon,
-    EmojiEmotions as EmojiIcon,
-    MicExternalOnSharp as MicIcon,
-    VideoCall as VideoIcon,
-    ScreenShare as ScreenShareIcon,
-    Menu as MenuIcon,
-    Chat as ChatIcon,
-    Close as CloseIcon,
-} from "@mui/icons-material";
-import { motion, AnimatePresence } from "framer-motion";
-import EmojiPicker from "emoji-picker-react";
+import { useState, useEffect } from "react";
+import { Box, styled, alpha, useTheme } from "@mui/material";
+import { motion } from "framer-motion";
+
+// Import components
+import VideoGridComponent from "./components/VideoGrid";
+import VideoControls from "./components/VideoControls";
+import LiveChat from "./components/LiveChat";
+import NotificationAnimation from "./components/NotificationAnimation";
+
+// Import hooks
+import useCamera from "./hooks/useCamera";
 
 // Styled components
 const LiveContainer = styled(Box)(({ theme }) => ({
@@ -45,231 +24,29 @@ const LiveContainer = styled(Box)(({ theme }) => ({
     overflow: "hidden",
 }));
 
-const VideoFeedContainer = styled(Box)(({ theme }) => ({
-    flex: 1,
-    position: "relative",
-    background: theme.palette.grey[900],
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-    padding: theme.spacing(1),
-    [theme.breakpoints.up("sm")]: {
-        padding: theme.spacing(2),
-    },
-}));
-
-const VideoGrid = styled(Grid2)(({ theme }) => ({
-    width: "100%",
-    height: "100%",
-    gap: theme.spacing(1),
-    [theme.breakpoints.up("sm")]: {
-        gap: theme.spacing(2),
-    },
-}));
-
-const VideoTile = styled(motion.div)(({ theme, isActive }) => ({
-    position: "relative",
-    borderRadius: theme.shape.borderRadius * 2,
-    overflow: "hidden",
-    background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
-    border: isActive ? `2px solid ${theme.palette.primary.main}` : "none",
-    boxShadow: isActive ? `0 0 15px ${alpha(theme.palette.primary.main, 0.5)}` : "none",
-    height: "100%",
-    minHeight: 150,
-    [theme.breakpoints.up("sm")]: {
-        border: isActive ? `3px solid ${theme.palette.primary.main}` : "none",
-        boxShadow: isActive ? `0 0 20px ${alpha(theme.palette.primary.main, 0.5)}` : "none",
-    },
-}));
-
-const UserVideo = styled(Box)({
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    color: "white",
-});
-
-const UserInfo = styled(Box)(({ theme }) => ({
-    position: "absolute",
-    bottom: 4,
-    left: 4,
-    display: "flex",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: alpha(theme.palette.grey[900], 0.7),
-    padding: "2px 6px",
-    borderRadius: 12,
-    color: theme.palette.common.white,
-    fontSize: "0.75rem",
-    [theme.breakpoints.up("sm")]: {
-        bottom: 8,
-        left: 8,
-        gap: 8,
-        padding: "4px 8px",
-        borderRadius: 16,
-        fontSize: "inherit",
-    },
-}));
-
-const ControlsOverlay = styled(Box)(({ theme }) => ({
-    position: "absolute",
-    bottom: 4,
-    right: 4,
-    display: "flex",
-    gap: 2,
-    backgroundColor: alpha(theme.palette.grey[900], 0.7),
-    padding: "2px",
-    borderRadius: 6,
-    [theme.breakpoints.up("sm")]: {
-        bottom: 8,
-        right: 8,
-        gap: 4,
-        padding: "4px",
-        borderRadius: 8,
-    },
-}));
-
-const LiveBadge = styled(Chip)(({ theme }) => ({
-    position: "absolute",
-    top: 4,
-    left: 4,
-    backgroundColor: theme.palette.error.main,
-    color: theme.palette.error.contrastText,
-    fontWeight: 700,
-    fontSize: "0.6rem",
-    height: 20,
-    "& .MuiChip-label": {
-        padding: "0 6px",
-    },
-    [theme.breakpoints.up("sm")]: {
-        top: 8,
-        left: 8,
-        fontSize: "0.7rem",
-        height: 24,
-        "& .MuiChip-label": {
-            padding: "0 8px",
-        },
-    },
-}));
-
-const ViewerCount = styled(Box)(({ theme }) => ({
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: alpha(theme.palette.grey[900], 0.7),
-    color: theme.palette.common.white,
-    padding: "4px 8px",
-    borderRadius: 16,
-    display: "flex",
-    alignItems: "center",
-    fontSize: 12,
-    fontWeight: 600,
-    [theme.breakpoints.up("sm")]: {
-        top: 16,
-        right: 16,
-        fontSize: 14,
-        padding: "6px 12px",
-    },
-}));
-
-const ChatContainer = styled(Box)(({ theme }) => ({
-    width: 350,
-    height: "100%",
-    backgroundColor: alpha(theme.palette.background.paper, 0.9),
-    backdropFilter: "blur(8px)",
-    borderLeft: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-    display: "flex",
-    flexDirection: "column",
-    overflow: "hidden",
-    [theme.breakpoints.down("md")]: {
-        position: "absolute",
-        right: 0,
-        top: 0,
-        bottom: 0,
-        transform: "translateX(100%)",
-        transition: "transform 0.3s ease",
-        zIndex: 1000,
-        "&.chat-open": {
-            transform: "translateX(0)",
-        },
-    },
-    [theme.breakpoints.down("sm")]: {
-        width: "100%",
-    },
-}));
-
-const MessageItem = styled(Box)(({ theme, type }) => ({
-    display: "flex",
-    alignItems: "flex-start",
-    padding: "6px 8px",
-    backgroundColor: type === "donation" ? alpha(theme.palette.success.light, 0.2) : "transparent",
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    [theme.breakpoints.up("sm")]: {
-        padding: "8px 12px",
-    },
-}));
-
-const EmojiPickerContainer = styled(Box)(({ theme }) => ({
-    position: "absolute",
-    bottom: "100%",
-    right: 0,
-    marginBottom: 8,
-    zIndex: 1000,
-    "& .emoji-picker-react": {
-        backgroundColor: theme.palette.background.paper,
-        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-        borderRadius: theme.shape.borderRadius * 2,
-        boxShadow: theme.shadows[8],
-        width: "100% !important",
-        maxWidth: 350,
-    },
-    [theme.breakpoints.down("sm")]: {
-        right: "auto",
-        left: 0,
-        "& .emoji-picker-react": {
-            maxWidth: "100%",
-        },
-    },
-}));
-
-const MobileChatToggle = styled(IconButton)(({ theme }) => ({
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: alpha(theme.palette.primary.main, 0.8),
-    color: theme.palette.common.white,
-    zIndex: 100,
-    display: "none",
-    [theme.breakpoints.down("md")]: {
-        display: "flex",
-    },
-}));
-
 const LiveStreamView = () => {
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-    const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const emojiButtonRef = useRef(null);
-    const videoRef = useRef(null);
-    const [message, setMessage] = useState("");
+    
+    // Camera hook
+    const { cameraActive, cameraError, isInitializing, videoRef, toggleCamera } = useCamera();
+    
+    // State
     const [viewers, setViewers] = useState(1254);
     const [messages, setMessages] = useState([
         { user: "Justin", text: "Awesome stream!", type: "message" },
         { user: "Emma", text: "Thank you!", type: "message" },
         { user: "Adam", text: "donated $19.99", type: "donation" },
     ]);
-    const [emojiAnchor, setEmojiAnchor] = useState(null);
     const [liveUsers, setLiveUsers] = useState([
         { id: 1, name: "Emma", isActive: true, isSpeaking: true, hasVideo: true, hasAudio: true },
         { id: 2, name: "Alex", isActive: false, isSpeaking: false, hasVideo: true, hasAudio: false },
         { id: 3, name: "Jordan", isActive: false, isSpeaking: true, hasVideo: false, hasAudio: true },
-        { id: 3, name: "James", isActive: false, isSpeaking: true, hasVideo: true, hasAudio: true },
+        { id: 4, name: "James", isActive: false, isSpeaking: true, hasVideo: true, hasAudio: true },
     ]);
     const [chatOpen, setChatOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
 
+    // Effects
     useEffect(() => {
         const interval = setInterval(() => {
             setViewers((prev) => prev + Math.floor(Math.random() * 10) - 3);
@@ -286,41 +63,143 @@ const LiveStreamView = () => {
         return () => clearInterval(interval);
     }, []);
 
-    const handleSendMessage = () => {
-        if (message.trim()) {
-            setMessages([...messages, { user: "You", text: message, type: "message" }]);
-            setMessage("");
-        }
-    };
-
-    const handleKeyPress = (e) => {
-        if (e.key === "Enter") {
-            handleSendMessage();
-        }
+    // Event handlers
+    const handleSendMessage = (message) => {
+        setMessages([...messages, { user: "You", text: message, type: "message" }]);
     };
 
     const handleDonate = () => {
+        const donationAmount = (Math.random() * 50 + 5).toFixed(2);
+        const donorName = "Anonymous";
+        
+        // Add message to chat
         setMessages([
             ...messages,
             {
-                user: "Anonymous",
-                text: `donated $${(Math.random() * 50 + 5).toFixed(2)}`,
+                user: donorName,
+                text: `donated $${donationAmount}`,
                 type: "donation",
             },
         ]);
+
+        // Trigger donation animation
+        addNotification({
+            type: 'donation',
+            data: {
+                name: donorName,
+                amount: donationAmount,
+                message: 'Thanks for the support!'
+            }
+        });
     };
 
-    const handleEmojiClick = (emojiData) => {
-        setMessage((prev) => prev + emojiData.emoji);
-        setEmojiAnchor(null);
+    const handleLike = () => {
+        const likerName = "Viewer";
+        const likeCount = Math.floor(Math.random() * 5) + 1;
+        
+        // Add message to chat
+        setMessages([
+            ...messages,
+            {
+                user: likerName,
+                text: `liked the stream ${likeCount > 1 ? `${likeCount} times` : ''}`,
+                type: "like",
+            },
+        ]);
+
+        // Trigger like animation
+        addNotification({
+            type: 'like',
+            data: {
+                name: likerName,
+                count: likeCount
+            }
+        });
     };
 
-    const handleEmojiButtonClick = (event) => {
-        setEmojiAnchor(event.currentTarget);
+    const handleSubscribe = () => {
+        const subscriberName = "New Subscriber";
+        const tier = Math.floor(Math.random() * 3) + 1;
+        
+        // Add message to chat
+        setMessages([
+            ...messages,
+            {
+                user: subscriberName,
+                text: `subscribed at Tier ${tier}!`,
+                type: "subscription",
+            },
+        ]);
+
+        // Trigger subscribe animation
+        addNotification({
+            type: 'subscribe',
+            data: {
+                name: subscriberName,
+                tier: tier
+            }
+        });
     };
 
-    const handleEmojiClose = () => {
-        setEmojiAnchor(null);
+    const handleFollow = () => {
+        const followerName = "New Follower";
+        
+        // Add message to chat
+        setMessages([
+            ...messages,
+            {
+                user: followerName,
+                text: 'started following!',
+                type: "follow",
+            },
+        ]);
+
+        // Trigger follow animation
+        addNotification({
+            type: 'follow',
+            data: {
+                name: followerName
+            }
+        });
+    };
+
+    const handleGift = () => {
+        const gifterName = "Generous Viewer";
+        const giftName = "Super Gift";
+        
+        // Add message to chat
+        setMessages([
+            ...messages,
+            {
+                user: gifterName,
+                text: `sent a ${giftName}!`,
+                type: "gift",
+            },
+        ]);
+
+        // Trigger gift animation
+        addNotification({
+            type: 'gift',
+            data: {
+                name: gifterName,
+                giftName: giftName
+            }
+        });
+    };
+
+    const addNotification = (notification) => {
+        const newNotification = {
+            ...notification,
+            id: Date.now(), // Unique ID for each animation
+            timestamp: Date.now()
+        };
+
+        setNotifications(prev => [...prev, newNotification]);
+
+        // Auto-remove notification after 4 seconds
+        setTimeout(() => {
+            setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
+        }, 4000);
     };
 
     const handleUserClick = (userId) => {
@@ -336,443 +215,58 @@ const LiveStreamView = () => {
         setChatOpen(!chatOpen);
     };
 
-    const emojiOpen = Boolean(emojiAnchor);
-
-    const getGridSize = (count) => {
-        if (count === 1) return { xs: 12, sm: 12, md: 12 };
-        if (count === 2) return { xs: 12, sm: 6, md: 6 };
-        if (count <= 4) return { xs: 12, sm: 6, md: 6 };
-        if (count <= 6) return { xs: 12, sm: 6, md: 4 };
-        if (count <= 9) return { xs: 12, sm: 6, md: 4 };
-        if (count <= 16) return { xs: 12, sm: 6, md: 3 };
-        return { xs: 12, sm: 6, md: 3, lg: 2 }; // for very large groups
+    const handleScreenShare = () => {
+        console.log("Screen share clicked");
     };
-    const [cameraActive, setCameraActive] = useState(true);
-    const [cameraError, setCameraError] = useState(null);
 
-    console.log("Camera Active:", cameraActive);
-
-    // Initialize camera on component mount
-    useEffect(() => {
-        const initializeCamera = async () => {
-            try {
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    setCameraError("Camera access not supported in this browser");
-                    return;
-                }
-
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "user", // Use front camera
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                    },
-                    audio: true,
-                });
-
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                    setCameraActive(true);
-                }
-            } catch (error) {
-                console.error("Error accessing camera:", error);
-                setCameraError("Unable to access camera. Please check permissions.");
-            }
-        };
-
-        initializeCamera();
-
-        // Cleanup function to stop camera when component unmounts
-        return () => {
-            if (videoRef.current && videoRef.current.srcObject) {
-                const tracks = videoRef.current.srcObject.getTracks();
-                tracks.forEach((track) => track.stop());
-            }
-        };
-    }, []);
-
-    const toggleCamera = async () => {
-        try {
-            if (cameraActive) {
-                // Stop all tracks & reset ref
-                if (videoRef.current && videoRef.current.srcObject) {
-                    const stream = videoRef.current.srcObject;
-                    stream.getTracks().forEach((track) => track.stop());
-                    videoRef.current.srcObject = null;
-                }
-                setCameraActive(false);
-            } else {
-                // Request new stream
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "user",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                    },
-                    audio: true,
-                });
-
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                    // Required for autoplay in some browsers
-                    videoRef.current.play().catch((err) => console.warn("Autoplay prevented:", err));
-                }
-
-                setCameraActive(true);
-                setCameraError(null);
-            }
-        } catch (error) {
-            console.error("Error toggling camera:", error);
-            setCameraError("Failed to access camera");
-        }
+    const handleMoreOptions = () => {
+        console.log("More options clicked");
     };
 
     return (
         <LiveContainer>
             <Box sx={{ display: "flex", height: "100%", position: "relative" }}>
-                {/* Mobile Chat Toggle */}
-                <MobileChatToggle onClick={toggleChat}>
-                    <ChatIcon />
-                </MobileChatToggle>
+                {/* Video Grid */}
+                <VideoGridComponent
+                    liveUsers={liveUsers}
+                    onUserClick={handleUserClick}
+                    cameraActive={cameraActive}
+                    cameraError={cameraError}
+                    isInitializing={isInitializing}
+                    viewers={viewers}
+                />
 
-                {/* Dynamic Video Grid */}
-                <VideoFeedContainer>
-                    <VideoGrid container spacing={isSmallMobile ? 1 : 2}>
-                        {liveUsers.map((user, i) => {
-                            const size = getGridSize(liveUsers.length);
+                {/* Video Controls */}
+                <VideoControls
+                    cameraActive={cameraActive}
+                    isInitializing={isInitializing}
+                    onToggleCamera={toggleCamera}
+                    onScreenShare={handleScreenShare}
+                    onMoreOptions={handleMoreOptions}
+                />
 
-                            return (
-                                <Grid2 key={i} size={size} justifyContent="center">
-                                    <VideoTile
-                                        isActive={user.isActive}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={() => handleUserClick(user.id)}
-                                    >
-                                        {/* Camera feed with fallback */}
-                                        {cameraActive && i === 0 ? (
-                                            <video
-                                                ref={videoRef}
-                                                autoPlay
-                                                muted
-                                                playsInline
-                                                style={{
-                                                    width: "100%",
-                                                    height: "100%",
-                                                    objectFit: "cover",
-                                                    transform: "scaleX(-1)", // mirror for front camera
-                                                }}
-                                            />
-                                        ) : (
-                                            <UserVideo>
-                                                <Avatar
-                                                    sx={{
-                                                        width: isSmallMobile ? 60 : 80,
-                                                        height: isSmallMobile ? 60 : 80,
-                                                        bgcolor: theme.palette.primary.main,
-                                                        fontSize: isSmallMobile ? "1.5rem" : "2rem",
-                                                    }}
-                                                >
-                                                    You
-                                                </Avatar>
-                                                {cameraError && (
-                                                    <Typography
-                                                        variant="caption"
-                                                        color="error"
-                                                        sx={{
-                                                            mt: 1,
-                                                            textAlign: "center",
-                                                            maxWidth: "80%",
-                                                        }}
-                                                    >
-                                                        {cameraError}
-                                                    </Typography>
-                                                )}
-                                            </UserVideo>
-                                        )}
-
-                                        <UserInfo>
-                                            <Avatar
-                                                sx={{
-                                                    width: 20,
-                                                    height: 20,
-                                                    fontSize: "0.7rem",
-                                                    bgcolor: user.isSpeaking
-                                                        ? theme.palette.success.main
-                                                        : theme.palette.grey[500],
-                                                }}
-                                            >
-                                                {user.name[0]}
-                                            </Avatar>
-                                            <Typography variant="caption">{user.name}</Typography>
-                                        </UserInfo>
-
-                                        <LiveBadge
-                                            label="LIVE"
-                                            icon={
-                                                <motion.div
-                                                    animate={{ scale: [1, 1.2, 1] }}
-                                                    transition={{ repeat: Infinity, duration: 1.5 }}
-                                                >
-                                                    <Box
-                                                        sx={{
-                                                            width: 4,
-                                                            height: 4,
-                                                            borderRadius: "50%",
-                                                            backgroundColor: theme.palette.error.contrastText,
-                                                        }}
-                                                    />
-                                                </motion.div>
-                                            }
-                                        />
-
-                                        <ControlsOverlay>
-                                            {!user.hasVideo && (
-                                                <VideoIcon sx={{ fontSize: 14, color: theme.palette.error.main }} />
-                                            )}
-                                            {!user.hasAudio && (
-                                                <MicIcon sx={{ fontSize: 14, color: theme.palette.error.main }} />
-                                            )}
-                                        </ControlsOverlay>
-                                    </VideoTile>
-                                </Grid2>
-                            );
-                        })}
-                    </VideoGrid>
-
-                    <ViewerCount>
-                        <Box
-                            sx={{
-                                width: 6,
-                                height: 6,
-                                borderRadius: "50%",
-                                backgroundColor: theme.palette.error.main,
-                                mr: 1,
-                            }}
-                        />
-                        {viewers.toLocaleString()} watching
-                    </ViewerCount>
-
-                    <Stack direction="row" spacing={1} sx={{ position: "absolute", bottom: 8, left: 8 }}>
-                        <IconButton
-                            onClick={toggleCamera}
-                            sx={{
-                                backgroundColor: alpha(theme.palette.error.main, 0.8),
-                                color: theme.palette.error.contrastText,
-                                "&:hover": {
-                                    backgroundColor: theme.palette.error.main,
-                                },
-                                fontSize: isSmallMobile ? "small" : "medium",
-                            }}
-                        >
-                            <StopIcon fontSize={isSmallMobile ? "small" : "medium"} />
-                        </IconButton>
-
-                        <IconButton
-                            sx={{
-                                backgroundColor: alpha(theme.palette.grey[900], 0.7),
-                                color: theme.palette.common.white,
-                                fontSize: isSmallMobile ? "small" : "medium",
-                            }}
-                        >
-                            <ScreenShareIcon fontSize={isSmallMobile ? "small" : "medium"} />
-                        </IconButton>
-
-                        <IconButton
-                            sx={{
-                                backgroundColor: alpha(theme.palette.grey[900], 0.7),
-                                color: theme.palette.common.white,
-                                fontSize: isSmallMobile ? "small" : "medium",
-                            }}
-                        >
-                            <MoreIcon fontSize={isSmallMobile ? "small" : "medium"} />
-                        </IconButton>
-                    </Stack>
-                </VideoFeedContainer>
-
-                {/* Chat Panel */}
-                <ChatContainer className={chatOpen ? "chat-open" : ""}>
-                    <Box
-                        sx={{
-                            p: 1,
-                            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            [theme.breakpoints.up("sm")]: {
-                                p: 2,
-                            },
-                        }}
-                    >
-                        <Typography variant="h6" fontWeight={600}>
-                            Live Chat
-                        </Typography>
-                        <Stack direction="row" spacing={0.5}>
-                            <IconButton size="small">
-                                <LikeIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton size="small" onClick={handleDonate}>
-                                <DonateIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton size="small">
-                                <ShareIcon fontSize="small" />
-                            </IconButton>
-                            {isMobile && (
-                                <IconButton size="small" onClick={toggleChat}>
-                                    <CloseIcon fontSize="small" />
-                                </IconButton>
-                            )}
-                        </Stack>
-                    </Box>
-
-                    <Box sx={{ flex: 1, overflowY: "auto", p: 0.5 }}>
-                        {messages.map((msg, index) => (
-                            <MessageItem key={index} type={msg.type}>
-                                <Avatar
-                                    sx={{
-                                        width: 28,
-                                        height: 28,
-                                        mr: 1,
-                                        fontSize: "0.8rem",
-                                        [theme.breakpoints.up("sm")]: {
-                                            width: 32,
-                                            height: 32,
-                                            mr: 1.5,
-                                        },
-                                    }}
-                                >
-                                    {msg.user[0]}
-                                </Avatar>
-                                <Box sx={{ flex: 1, minWidth: 0 }}>
-                                    <Typography variant="subtitle2" fontWeight={600} noWrap>
-                                        {msg.user}
-                                        {msg.type === "donation" && (
-                                            <Chip
-                                                label="DONATION"
-                                                size="small"
-                                                sx={{
-                                                    ml: 0.5,
-                                                    height: 14,
-                                                    fontSize: "0.5rem",
-                                                    backgroundColor: alpha(theme.palette.success.main, 0.2),
-                                                    color: theme.palette.success.main,
-                                                    [theme.breakpoints.up("sm")]: {
-                                                        ml: 1,
-                                                        height: 16,
-                                                        fontSize: "0.6rem",
-                                                    },
-                                                }}
-                                            />
-                                        )}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
-                                        {msg.text}
-                                    </Typography>
-                                </Box>
-                            </MessageItem>
-                        ))}
-                    </Box>
-
-                    {/* Enhanced Message Input with Emoji Picker */}
-                    <Box
-                        sx={{
-                            p: 1,
-                            borderTop: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                            position: "relative",
-                            [theme.breakpoints.up("sm")]: {
-                                p: 2,
-                            },
-                        }}
-                    >
-                        <TextField
-                            fullWidth
-                            placeholder="Send a message..."
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                            size="small"
-                            InputProps={{
-                                startAdornment: (
-                                    <IconButton
-                                        ref={emojiButtonRef}
-                                        onClick={handleEmojiButtonClick}
-                                        size="small"
-                                        sx={{
-                                            mr: 0.5,
-                                            color: theme.palette.text.secondary,
-                                            "&:hover": {
-                                                color: theme.palette.primary.main,
-                                            },
-                                        }}
-                                    >
-                                        <EmojiIcon fontSize="small" />
-                                    </IconButton>
-                                ),
-                                endAdornment: (
-                                    <IconButton
-                                        onClick={handleSendMessage}
-                                        disabled={!message.trim()}
-                                        size="small"
-                                        sx={{
-                                            color: message.trim()
-                                                ? theme.palette.primary.main
-                                                : theme.palette.text.disabled,
-                                        }}
-                                    >
-                                        <SendIcon fontSize="small" />
-                                    </IconButton>
-                                ),
-                                sx: {
-                                    borderRadius: 3,
-                                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                                    "&:hover": {
-                                        backgroundColor: alpha(theme.palette.background.paper, 0.9),
-                                    },
-                                    fontSize: "0.875rem",
-                                    [theme.breakpoints.up("sm")]: {
-                                        borderRadius: 4,
-                                        fontSize: "1rem",
-                                    },
-                                },
-                            }}
-                        />
-
-                        {/* Emoji Picker Popover */}
-                        <Popover
-                            open={emojiOpen}
-                            anchorEl={emojiAnchor}
-                            onClose={handleEmojiClose}
-                            anchorOrigin={{
-                                vertical: "top",
-                                horizontal: "left",
-                            }}
-                            transformOrigin={{
-                                vertical: "bottom",
-                                horizontal: "left",
-                            }}
-                            sx={{
-                                "& .MuiPopover-paper": {
-                                    backgroundColor: "transparent",
-                                    boxShadow: "none",
-                                    overflow: "visible",
-                                },
-                            }}
-                        >
-                            <EmojiPickerContainer>
-                                <EmojiPicker
-                                    onEmojiClick={handleEmojiClick}
-                                    autoFocusSearch={false}
-                                    theme={theme.palette.mode}
-                                    skinTonesDisabled
-                                    searchDisabled={false}
-                                    width={isSmallMobile ? 300 : 350}
-                                    height={isSmallMobile ? 300 : 400}
-                                />
-                            </EmojiPickerContainer>
-                        </Popover>
-                    </Box>
-                </ChatContainer>
+                {/* Live Chat */}
+                <LiveChat
+                    messages={messages}
+                    onSendMessage={handleSendMessage}
+                    onDonate={handleDonate}
+                    onLike={handleLike}
+                    onSubscribe={handleSubscribe}
+                    onFollow={handleFollow}
+                    onGift={handleGift}
+                    // onShare={handleShare}
+                    chatOpen={chatOpen}
+                    onToggleChat={toggleChat}
+                />
             </Box>
+
+            {/* Notification Animations Overlay */}
+            {notifications.map(notification => (
+                <NotificationAnimation 
+                    key={notification.id} 
+                    notification={notification} 
+                />
+            ))}
         </LiveContainer>
     );
 };
