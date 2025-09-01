@@ -20,7 +20,7 @@ const AppWrapper = ({ children }) => {
                 <Box sx={{ overflowX: "hidden", position: "relative" }}>
                     <AnimatePresence mode="wait">
                         <MotionDiv
-                            key={isDarkMode}
+                            // key={isDarkMode}
                             initial={{
                                 opacity: 0,
                                 scale: 0.98,

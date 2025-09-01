@@ -1,15 +1,7 @@
-import {  useRef, useEffect } from "react";
-import {
-    Box,
-    Typography,
-    Avatar,
-    styled,
-    alpha,
-    useTheme,
-    Grid2,
-    useMediaQuery,
-} from "@mui/material";
+import { useEffect } from "react";
+import { Box, Typography, Avatar, styled, alpha, useTheme, Grid2, useMediaQuery } from "@mui/material";
 import { motion } from "framer-motion";
+import useCamera from "../hooks/useCamera";
 
 // Styled components
 const VideoFeedContainer = styled(Box)(({ theme }) => ({
@@ -21,6 +13,7 @@ const VideoFeedContainer = styled(Box)(({ theme }) => ({
     alignItems: "center",
     overflow: "hidden",
     padding: theme.spacing(1),
+    height: "100vh", // Adjust height to accommodate chat
     [theme.breakpoints.up("sm")]: {
         padding: theme.spacing(2),
     },
@@ -141,18 +134,11 @@ const ViewerCount = styled(Box)(({ theme }) => ({
     },
 }));
 
-const VideoGridComponent = ({ 
-    liveUsers, 
-    onUserClick, 
-    cameraActive, 
-    cameraError, 
-    isInitializing,
-    viewers ,
-    videoRef: propRef
-}) => {
+const VideoGridComponent = ({ liveUsers, onUserClick, viewers }) => {
     const theme = useTheme();
     const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const videoRef = useRef(propRef);
+    // Camera hook
+    const { cameraActive, cameraError, isInitializing, videoRef } = useCamera();
 
     const getGridSize = (count) => {
         if (count === 1) return { xs: 12, sm: 12, md: 12 };

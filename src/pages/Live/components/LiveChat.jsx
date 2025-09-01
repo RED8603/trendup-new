@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
     Box,
     Typography,
@@ -25,43 +25,54 @@ import {
     PersonAdd as PersonAddIcon,
     CardGiftcard as CardGiftcardIcon,
 } from "@mui/icons-material";
+import { motion, AnimatePresence } from "framer-motion";
 import EmojiPicker from "emoji-picker-react";
 
 // Styled components
-const ChatContainer = styled(Box)(({ theme }) => ({
-    width: 350,
-    height: "100%",
-    backgroundColor: alpha(theme.palette.background.paper, 0.9),
-    backdropFilter: "blur(8px)",
-    borderLeft: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+const ChatContainer = styled(Box, {
+    shouldForwardProp: (prop) => prop !== "isCompact",
+})(({ theme, isCompact }) => ({
+    width: isCompact ? "100%" : 350,
+    height: isCompact ? "100%" : "100%",
+    backgroundColor: alpha(theme.palette.background.paper, 0.97),
+    backdropFilter: "blur(16px)",
+    borderLeft: isCompact ? "none" : `1px solid ${alpha(theme.palette.divider, 0.2)}`,
     display: "flex",
     flexDirection: "column",
     overflow: "hidden",
+    borderRadius: isCompact ? "16px 16px 0 0" : "0",
+    transition: "all 0.3s ease-in-out",
+    boxShadow: isCompact ? theme.shadows[8] : "none",
+
     [theme.breakpoints.down("md")]: {
-        position: "absolute",
-        right: 0,
-        top: 0,
-        bottom: 0,
-        transform: "translateX(100%)",
-        transition: "transform 0.3s ease",
-        zIndex: 1000,
-        "&.chat-open": {
-            transform: "translateX(0)",
-        },
+        ...(!isCompact && {
+            position: "absolute",
+            right: 0,
+            top: 0,
+            bottom: 0,
+            transform: "translateX(100%)",
+            zIndex: 1000,
+            "&.chat-open": {
+                transform: "translateX(0)",
+            },
+        }),
     },
     [theme.breakpoints.down("sm")]: {
         width: "100%",
+        borderRadius: isCompact ? "16px 16px 0 0" : "0",
     },
 }));
 
-const MessageItem = styled(Box)(({ theme, type }) => ({
+const MessageItem = styled(motion.div)(({ theme, type }) => ({
     display: "flex",
     alignItems: "flex-start",
-    padding: "6px 8px",
-    backgroundColor: type === "donation" ? alpha(theme.palette.success.light, 0.2) : "transparent",
+    padding: "8px 12px",
+    backgroundColor: type === "donation" ? alpha(theme.palette.success.main, 0.15) : "transparent",
     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    [theme.breakpoints.up("sm")]: {
-        padding: "8px 12px",
+    transition: "all 0.2s ease",
+
+    "&:hover": {
+        backgroundColor: alpha(theme.palette.action.hover, 0.08),
     },
 }));
 
@@ -71,6 +82,7 @@ const EmojiPickerContainer = styled(Box)(({ theme }) => ({
     right: 0,
     marginBottom: 8,
     zIndex: 1000,
+
     "& .emoji-picker-react": {
         backgroundColor: theme.palette.background.paper,
         border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
@@ -79,25 +91,57 @@ const EmojiPickerContainer = styled(Box)(({ theme }) => ({
         width: "100% !important",
         maxWidth: 350,
     },
+
     [theme.breakpoints.down("sm")]: {
         right: "auto",
         left: 0,
+
         "& .emoji-picker-react": {
             maxWidth: "100%",
+            width: "100vw !important",
+            marginLeft: "-16px",
         },
     },
 }));
 
-const MobileChatToggle = styled(IconButton)(({ theme }) => ({
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: alpha(theme.palette.primary.main, 0.8),
-    color: theme.palette.common.white,
-    zIndex: 100,
-    display: "none",
-    [theme.breakpoints.down("md")]: {
-        display: "flex",
+const CompactHeader = styled(Box)(({ theme }) => ({
+    padding: theme.spacing(1.5),
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    background: alpha(theme.palette.background.paper, 0.9),
+    backdropFilter: "blur(12px)",
+}));
+
+const ActionButtonsContainer = styled(Stack)(({ theme, isCompact }) => ({
+    flexDirection: "row",
+    gap: theme.spacing(0.5),
+
+    ...(isCompact && {
+        overflowX: "auto",
+        padding: theme.spacing(0.5),
+        "&::-webkit-scrollbar": {
+            display: "none",
+        },
+        msOverflowStyle: "none",
+        scrollbarWidth: "none",
+    }),
+}));
+
+const MessagesContainer = styled(Box)(({ theme }) => ({
+    flex: 1,
+    overflowY: "auto",
+    padding: theme.spacing(0.5),
+    "&::-webkit-scrollbar": {
+        width: "6px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+        backgroundColor: alpha(theme.palette.primary.main, 0.3),
+        borderRadius: "3px",
+    },
+    "&::-webkit-scrollbar-thumb:hover": {
+        backgroundColor: alpha(theme.palette.primary.main, 0.5),
     },
 }));
 
@@ -112,11 +156,13 @@ const LiveChat = ({
     onShare,
     chatOpen,
     onToggleChat,
+    isCompact = false,
 }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const emojiButtonRef = useRef(null);
+    const messagesEndRef = useRef(null);
     const [message, setMessage] = useState("");
     const [emojiAnchor, setEmojiAnchor] = useState(null);
 
@@ -128,7 +174,8 @@ const LiveChat = ({
     };
 
     const handleKeyPress = (e) => {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
             handleSendMessage();
         }
     };
@@ -148,205 +195,357 @@ const LiveChat = ({
 
     const emojiOpen = Boolean(emojiAnchor);
 
-    return (
-        <>
-            {/* Mobile Chat Toggle */}
-            <MobileChatToggle onClick={onToggleChat}>
-                <ChatIcon />
-            </MobileChatToggle>
+    // Scroll to bottom when new messages arrive
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
-            {/* Chat Panel */}
-            <ChatContainer className={chatOpen ? "chat-open" : ""}>
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+    return (
+        <ChatContainer
+            isCompact={isCompact}
+            sx={{
+                ...(isCompact && {
+                    maxHeight: "50vh",
+                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    boxShadow: theme.shadows[6],
+                }),
+            }}
+        >
+            {/* Header */}
+            {isCompact ? (
+                <CompactHeader>
+                    <Typography variant="h6" fontWeight={600} sx={{ fontSize: "1.1rem" }}>
+                        💬 Live Chat ({messages.length})
+                    </Typography>
+                    <IconButton
+                        size="small"
+                        onClick={onToggleChat}
+                        sx={{
+                            color: theme.palette.text.secondary,
+                            "&:hover": {
+                                color: theme.palette.text.primary,
+                                backgroundColor: alpha(theme.palette.action.hover, 0.1),
+                            },
+                        }}
+                    >
+                        <CloseIcon fontSize="small" />
+                    </IconButton>
+                </CompactHeader>
+            ) : (
                 <Box
                     sx={{
-                        p: 1,
+                        p: theme.spacing(1.5),
                         borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        [theme.breakpoints.up("sm")]: {
-                            p: 2,
-                        },
+                        background: alpha(theme.palette.background.paper, 0.9),
+                        backdropFilter: "blur(12px)",
                     }}
                 >
                     <Typography variant="h6" fontWeight={600}>
-                        Live Chat
+                        Live Chat ({messages.length})
                     </Typography>
-                    <Stack direction="row" spacing={0.5}>
-                        <IconButton size="small" onClick={onLike} title="Send Like">
-                            <LikeIcon fontSize="small" />
+                    {isMobile && (
+                        <IconButton
+                            size="small"
+                            onClick={onToggleChat}
+                            sx={{
+                                color: theme.palette.text.secondary,
+                                "&:hover": {
+                                    color: theme.palette.text.primary,
+                                    backgroundColor: alpha(theme.palette.action.hover, 0.1),
+                                },
+                            }}
+                        >
+                            <CloseIcon fontSize="small" />
                         </IconButton>
-                        <IconButton size="small" onClick={onSubscribe} title="Subscribe">
-                            <StarIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" onClick={onFollow} title="Follow">
-                            <PersonAddIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" onClick={onGift} title="Send Gift">
-                            <CardGiftcardIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" onClick={onDonate} title="Donate">
-                            <DonateIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" onClick={onShare} title="Share">
-                            <ShareIcon fontSize="small" />
-                        </IconButton>
-                        {isMobile && (
-                            <IconButton size="small" onClick={onToggleChat}>
-                                <CloseIcon fontSize="small" />
-                            </IconButton>
-                        )}
-                    </Stack>
+                    )}
                 </Box>
+            )}
 
-                <Box sx={{ flex: 1, overflowY: "auto", p: 0.5 }}>
-                    {messages.map((msg, index) => (
-                        <MessageItem key={index} type={msg.type}>
+            {/* Action Buttons */}
+            <Box
+                sx={{
+                    p: theme.spacing(1),
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    background: alpha(theme.palette.background.default, 0.6),
+                    backdropFilter: "blur(8px)",
+                }}
+            >
+                <ActionButtonsContainer isCompact={isCompact}>
+                    <IconButton
+                        size="small"
+                        onClick={onLike}
+                        title="Send Like"
+                        sx={{
+                            color: theme.palette.error.main,
+                            backgroundColor: alpha(theme.palette.error.main, 0.1),
+                            "&:hover": {
+                                backgroundColor: alpha(theme.palette.error.main, 0.2),
+                            },
+                        }}
+                    >
+                        <LikeIcon fontSize="small" />
+                    </IconButton>
+
+                    <IconButton
+                        size="small"
+                        onClick={onSubscribe}
+                        title="Subscribe"
+                        sx={{
+                            color: theme.palette.warning.main,
+                            backgroundColor: alpha(theme.palette.warning.main, 0.1),
+                            "&:hover": {
+                                backgroundColor: alpha(theme.palette.warning.main, 0.2),
+                            },
+                        }}
+                    >
+                        <StarIcon fontSize="small" />
+                    </IconButton>
+
+                    <IconButton
+                        size="small"
+                        onClick={onFollow}
+                        title="Follow"
+                        sx={{
+                            color: theme.palette.info.main,
+                            backgroundColor: alpha(theme.palette.info.main, 0.1),
+                            "&:hover": {
+                                backgroundColor: alpha(theme.palette.info.main, 0.2),
+                            },
+                        }}
+                    >
+                        <PersonAddIcon fontSize="small" />
+                    </IconButton>
+
+                    <IconButton
+                        size="small"
+                        onClick={onGift}
+                        title="Send Gift"
+                        sx={{
+                            color: theme.palette.success.main,
+                            backgroundColor: alpha(theme.palette.success.main, 0.1),
+                            "&:hover": {
+                                backgroundColor: alpha(theme.palette.success.main, 0.2),
+                            },
+                        }}
+                    >
+                        <CardGiftcardIcon fontSize="small" />
+                    </IconButton>
+
+                    <IconButton
+                        size="small"
+                        onClick={onDonate}
+                        title="Donate"
+                        sx={{
+                            color: theme.palette.primary.main,
+                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                            "&:hover": {
+                                backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                            },
+                        }}
+                    >
+                        <DonateIcon fontSize="small" />
+                    </IconButton>
+
+                    <IconButton
+                        size="small"
+                        onClick={onShare}
+                        title="Share"
+                        sx={{
+                            color: theme.palette.text.secondary,
+                            backgroundColor: alpha(theme.palette.action.hover, 0.1),
+                            "&:hover": {
+                                backgroundColor: alpha(theme.palette.action.hover, 0.2),
+                                color: theme.palette.text.primary,
+                            },
+                        }}
+                    >
+                        <ShareIcon fontSize="small" />
+                    </IconButton>
+                </ActionButtonsContainer>
+            </Box>
+
+            {/* Messages List with Animations */}
+            <MessagesContainer>
+                <AnimatePresence initial={false}>
+                    {messages.map((msg) => (
+                        <MessageItem
+                            key={msg.id}
+                            type={msg.type}
+                            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3, ease: "easeOut" }}
+                            layout
+                        >
                             <Avatar
                                 sx={{
-                                    width: 28,
-                                    height: 28,
-                                    mr: 1,
-                                    fontSize: "0.8rem",
-                                    [theme.breakpoints.up("sm")]: {
-                                        width: 32,
-                                        height: 32,
-                                        mr: 1.5,
-                                    },
+                                    width: 36,
+                                    height: 36,
+                                    mr: 1.5,
+                                    fontSize: "1rem",
+                                    fontWeight: 600,
+                                    bgcolor:
+                                        msg.type === "donation"
+                                            ? theme.palette.success.main
+                                            : theme.palette.primary.main,
                                 }}
                             >
-                                {msg.user[0]}
+                                {msg.user[0].toUpperCase()}
                             </Avatar>
                             <Box sx={{ flex: 1, minWidth: 0 }}>
-                                <Typography variant="subtitle2" fontWeight={600} noWrap>
-                                    {msg.user}
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                                    <Typography
+                                        variant="subtitle2"
+                                        fontWeight={600}
+                                        sx={{
+                                            color:
+                                                msg.type === "donation"
+                                                    ? theme.palette.success.main
+                                                    : theme.palette.text.primary,
+                                        }}
+                                    >
+                                        {msg.user}
+                                    </Typography>
                                     {msg.type === "donation" && (
                                         <Chip
                                             label="DONATION"
                                             size="small"
                                             sx={{
-                                                ml: 0.5,
-                                                height: 14,
-                                                fontSize: "0.5rem",
+                                                height: 20,
+                                                fontSize: "0.65rem",
+                                                fontWeight: 700,
                                                 backgroundColor: alpha(theme.palette.success.main, 0.2),
                                                 color: theme.palette.success.main,
-                                                [theme.breakpoints.up("sm")]: {
-                                                    ml: 1,
-                                                    height: 16,
-                                                    fontSize: "0.6rem",
-                                                },
                                             }}
                                         />
                                     )}
-                                </Typography>
-                                <Typography variant="body2" sx={{ wordBreak: "break-word" }}>
+                                </Box>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        wordBreak: "break-word",
+                                        lineHeight: 1.4,
+                                    }}
+                                >
                                     {msg.text}
                                 </Typography>
                             </Box>
                         </MessageItem>
                     ))}
-                </Box>
+                </AnimatePresence>
+                <div ref={messagesEndRef} />
+            </MessagesContainer>
 
-                {/* Enhanced Message Input with Emoji Picker */}
-                <Box
+            {/* Message Input - Always visible at bottom */}
+            <Box
+                sx={{
+                    p: theme.spacing(1.5),
+                    borderTop: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    position: "relative",
+                    background: alpha(theme.palette.background.paper, 0.9),
+                    backdropFilter: "blur(12px)",
+                }}
+            >
+                <TextField
+                    fullWidth
+                    placeholder="Send a message..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    size="small"
+                    multiline
+                    maxRows={3}
+                    InputProps={{
+                        startAdornment: (
+                            <IconButton
+                                ref={emojiButtonRef}
+                                onClick={handleEmojiButtonClick}
+                                size="small"
+                                sx={{
+                                    mr: 1,
+                                    color: theme.palette.text.secondary,
+                                    "&:hover": {
+                                        color: theme.palette.primary.main,
+                                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                    },
+                                }}
+                            >
+                                <EmojiIcon />
+                            </IconButton>
+                        ),
+                        endAdornment: (
+                            <IconButton
+                                onClick={handleSendMessage}
+                                disabled={!message.trim()}
+                                size="small"
+                                sx={{
+                                    color: message.trim() ? theme.palette.primary.main : theme.palette.text.disabled,
+                                    "&:hover:not(:disabled)": {
+                                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                    },
+                                }}
+                            >
+                                <SendIcon />
+                            </IconButton>
+                        ),
+                        sx: {
+                            borderRadius: 2,
+                            backgroundColor: alpha(theme.palette.background.default, 0.7),
+                            "&:hover": {
+                                backgroundColor: alpha(theme.palette.background.default, 0.8),
+                            },
+                            "&.Mui-focused": {
+                                backgroundColor: alpha(theme.palette.background.default, 0.9),
+                                boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+                            },
+                            fontSize: "0.9rem",
+                            padding: theme.spacing(0.5),
+                        },
+                    }}
+                />
+
+                {/* Emoji Picker Popover */}
+                <Popover
+                    open={emojiOpen}
+                    anchorEl={emojiAnchor}
+                    onClose={handleEmojiClose}
+                    anchorOrigin={{
+                        vertical: "top",
+                        horizontal: "center",
+                    }}
+                    transformOrigin={{
+                        vertical: "bottom",
+                        horizontal: "center",
+                    }}
                     sx={{
-                        p: 1,
-                        borderTop: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                        position: "relative",
-                        [theme.breakpoints.up("sm")]: {
-                            p: 2,
+                        "& .MuiPopover-paper": {
+                            backgroundColor: "transparent",
+                            boxShadow: "none",
+                            overflow: "visible",
                         },
                     }}
                 >
-                    <TextField
-                        fullWidth
-                        placeholder="Send a message..."
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        size="small"
-                        InputProps={{
-                            startAdornment: (
-                                <IconButton
-                                    ref={emojiButtonRef}
-                                    onClick={handleEmojiButtonClick}
-                                    size="small"
-                                    sx={{
-                                        mr: 0.5,
-                                        color: theme.palette.text.secondary,
-                                        "&:hover": {
-                                            color: theme.palette.primary.main,
-                                        },
-                                    }}
-                                >
-                                    <EmojiIcon fontSize="small" />
-                                </IconButton>
-                            ),
-                            endAdornment: (
-                                <IconButton
-                                    onClick={handleSendMessage}
-                                    disabled={!message.trim()}
-                                    size="small"
-                                    sx={{
-                                        color: message.trim()
-                                            ? theme.palette.primary.main
-                                            : theme.palette.text.disabled,
-                                    }}
-                                >
-                                    <SendIcon fontSize="small" />
-                                </IconButton>
-                            ),
-                            sx: {
-                                borderRadius: 3,
-                                backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                                "&:hover": {
-                                    backgroundColor: alpha(theme.palette.background.paper, 0.9),
-                                },
-                                fontSize: "0.875rem",
-                                [theme.breakpoints.up("sm")]: {
-                                    borderRadius: 4,
-                                    fontSize: "1rem",
-                                },
-                            },
-                        }}
-                    />
-
-                    {/* Emoji Picker Popover */}
-                    <Popover
-                        open={emojiOpen}
-                        anchorEl={emojiAnchor}
-                        onClose={handleEmojiClose}
-                        anchorOrigin={{
-                            vertical: "top",
-                            horizontal: "left",
-                        }}
-                        transformOrigin={{
-                            vertical: "bottom",
-                            horizontal: "left",
-                        }}
-                        sx={{
-                            "& .MuiPopover-paper": {
-                                backgroundColor: "transparent",
-                                boxShadow: "none",
-                                overflow: "visible",
-                            },
-                        }}
-                    >
-                        <EmojiPickerContainer>
-                            <EmojiPicker
-                                onEmojiClick={handleEmojiClick}
-                                autoFocusSearch={false}
-                                theme={theme.palette.mode}
-                                skinTonesDisabled
-                                searchDisabled={false}
-                                width={isSmallMobile ? 300 : 350}
-                                height={isSmallMobile ? 300 : 400}
-                            />
-                        </EmojiPickerContainer>
-                    </Popover>
-                </Box>
-            </ChatContainer>
-        </>
+                    <EmojiPickerContainer>
+                        <EmojiPicker
+                            onEmojiClick={handleEmojiClick}
+                            autoFocusSearch={false}
+                            theme={theme.palette.mode}
+                            skinTonesDisabled
+                            searchDisabled={false}
+                            width={isSmallMobile ? 300 : 350}
+                            height={isSmallMobile ? 300 : 400}
+                        />
+                    </EmojiPickerContainer>
+                </Popover>
+            </Box>
+        </ChatContainer>
     );
 };
 

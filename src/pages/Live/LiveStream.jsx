@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Box, styled, alpha } from "@mui/material";
+import { Box, styled, alpha} from "@mui/material";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Import components
 import VideoGridComponent from "./components/VideoGrid";
@@ -23,17 +24,64 @@ const LiveContainer = styled(Box)(({ theme }) => ({
     overflow: "hidden",
 }));
 
+const VideoSection = styled(Box)(({ theme }) => ({
+    flex: 1,
+    position: "relative",
+    overflow: "hidden",
+    background: theme.palette.grey[900],
+}));
+
+const ChatSection = styled(motion.div)(({ theme }) => ({
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    background: alpha(theme.palette.background.paper, 0.95),
+    backdropFilter: "blur(20px)",
+    borderTop: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+    maxHeight: "50vh",
+    display: "flex",
+    flexDirection: "column",
+}));
+
+const ChatToggleButton = styled(motion.button)(({ theme }) => ({
+    position: "absolute",
+    bottom: 16,
+    right: 16,
+    backgroundColor: alpha(theme.palette.primary.main, 0.9),
+    color: theme.palette.common.white,
+    border: "none",
+    borderRadius: "20px",
+    padding: "10px 20px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    fontSize: "0.875rem",
+    fontWeight: 600,
+    zIndex: 101,
+    backdropFilter: "blur(10px)",
+    boxShadow: theme.shadows[4],
+    "&:hover": {
+        backgroundColor: theme.palette.primary.main,
+        transform: "scale(1.05)",
+    },
+}));
+
 const LiveStreamView = () => {
-    
+    // const theme = useTheme();
+    // const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
     // Camera hook
     const { cameraActive, cameraError, isInitializing, videoRef, toggleCamera } = useCamera();
-    
+
     // State
     const [viewers, setViewers] = useState(1254);
     const [messages, setMessages] = useState([
-        { user: "Justin", text: "Awesome stream!", type: "message" },
-        { user: "Emma", text: "Thank you!", type: "message" },
-        { user: "Adam", text: "donated $19.99", type: "donation" },
+        { id: 1, user: "Justin", text: "Awesome stream!", type: "message" },
+        { id: 2, user: "Emma", text: "Thank you!", type: "message" },
+        { id: 3, user: "Adam", text: "donated $19.99", type: "donation" },
     ]);
     const [liveUsers, setLiveUsers] = useState([
         { id: 1, name: "Emma", isActive: true, isSpeaking: true, hasVideo: true, hasAudio: true },
@@ -47,7 +95,7 @@ const LiveStreamView = () => {
     // Effects
     useEffect(() => {
         const interval = setInterval(() => {
-            setViewers((prev) => prev + Math.floor(Math.random() * 10) - 3);
+            setViewers((prev) => Math.max(1000, prev + Math.floor(Math.random() * 10) - 3));
             setLiveUsers((prev) =>
                 prev.map((user) => ({
                     ...user,
@@ -63,140 +111,135 @@ const LiveStreamView = () => {
 
     // Event handlers
     const handleSendMessage = (message) => {
-        setMessages([...messages, { user: "You", text: message, type: "message" }]);
+        const newMessage = {
+            id: Date.now(),
+            user: "You",
+            text: message,
+            type: "message",
+        };
+        setMessages((prev) => [...prev, newMessage]);
     };
 
     const handleDonate = () => {
         const donationAmount = (Math.random() * 50 + 5).toFixed(2);
         const donorName = "Anonymous";
-        
-        // Add message to chat
-        setMessages([
-            ...messages,
-            {
-                user: donorName,
-                text: `donated $${donationAmount}`,
-                type: "donation",
-            },
-        ]);
 
-        // Trigger donation animation
+        const newMessage = {
+            id: Date.now(),
+            user: donorName,
+            text: `donated $${donationAmount}`,
+            type: "donation",
+        };
+
+        setMessages((prev) => [...prev, newMessage]);
+
         addNotification({
-            type: 'donation',
+            type: "donation",
             data: {
                 name: donorName,
                 amount: donationAmount,
-                message: 'Thanks for the support!'
-            }
+                message: "Thanks for the support!",
+            },
         });
     };
 
     const handleLike = () => {
         const likerName = "Viewer";
         const likeCount = Math.floor(Math.random() * 5) + 1;
-        
-        // Add message to chat
-        setMessages([
-            ...messages,
-            {
-                user: likerName,
-                text: `liked the stream ${likeCount > 1 ? `${likeCount} times` : ''}`,
-                type: "like",
-            },
-        ]);
 
-        // Trigger like animation
+        const newMessage = {
+            id: Date.now(),
+            user: likerName,
+            text: `liked the stream ${likeCount > 1 ? `${likeCount} times` : ""}`,
+            type: "like",
+        };
+
+        setMessages((prev) => [...prev, newMessage]);
+
         addNotification({
-            type: 'like',
+            type: "like",
             data: {
                 name: likerName,
-                count: likeCount
-            }
+                count: likeCount,
+            },
         });
     };
 
     const handleSubscribe = () => {
         const subscriberName = "New Subscriber";
         const tier = Math.floor(Math.random() * 3) + 1;
-        
-        // Add message to chat
-        setMessages([
-            ...messages,
-            {
-                user: subscriberName,
-                text: `subscribed at Tier ${tier}!`,
-                type: "subscription",
-            },
-        ]);
 
-        // Trigger subscribe animation
+        const newMessage = {
+            id: Date.now(),
+            user: subscriberName,
+            text: `subscribed at Tier ${tier}!`,
+            type: "subscription",
+        };
+
+        setMessages((prev) => [...prev, newMessage]);
+
         addNotification({
-            type: 'subscribe',
+            type: "subscribe",
             data: {
                 name: subscriberName,
-                tier: tier
-            }
+                tier: tier,
+            },
         });
     };
 
     const handleFollow = () => {
         const followerName = "New Follower";
-        
-        // Add message to chat
-        setMessages([
-            ...messages,
-            {
-                user: followerName,
-                text: 'started following!',
-                type: "follow",
-            },
-        ]);
 
-        // Trigger follow animation
+        const newMessage = {
+            id: Date.now(),
+            user: followerName,
+            text: "started following!",
+            type: "follow",
+        };
+
+        setMessages((prev) => [...prev, newMessage]);
+
         addNotification({
-            type: 'follow',
+            type: "follow",
             data: {
-                name: followerName
-            }
+                name: followerName,
+            },
         });
     };
 
     const handleGift = () => {
         const gifterName = "Generous Viewer";
         const giftName = "Super Gift";
-        
-        // Add message to chat
-        setMessages([
-            ...messages,
-            {
-                user: gifterName,
-                text: `sent a ${giftName}!`,
-                type: "gift",
-            },
-        ]);
 
-        // Trigger gift animation
+        const newMessage = {
+            id: Date.now(),
+            user: gifterName,
+            text: `sent a ${giftName}!`,
+            type: "gift",
+        };
+
+        setMessages((prev) => [...prev, newMessage]);
+
         addNotification({
-            type: 'gift',
+            type: "gift",
             data: {
                 name: gifterName,
-                giftName: giftName
-            }
+                giftName: giftName,
+            },
         });
     };
 
     const addNotification = (notification) => {
         const newNotification = {
             ...notification,
-            id: Date.now(), // Unique ID for each animation
-            timestamp: Date.now()
+            id: Date.now(),
+            timestamp: Date.now(),
         };
 
-        setNotifications(prev => [...prev, newNotification]);
+        setNotifications((prev) => [...prev, newNotification]);
 
-        // Auto-remove notification after 4 seconds
         setTimeout(() => {
-            setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
+            setNotifications((prev) => prev.filter((n) => n.id !== newNotification.id));
         }, 4000);
     };
 
@@ -223,7 +266,7 @@ const LiveStreamView = () => {
 
     return (
         <LiveContainer>
-            <Box sx={{ display: "flex", height: "100%", position: "relative" }}>
+            <VideoSection>
                 {/* Video Grid */}
                 <VideoGridComponent
                     liveUsers={liveUsers}
@@ -244,27 +287,47 @@ const LiveStreamView = () => {
                     onMoreOptions={handleMoreOptions}
                 />
 
-                {/* Live Chat */}
-                <LiveChat
-                    messages={messages}
-                    onSendMessage={handleSendMessage}
-                    onDonate={handleDonate}
-                    onLike={handleLike}
-                    onSubscribe={handleSubscribe}
-                    onFollow={handleFollow}
-                    onGift={handleGift}
-                    // onShare={handleShare}
-                    chatOpen={chatOpen}
-                    onToggleChat={toggleChat}
-                />
-            </Box>
+                {/* Chat Toggle Button */}
+                <ChatToggleButton
+                    onClick={toggleChat}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    💬 {chatOpen ? "Hide Chat" : "Show Chat"} • {messages.length}
+                </ChatToggleButton>
+
+                {/* Animated Chat Section */}
+                <AnimatePresence>
+                    {chatOpen && (
+                        <ChatSection
+                            initial={{ y: "100%" }}
+                            animate={{ y: 0 }}
+                            exit={{ y: "100%" }}
+                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        >
+                            <LiveChat
+                                messages={messages}
+                                onSendMessage={handleSendMessage}
+                                onDonate={handleDonate}
+                                onLike={handleLike}
+                                onSubscribe={handleSubscribe}
+                                onFollow={handleFollow}
+                                onGift={handleGift}
+                                chatOpen={chatOpen}
+                                onToggleChat={toggleChat}
+                                isCompact={true}
+                            />
+                        </ChatSection>
+                    )}
+                </AnimatePresence>
+            </VideoSection>
 
             {/* Notification Animations Overlay */}
-            {notifications.map(notification => (
-                <NotificationAnimation 
-                    key={notification.id} 
-                    notification={notification} 
-                />
+            {notifications.map((notification) => (
+                <NotificationAnimation key={notification.id} notification={notification} />
             ))}
         </LiveContainer>
     );
