@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: trendup-redis
+    volumes:
+      - redis-data:/data
+    restart: always
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    networks:
+      - trendup-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:7
+    container_name: trendup-mongodb
+    volumes:
+      - mongodb-data:/data/db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: trendupcoin
+    networks:
+      - trendup-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: trendup-backend
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/trendupcoin?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+    env_file:
+      - ./backend/.env.production
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    restart: always
+    networks:
+      - trendup-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: trendup-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - trendup-network
+
+networks:
+  trendup-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  mongodb-data:

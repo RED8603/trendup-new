@@ -1,0 +1,29 @@
+# Root level ignores
+node_modules/
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Docker
+docker-compose.override.yml
+
+# Build outputs
+dist/
+build/
+
+# Package locks (optional)
+# package-lock.json

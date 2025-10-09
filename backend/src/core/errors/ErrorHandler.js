@@ -55,7 +55,7 @@ class ErrorHandler {
     }
 
     // Send error response
-    this.sendErrorResponse(res, error);
+    ErrorHandler.sendErrorResponse(res, error);
   }
 
   static sendErrorResponse(res, error) {

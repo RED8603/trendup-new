@@ -6,7 +6,7 @@ const morgan = require('morgan');
 
 const config = require('./config');
 const { logger } = require('./core/utils/logger');
-const { ErrorHandler } = require('./core/errors/ErrorHandler');
+const ErrorHandler = require('./core/errors/ErrorHandler');
 
 const app = express();
 
@@ -40,9 +40,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes will be added here
-// app.use('/api/v1/auth', authRoutes);
-// app.use('/api/v1/users', userRoutes);
+// API routes
+const { authRoutes } = require('./modules/auth');
+app.use('/api/v1/auth', authRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -57,16 +57,6 @@ app.use('*', (req, res) => {
 });
 
 // Global error handler
-app.use((err, req, res, next) => {
-  logger.error('Error:', err);
-  res.status(500).json({
-    success: false,
-    message: 'Internal server error',
-    error: {
-      code: 'INTERNAL_ERROR',
-      timestamp: new Date().toISOString()
-    }
-  });
-});
+app.use(ErrorHandler.handle);
 
 module.exports = app;
