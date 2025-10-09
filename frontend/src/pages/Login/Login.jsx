@@ -1,31 +1,32 @@
 import { AppleIcon, GoogleIcon, GoogleSvg, ReplyIcon, Visibility, VisibilityOff, WalletIcon } from "@/assets/icons";
 import { AppleIconSvg, EmailIconSvg, WalletIconSvg } from "@/assets/svg/index";
-
 import InputFeild from "@/components/common/InputFeild/InputFeild";
 import Loading from "@/components/common/loading";
 import Logo from "@/components/common/Logo/Logo";
 import MainButton from "@/components/common/MainButton/MainButton";
-import { setUser } from "@/store/slices/userSlices";
 import { Box, Checkbox, Container, IconButton, InputAdornment, Stack, Typography, useTheme } from "@mui/material";
-import { useAppKit } from "@reown/appkit/react";
+import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useRequestWalletNonceMutation } from "@/api/slices/authApi";
+import { useSignMessage } from "wagmi";
 
 const Login = () => {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
     const { open } = useAppKit();
+    const { address } = useAppKitAccount();
     const theme = useTheme();
+    const { login, loginWithWallet, loading } = useAuth();
 
     const [email, setEmail] = useState({ email: "", error: "" });
     const [password, setPassword] = useState({ password: "", error: "" });
     const [showPassword, setShowPassword] = useState(false);
     const [loginWithEmail, setLoginWithEmail] = useState(false);
-
     const [checked, setChecked] = useState(false);
+    const [apiError, setApiError] = useState("");
 
-    const [isLoading, setIsLoading] = useState(false);
+    const [requestWalletNonce] = useRequestWalletNonceMutation();
+    const { signMessageAsync } = useSignMessage();
 
     const handleChange = (event) => {
         setChecked(event.target.checked);
@@ -83,16 +84,63 @@ const Login = () => {
         }));
     };
 
-    const handleSubmit = () => {
-        if (isLoading) return;
-        setIsLoading(true);
-        setTimeout(() => {
-            dispatch(setUser({ name: "user", id: 1, address: "" }));
-            setIsLoading(false);
-            navigate("/home");
-        }, 2000);
+    const handleEmailLogin = async (e) => {
+        e.preventDefault();
+        if (loading) return;
+
+        if (!email.email || email.error) {
+            setApiError("Please enter a valid email");
+            return;
+        }
+
+        if (!password.password || password.error) {
+            setApiError("Please enter a valid password");
+            return;
+        }
+
+        try {
+            setApiError("");
+            await login({
+                email: email.email,
+                password: password.password,
+            });
+        } catch (error) {
+            setApiError(error.data?.message || "Login failed. Please try again.");
+        }
     };
-    if (isLoading) return <Loading isLoading={true} />;
+
+    const handleWalletLogin = async () => {
+        if (loading) return;
+
+        if (!address) {
+            open();
+            return;
+        }
+
+        try {
+            setApiError("");
+            
+            const nonceResult = await requestWalletNonce({
+                walletAddress: address
+            }).unwrap();
+
+            const message = nonceResult.data.message;
+            const nonce = nonceResult.data.nonce;
+
+            const signature = await signMessageAsync({ message });
+
+            await loginWithWallet(address, signature, nonce);
+        } catch (error) {
+            setApiError(error.data?.message || "Wallet login failed. Please try again.");
+        }
+    };
+
+    const handleSkip = () => {
+        setLoginWithEmail(false);
+        setApiError("");
+    };
+
+    if (loading) return <Loading isLoading={true} />;
 
     return (
         <Box
@@ -120,12 +168,10 @@ const Login = () => {
                     >
                         <IconButton
                             sx={{ display: "flex", alignItems: "center", gap: "5px" }}
-                            onClick={() => {
-                                loginWithEmail ? setLoginWithEmail(false) : handleSubmit();
-                            }}
+                            onClick={handleSkip}
                         >
                             <ReplyIcon color={theme.palette.text.primary} />{" "}
-                            <Typography color="textPrimary"> {loginWithEmail ? "Back" : "Skip"} </Typography>
+                            <Typography color="textPrimary">Back</Typography>
                         </IconButton>
                     </Box>
                     <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -159,13 +205,21 @@ const Login = () => {
                         Login to continue
                     </Typography>
 
+                    {apiError && (
+                        <Box sx={{ 
+                            bgcolor: 'error.main', 
+                            color: 'white', 
+                            p: 2, 
+                            borderRadius: 1, 
+                            mt: 2,
+                            textAlign: 'center'
+                        }}>
+                            <Typography variant="body2">{apiError}</Typography>
+                        </Box>
+                    )}
+
                     {loginWithEmail ? (
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                handleSubmit();
-                            }}
-                        >
+                        <form onSubmit={handleEmailLogin}>
                             <InputFeild
                                 placeholder="Email"
                                 lable="Email"
@@ -232,14 +286,26 @@ const Login = () => {
                             justifyContent={"center"}
                             mt={4}
                         >
-                            <MainButton sx={{ width: "230px" }} startIcon={<WalletIconSvg />} onClick={open}>
-                                Connect
+                            <MainButton 
+                                sx={{ width: "230px" }} 
+                                startIcon={<WalletIconSvg />} 
+                                onClick={handleWalletLogin}
+                            >
+                                {address ? 'Login with Wallet' : 'Connect Wallet'}
                             </MainButton>
-                            <MainButton sx={{ width: "230px" }} startIcon={<GoogleSvg />} onClick={handleSubmit}>
-                                Log in with Goggle
+                            <MainButton 
+                                sx={{ width: "230px", opacity: 0.5 }} 
+                                startIcon={<GoogleSvg />} 
+                                disabled
+                            >
+                                Coming Soon
                             </MainButton>
-                            <MainButton sx={{ width: "230px" }} startIcon={<AppleIconSvg />} onClick={handleSubmit}>
-                                Log in with Apple
+                            <MainButton 
+                                sx={{ width: "230px", opacity: 0.5 }} 
+                                startIcon={<AppleIconSvg />} 
+                                disabled
+                            >
+                                Coming Soon
                             </MainButton>
                             <MainButton
                                 sx={{ width: "230px" }}
