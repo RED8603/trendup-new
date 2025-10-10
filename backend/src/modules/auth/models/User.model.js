@@ -41,6 +41,28 @@ const userSchema = new mongoose.Schema(
       maxlength: [500, 'Bio cannot exceed 500 characters'],
       default: '',
     },
+    location: {
+      type: String,
+      maxlength: [100, 'Location cannot exceed 100 characters'],
+      default: '',
+    },
+    website: {
+      type: String,
+      maxlength: [200, 'Website URL cannot exceed 200 characters'],
+      validate: {
+        validator: function (v) {
+          // URL validation (optional field)
+          if (!v) return true;
+          return /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/.test(v);
+        },
+        message: 'Invalid website URL',
+      },
+      default: '',
+    },
+    coverImage: {
+      type: String,
+      default: null,
+    },
     walletAddress: {
       type: String,
       unique: true,

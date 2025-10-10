@@ -15,8 +15,8 @@ const SecureRoutes = () => {
             <Route element={<Chat />} path="/chat" />
             <Route element={<GoLiveView />} path="/live" />
             <Route element={<LiveStreamView />} path="/live/stream" />
-            <Route element={<Profile />} path="/profile" />
-            <Route element={<EditProfilePage />} path="/edit-profile" />
+            <Route element={<Profile />} path="/user/profile" />
+            <Route element={<EditProfilePage />} path="/user/edit-profile" />
 
 
         </Routes>

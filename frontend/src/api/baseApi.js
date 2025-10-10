@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { removeUser } from "@/store/slices/userSlices";
+import { env } from "@/config/env";
 
 const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
 

@@ -8,6 +8,8 @@ import { ThemeToggle } from "../common/ToggelTheme/ToggelTheme";
 import ConnectButton from "../common/ConnectButton/ConnectButton";
 import { useSelector } from "react-redux";
 import { MenuIcon } from "@/assets/icons";
+import LogoutButton from "../common/LogoutButton/LogoutButton";
+import { getImageUrl } from "@/config/env";
 
 // const array = [
 //     {
@@ -64,9 +66,12 @@ const Navbar = () => {
                     <ThemeToggle />
 
                     {user && (
-                        <Link to="/user/profile">
-                            <Avatar src="https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes.png" />
-                        </Link>
+                        <>
+                            <Link to="/user/profile">
+                                <Avatar src={getImageUrl(user.avatar) || 'https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes.png'} />
+                            </Link>
+                            <LogoutButton variant="icon" />
+                        </>
                     )}
                 </Box>
             </Box>

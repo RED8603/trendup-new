@@ -20,7 +20,8 @@ const AuthContainer = () => {
                 navigate("/home");
             }
         } else {
-            if (location.pathname !== '/login' && location.pathname !== '/register' && location.pathname !== '/forgot-password') {
+            const allowedPaths = ['/login', '/register', '/forgot-password', '/reset-password'];
+            if (!allowedPaths.includes(location.pathname)) {
                 navigate("/login");
             }
         }

@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import Loading from "@/components/common/loading";
 import MainButton from "@/components/common/MainButton/MainButton";
-import Toastify from "@/components/common/Toastify";
+import { useToast } from "@/hooks/useToast.jsx";
 import InputFeild from "@/components/common/InputFeild/InputFeild";
 import { useTokenWriteFunction } from "@/connectivityAssets/hooks";
 import { useGenrelContext } from "@/context/GenrelContext";
@@ -39,7 +39,7 @@ export default function DemocraticVoting() {
 
     const [title, setTitle] = useState({ text: "", error: "" });
     const [isLoading, setIsLoading] = useState(false);
-    const [alertState, setAlertState] = useState({ open: false, message: "", severity: undefined });
+    const { showToast } = useToast();
 
     const onTextChange = (e) => {
         const text = e.target.value;
@@ -49,9 +49,6 @@ export default function DemocraticVoting() {
         });
     };
 
-    const showToast = (msg, type) => {
-        setAlertState({ open: true, message: msg, severity: type });
-    };
 
     const vote = async () => {
         if (title.text.trim().length < 2) {
@@ -72,7 +69,6 @@ export default function DemocraticVoting() {
     return (
         <>
             <Loading isLoading={isLoading} />
-            <Toastify setAlertState={setAlertState} alertState={alertState} />
             <Container maxWidth="md">
                 <VoteContainer>
                     <Fade in timeout={300}>

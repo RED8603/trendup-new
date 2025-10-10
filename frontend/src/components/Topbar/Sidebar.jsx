@@ -29,6 +29,8 @@ import { motion } from "framer-motion";
 import Logo from "../common/Logo/Logo";
 import AnimatedSearchInput from "../common/SearchInput/SearchInput";
 import NotificationBell from "../common/Notifictions/Notifications";
+import LogoutButton from "../common/LogoutButton/LogoutButton";
+import { getImageUrl } from "@/config/env";
 import { mockNotifications } from "@/constants";
 import MiniVotingCard from "../common/MiniVoting/MiniVoting";
 
@@ -164,7 +166,7 @@ const array = [
     },
      {
         name: "Profile",
-        link1: "/profile",
+        link1: "/user/profile",
         Icon: AccountBoxIcon,
         id:9,
     },
@@ -367,9 +369,12 @@ const Sidebar = ({ children }) => {
                                         <ThemeToggle />
 
                                         {user && (
-                                            <Link to="/user/profile">
-                                                <Avatar src="https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes.png" />
-                                            </Link>
+                                            <>
+                                                <Link to="/user/profile">
+                                                    <Avatar src={getImageUrl(user.avatar) || 'https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes.png'} />
+                                                </Link>
+                                                <LogoutButton variant="icon" />
+                                            </>
                                         )}
                                         <NotificationBell notifications={mockNotifications} />
                                     </Box>

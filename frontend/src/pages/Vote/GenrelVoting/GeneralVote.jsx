@@ -15,7 +15,7 @@ import {
 import InputFeild from "@/components/common/InputFeild/InputFeild";
 import Loading from "@/components/common/loading";
 import MainButton from "@/components/common/MainButton/MainButton";
-import Toastify from "@/components/common/Toastify";
+import { useToast } from "@/hooks/useToast.jsx";
 import { useTokenWriteFunction } from "@/connectivityAssets/hooks";
 import { useGenrelContext } from "@/context/GenrelContext";
 import { useAppKit } from "@reown/appkit/react";
@@ -47,7 +47,7 @@ export default function GeneralVotingComponent() {
 
     const [title, setTitle] = useState({ text: "", error: "" });
     const [isLoading, setIsLoading] = useState(false);
-    const [alertState, setAlertState] = useState({ open: false, message: "", severity: undefined });
+    const { showToast } = useToast();
 
     const onTextChange = (e) => {
         const text = e.target.value;
@@ -57,9 +57,6 @@ export default function GeneralVotingComponent() {
         });
     };
 
-    const showToast = (msg, type) => {
-        setAlertState({ open: true, message: msg, severity: type });
-    };
 
     const vote = async () => {
         if (title.text.trim().length < 2) {
@@ -80,7 +77,6 @@ export default function GeneralVotingComponent() {
     return (
         <>
             <Loading isLoading={isLoading} />
-            <Toastify setAlertState={setAlertState} alertState={alertState} />
             <Container maxWidth="md">
                 <VoteContainer>
                     <Fade in timeout={300}>

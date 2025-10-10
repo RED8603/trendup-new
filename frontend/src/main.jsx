@@ -21,20 +21,24 @@ const projectId = "a65bc026af82f217afeb8f7543a83113";
 // Set the networks
 const networks = [mainnet];
 
-//  Create Wagmi Adapter
+// Create Wagmi Adapter - Removed ssr flag for Vite (client-side only)
 const wagmiAdapter = new WagmiAdapter({
     networks,
     projectId,
-    ssr: true,
-    
 });
 
 createAppKit({
     adapters: [wagmiAdapter],
     networks,
     projectId,
+    metadata: {
+        name: 'TrendUp',
+        description: 'TrendUp - Social Web3 Platform',
+        url: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173',
+        icons: ['https://avatars.githubusercontent.com/u/37784886']
+    },
     features: {
-        analytics: true, // Optional - defaults to your Cloud configur ation
+        analytics: true,
     },
 });
 

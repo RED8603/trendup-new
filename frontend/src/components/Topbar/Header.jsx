@@ -32,6 +32,11 @@ import { mockNotifications } from "@/constants";
 import { useSelector } from "react-redux";
 import { ThemeToggle } from "../common/ToggelTheme/ToggelTheme";
 import NotificationBell from "../common/Notifictions/Notifications";
+import LogoutButton from "../common/LogoutButton/LogoutButton";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast.jsx";
+import { getImageUrl } from "@/config/env";
 
 // Drawer route configuration
 const drawerLinks = [
@@ -44,10 +49,18 @@ const drawerLinks = [
 export default function HeaderDrawer() {
     const theme = useTheme();
     const { address } = useGenrelContext();
-     const { user } = useSelector((state) => state.user);
+    const { user } = useSelector((state) => state.user);
     const [isOpen, setIsOpen] = useState(false);
+    const { logout } = useAuth();
+    const { showToast } = useToast();
 
     const toggleDrawer = (open) => () => setIsOpen(open);
+
+    const handleLogout = () => {
+        logout();
+        showToast('Logged out successfully', 'success');
+        setIsOpen(false);
+    };
 
     //   const handleSearch = (term) => {
     //     console.log("Search:", term);
@@ -123,6 +136,34 @@ export default function HeaderDrawer() {
                                     />
                                 </ListItemButton>
                             ))}
+                            
+                            {user && (
+                                <>
+                                    <Divider sx={{ my: 2 }} />
+                                    <ListItemButton
+                                        onClick={handleLogout}
+                                        sx={{
+                                            borderRadius: 2,
+                                            px: 2,
+                                            color: theme.palette.text.primary,
+                                            "&:hover": {
+                                                background: theme.palette.action.hover,
+                                            },
+                                        }}
+                                    >
+                                        <ListItemIcon>
+                                            <LogoutIcon fontSize="medium" sx={{ color: theme.palette.error.main }} />
+                                        </ListItemIcon>
+                                        <ListItemText
+                                            primary="Logout"
+                                            primaryTypographyProps={{
+                                                fontWeight: 500,
+                                                fontSize: 16,
+                                            }}
+                                        />
+                                    </ListItemButton>
+                                </>
+                            )}
                         </List>
 
                         {/* Wallet Button */}
@@ -153,9 +194,12 @@ export default function HeaderDrawer() {
                 <ThemeToggle />
 
                 {user && (
-                    <Link to="/user/profile">
-                        <Avatar src="https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes.png" />
-                    </Link>
+                    <>
+                        <Link to="/user/profile">
+                            <Avatar src={getImageUrl(user.avatar) || 'https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes.png'} />
+                        </Link>
+                        <LogoutButton variant="icon" />
+                    </>
                 )}
                 <NotificationBell notifications={mockNotifications} />
             </Box>

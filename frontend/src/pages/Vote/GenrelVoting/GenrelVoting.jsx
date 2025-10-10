@@ -1,7 +1,7 @@
 import ButtonMain from "@/components/common/ButtonMain";
 import InputFeild from "@/components/common/InputFeild/InputFeild";
 import Loading from "@/components/common/loading";
-import Toastify from "@/components/common/Toastify";
+import { useToast } from "@/hooks/useToast.jsx";
 import {  useTokenWriteFunction } from "@/connectivityAssets/hooks";
 import { useGenrelContext } from "@/context/GenrelContext";
 import { Avatar, AvatarGroup, Box, Container, Stack, Typography } from "@mui/material";
@@ -28,24 +28,12 @@ const GenrelVoting = () => {
 
     const [title, setTitle] = useState({ text: "", error: "" });
     const [isLoading, setIsLoading] = useState(false);
-
-    const [alertState, setAlertState] = useState({
-        open: false,
-        message: "",
-        severity: undefined,
-    });
+    const { showToast } = useToast();
 
     const onTextChange = (e) => {
         const text = e.target.value?.trim();
 
         setTitle((prev) => ({ ...prev, text: text, error: text?.length < 2 ? "Minimum two chrachters allowed" : "" }));
-    };
-    const showToast = (msg, type) => {
-        return setAlertState({
-            open: true,
-            message: msg,
-            severity: type,
-        });
     };
 
     const vote = async () => {
@@ -74,7 +62,6 @@ const GenrelVoting = () => {
     return (
         <>
             <Loading isLoading={isLoading} />
-            <Toastify setAlertState={setAlertState} alertState={alertState} />
             <Container maxWidth="sm">
                 <Box
                     sx={(theme) => ({

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Box, Typography, Stack, Container, useTheme, LinearProgress, Divider, Fade } from "@mui/material";
 import Loading from "@/components/common/loading";
 import MainButton from "@/components/common/MainButton/MainButton";
-import Toastify from "@/components/common/Toastify";
+import { useToast } from "@/hooks/useToast.jsx";
 import { useTokenWriteFunction } from "@/connectivityAssets/hooks";
 import { useGenrelContext } from "@/context/GenrelContext";
 import { useAppKit } from "@reown/appkit/react";
@@ -16,11 +16,7 @@ export default function HodleVoting() {
 
     const [title, _setTitle] = useState({ text: "", error: "" });
     const [isLoading, setIsLoading] = useState(false);
-    const [alertState, setAlertState] = useState({ open: false, message: "", severity: undefined });
-
-    const showToast = (msg, type) => {
-        setAlertState({ open: true, message: msg, severity: type });
-    };
+    const { showToast } = useToast();
 
     const vote = async () => {
         if (title.text.trim().length < 2) {
@@ -41,7 +37,6 @@ export default function HodleVoting() {
     return (
         <>
             <Loading isLoading={isLoading} />
-            <Toastify setAlertState={setAlertState} alertState={alertState} />
             <Container maxWidth="md">
                 <VoteContainer>
                     <Fade in timeout={300}>

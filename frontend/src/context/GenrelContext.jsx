@@ -1,35 +1,42 @@
-import React, { createContext, useState, useContext, useMemo } from "react";
+import React, { createContext, useState, useContext, useMemo, useCallback } from "react";
 import { useAccount, useWalletClient } from "wagmi";
 
 const GenrelContext = createContext();
+
 export const ConfigProvider = ({ children }) => {
     const [isDarkMode, setIsDarkMode] = useState(true);
 
-    const { address } = useAccount();
+    // Get wallet data from wagmi
+    const { address, isConnected } = useAccount();
     const { data: signer } = useWalletClient();
 
-    console.log(address , signer);
-    
-
-    // Toggle theme function
-    const toggleTheme = () => {
+    // Toggle theme function - memoized to prevent re-creation
+    const toggleTheme = useCallback(() => {
         setIsDarkMode((prevMode) => !prevMode);
-    };
+    }, []);
 
-    // Memoized value to avoid unnecessary re-renders
+    // Memoized value - Only depend on stable values, not signer object
     const value = useMemo(
         () => ({
             isDarkMode,
             toggleTheme,
             address,
-            signer
+            signer,
+            isConnected,
         }),
-        [isDarkMode ,address , signer]
+        [isDarkMode, toggleTheme, address, isConnected]
+        // Removed 'signer' from dependencies to prevent infinite re-renders
     );
 
     return <GenrelContext.Provider value={value}>{children}</GenrelContext.Provider>;
 };
 
 // Custom hook to use the ConfigContext
-export const useGenrelContext = () => useContext(GenrelContext);
+export const useGenrelContext = () => {
+    const context = useContext(GenrelContext);
+    if (!context) {
+        throw new Error('useGenrelContext must be used within ConfigProvider');
+    }
+    return context;
+};
  
