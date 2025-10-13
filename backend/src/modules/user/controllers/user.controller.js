@@ -1,4 +1,5 @@
 const userService = require('../services/user.service');
+const s3Service = require('../../../core/services/s3.service');
 const { sendSuccessResponse } = require('../../../core/utils/response');
 const ErrorHandler = require('../../../core/errors/ErrorHandler');
 
@@ -32,8 +33,22 @@ class UserController {
       return sendSuccessResponse(res, { message: 'No file uploaded' }, 'No file uploaded', 400);
     }
 
-    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
-    const result = await userService.updateAvatar(req.user._id, avatarUrl);
+    // Upload to S3
+    const filename = s3Service.generateFilename(req.user._id, req.file.originalname, 'avatar');
+    const uploadResult = await s3Service.uploadFile(
+      req.file.buffer,
+      'avatars',
+      filename,
+      req.file.mimetype
+    );
+
+    // Delete old avatar from S3 if exists
+    if (req.user.avatar && req.user.avatar.includes('amazonaws.com')) {
+      await s3Service.deleteFile(req.user.avatar);
+    }
+
+    // Update user with S3 URL
+    const result = await userService.updateAvatar(req.user._id, uploadResult.url);
     
     sendSuccessResponse(res, result, result.message);
   }
@@ -43,8 +58,22 @@ class UserController {
       return sendSuccessResponse(res, { message: 'No file uploaded' }, 'No file uploaded', 400);
     }
 
-    const coverImageUrl = `/uploads/covers/${req.file.filename}`;
-    const result = await userService.updateCoverImage(req.user._id, coverImageUrl);
+    // Upload to S3
+    const filename = s3Service.generateFilename(req.user._id, req.file.originalname, 'cover');
+    const uploadResult = await s3Service.uploadFile(
+      req.file.buffer,
+      'covers',
+      filename,
+      req.file.mimetype
+    );
+
+    // Delete old cover from S3 if exists
+    if (req.user.coverImage && req.user.coverImage.includes('amazonaws.com')) {
+      await s3Service.deleteFile(req.user.coverImage);
+    }
+
+    // Update user with S3 URL
+    const result = await userService.updateCoverImage(req.user._id, uploadResult.url);
     
     sendSuccessResponse(res, result, result.message);
   }

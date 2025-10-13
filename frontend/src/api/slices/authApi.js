@@ -23,8 +23,7 @@ export const authApi = baseApi.injectEndpoints({
                 url: '/auth/register',
                 method: 'POST',
                 body: data
-            }),
-            invalidatesTags: ['Auth']
+            })
         }),
 
         login: builder.mutation({
@@ -32,8 +31,7 @@ export const authApi = baseApi.injectEndpoints({
                 url: '/auth/login',
                 method: 'POST',
                 body: credentials
-            }),
-            invalidatesTags: ['Auth']
+            })
         }),
 
         getProfile: builder.query({
@@ -82,8 +80,7 @@ export const authApi = baseApi.injectEndpoints({
                 url: '/auth/wallet/verify',
                 method: 'POST',
                 body: data
-            }),
-            invalidatesTags: ['Auth']
+            })
         }),
     })
 });

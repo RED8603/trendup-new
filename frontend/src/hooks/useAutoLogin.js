@@ -12,6 +12,7 @@ export const useAutoLogin = () => {
         dispatch(initAuth());
         
         const { accessToken } = authUtils.getTokens();
+        
         if (accessToken && !authUtils.isAccessTokenExpired()) {
             setShouldFetchProfile(true);
         } else {
@@ -35,7 +36,7 @@ export const useAutoLogin = () => {
         }
         
         if (isError) {
-            authUtils.clearTokens();
+            // Don't clear tokens here - baseQueryWithReauth already handles 401s and token refresh
             dispatch(setLoading(false));
         }
     }, [data, isLoading, isError, dispatch]);

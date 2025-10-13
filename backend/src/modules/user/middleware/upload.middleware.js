@@ -1,42 +1,8 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const { BadRequestError } = require('../../../core/errors/AppError');
 
-// Create uploads directories if they don't exist
-const uploadsDir = path.join(__dirname, '../../../uploads');
-const avatarsDir = path.join(uploadsDir, 'avatars');
-const coversDir = path.join(uploadsDir, 'covers');
-
-[uploadsDir, avatarsDir, coversDir].forEach(dir => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-});
-
-// Storage configuration for avatars
-const avatarStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, avatarsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    const ext = path.extname(file.originalname);
-    cb(null, `avatar-${req.user._id}-${uniqueSuffix}${ext}`);
-  }
-});
-
-// Storage configuration for cover images
-const coverStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, coversDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    const ext = path.extname(file.originalname);
-    cb(null, `cover-${req.user._id}-${uniqueSuffix}${ext}`);
-  }
-});
+// Use memory storage for S3 uploads
+const storage = multer.memoryStorage();
 
 // File filter - only images
 const imageFilter = (req, file, cb) => {
@@ -51,7 +17,7 @@ const imageFilter = (req, file, cb) => {
 
 // Avatar upload middleware
 const uploadAvatar = multer({
-  storage: avatarStorage,
+  storage: storage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
   },
@@ -60,7 +26,7 @@ const uploadAvatar = multer({
 
 // Cover image upload middleware
 const uploadCover = multer({
-  storage: coverStorage,
+  storage: storage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
   },
