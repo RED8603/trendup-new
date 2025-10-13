@@ -8,12 +8,14 @@ import {
     useVerifyEmailMutation 
 } from "@/api/slices/authApi";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
 
 const steps = ['Verify Email', 'Enter Code', 'Complete Registration'];
 
 const RegistrationStepper = () => {
     const theme = useTheme();
     const { register, loading: authLoading } = useAuth();
+    const { showToast } = useToast();
     
     const [activeStep, setActiveStep] = useState(0);
     const [email, setEmail] = useState("");
@@ -25,7 +27,6 @@ const RegistrationStepper = () => {
         confirmPassword: "",
     });
     const [errors, setErrors] = useState({});
-    const [apiError, setApiError] = useState("");
 
     const [requestVerification, { isLoading: requestingVerification }] = useRequestVerificationMutation();
     const [verifyEmail, { isLoading: verifyingEmail }] = useVerifyEmailMutation();
@@ -48,32 +49,34 @@ const RegistrationStepper = () => {
     const handleStep1Submit = async () => {
         if (!validateEmail(email)) {
             setErrors({ email: "Please enter a valid email address" });
+            showToast("Please enter a valid email address", "error");
             return;
         }
 
         try {
-            setApiError("");
             setErrors({});
             await requestVerification({ email }).unwrap();
             setActiveStep(1);
+            showToast("Verification code sent to your email", "success");
         } catch (error) {
-            setApiError(error.data?.message || "Failed to send verification code. Please try again.");
+            showToast(error.data?.message || "Failed to send verification code. Please try again.", "error");
         }
     };
 
     const handleStep2Submit = async () => {
         if (code.length !== 6) {
             setErrors({ code: "Please enter the 6-digit code" });
+            showToast("Please enter the 6-digit code", "error");
             return;
         }
 
         try {
-            setApiError("");
             setErrors({});
             await verifyEmail({ email, code }).unwrap();
             setActiveStep(2);
+            showToast("Email verified successfully", "success");
         } catch (error) {
-            setApiError(error.data?.message || "Invalid verification code. Please try again.");
+            showToast(error.data?.message || "Invalid verification code. Please try again.", "error");
         }
     };
 
@@ -99,11 +102,12 @@ const RegistrationStepper = () => {
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
+            const firstError = Object.values(newErrors)[0];
+            showToast(firstError, "error");
             return;
         }
 
         try {
-            setApiError("");
             setErrors({});
             await register({
                 email,
@@ -112,8 +116,9 @@ const RegistrationStepper = () => {
                 password: formData.password,
                 passwordConfirm: formData.confirmPassword,
             });
+            showToast("Account created successfully! Welcome to TrendUp", "success");
         } catch (error) {
-            setApiError(error.data?.message || "Registration failed. Please try again.");
+            showToast(error.data?.message || "Registration failed. Please try again.", "error");
         }
     };
 
@@ -135,19 +140,6 @@ const RegistrationStepper = () => {
                     </Step>
                 ))}
             </Stepper>
-
-            {apiError && (
-                <Box sx={{ 
-                    bgcolor: 'error.main', 
-                    color: 'white', 
-                    p: 2, 
-                    borderRadius: 1, 
-                    mb: 2,
-                    textAlign: 'center'
-                }}>
-                    <Typography variant="body2">{apiError}</Typography>
-                </Box>
-            )}
 
             {activeStep === 0 && (
                 <Box>

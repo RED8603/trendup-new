@@ -23,7 +23,11 @@ const connectRedis = async () => {
     });
 
     redisClient.on('error', (err) => {
-      logger.error('Redis client error:', err);
+      logger.error('Redis client error:', {
+        error: err.message,
+        stack: err.stack,
+        name: err.name
+      });
     });
 
     redisClient.on('close', () => {
@@ -37,7 +41,11 @@ const connectRedis = async () => {
     await redisClient.connect();
     
   } catch (error) {
-    logger.error('Redis connection failed:', error);
+    logger.error('Redis connection failed:', {
+      error: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     process.exit(1);
   }
 };
@@ -56,7 +64,10 @@ const disconnectRedis = async () => {
       logger.info('Redis client disconnected');
     }
   } catch (error) {
-    logger.error('Error disconnecting Redis:', error);
+    logger.error('Error disconnecting Redis:', {
+      error: error.message,
+      stack: error.stack
+    });
   }
 };
 

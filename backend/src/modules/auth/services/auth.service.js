@@ -58,7 +58,10 @@ class AuthService {
       try {
         await emailService.sendWelcomeEmail(email, name);
       } catch (error) {
-        logger.error(`Failed to send welcome email to ${email}:`, error);
+        logger.error(`Failed to send welcome email to ${email}:`, {
+          error: error.message,
+          stack: error.stack
+        });
       }
 
       return {
@@ -67,7 +70,11 @@ class AuthService {
         refreshToken,
       };
     } catch (error) {
-      logger.error('Registration error:', error);
+      logger.error('Registration error:', {
+        error: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       throw error;
     }
   }

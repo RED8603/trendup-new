@@ -52,7 +52,11 @@ class WalletService {
     try {
       recoveredAddress = ethers.verifyMessage(fullMessage, signature);
     } catch (error) {
-      logger.error('Signature verification failed:', error);
+      logger.error('Signature verification failed:', {
+        error: error.message,
+        stack: error.stack,
+        walletAddress
+      });
       throw new AuthenticationError('Invalid signature');
     }
 

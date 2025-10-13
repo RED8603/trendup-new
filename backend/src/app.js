@@ -61,6 +61,9 @@ app.use('/api/v1/auth', authRoutes);
 const userRoutes = require('./modules/user/routes/user.routes');
 app.use('/api/v1/users', userRoutes);
 
+const { votingRoutes } = require('./modules/voting');
+app.use('/api/v1/voting', votingRoutes);
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({

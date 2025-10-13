@@ -33,7 +33,10 @@ class PasswordResetService {
       await emailService.sendPasswordResetEmail(email, token, user.name);
       logger.info(`Password reset email sent to ${email}`);
     } catch (error) {
-      logger.error(`Failed to send password reset email to ${email}:`, error);
+      logger.error(`Failed to send password reset email to ${email}:`, {
+        error: error.message,
+        stack: error.stack
+      });
       logger.info(`Password reset token for ${email}: ${token}`);
     }
 

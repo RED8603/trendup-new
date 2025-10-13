@@ -30,7 +30,10 @@ class VerificationService {
       await emailService.sendVerificationEmail(email, code);
       logger.info(`Verification code sent to ${email}`);
     } catch (error) {
-      logger.error(`Failed to send verification email to ${email}:`, error);
+      logger.error(`Failed to send verification email to ${email}:`, {
+        error: error.message,
+        stack: error.stack
+      });
       logger.info(`Verification code for ${email}: ${code}`);
     }
 

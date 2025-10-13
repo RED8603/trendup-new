@@ -1,31 +1,65 @@
-import { useState } from "react";
-import { Box, Typography, Stack, Container, useTheme, LinearProgress, Divider, Fade } from "@mui/material";
+import { useState, useEffect } from "react";
+import { Box, Typography, Stack, Container, useTheme, Divider, Fade, Chip } from "@mui/material";
 import Loading from "@/components/common/loading";
 import MainButton from "@/components/common/MainButton/MainButton";
 import { useToast } from "@/hooks/useToast.jsx";
-import { useTokenWriteFunction } from "@/connectivityAssets/hooks";
+import { 
+    useTokenWriteFunction, 
+    useTokenBalance, 
+    useVoteCooldown,
+    useHodlActivationTimestamp,
+    useIsSaleRestricted 
+} from "@/connectivityAssets/hooks";
 import { useGenrelContext } from "@/context/GenrelContext";
 import { useAppKit } from "@reown/appkit/react";
 import VoteContainer from "@/components/common/VoteContainer/VoteContainer";
+import { formatUnits } from "viem";
 
-export default function HodleVoting() {
+export default function HodlVoting() {
     const theme = useTheme();
     const { address } = useGenrelContext();
     const { open } = useAppKit();
     const { handleWriteContract } = useTokenWriteFunction();
-
-    const [title, _setTitle] = useState({ text: "", error: "" });
+    const { balance } = useTokenBalance(address);
+    const { expiryTimestamp } = useVoteCooldown(address);
+    const { hodlTimestamp } = useHodlActivationTimestamp();
+    const { isSaleRestricted } = useIsSaleRestricted();
+    
     const [isLoading, setIsLoading] = useState(false);
+    const [cooldownRemaining, setCooldownRemaining] = useState(0);
     const { showToast } = useToast();
 
-    const vote = async () => {
-        if (title.text.trim().length < 2) {
-            showToast("Minimum two characters allowed", "error");
+    // Calculate cooldown
+    useEffect(() => {
+        if (!expiryTimestamp) return;
+        
+        const interval = setInterval(() => {
+            const now = Math.floor(Date.now() / 1000);
+            const remaining = Number(expiryTimestamp) - now;
+            setCooldownRemaining(remaining > 0 ? remaining : 0);
+        }, 1000);
+        
+        return () => clearInterval(interval);
+    }, [expiryTimestamp]);
+
+    const formatCooldown = (seconds) => {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        return `${days}d ${hours}h ${mins}m`;
+    };
+
+    const voteForHODL = async () => {
+        if (cooldownRemaining > 0) {
+            showToast(`Please wait ${formatCooldown(cooldownRemaining)} before voting again`, "error");
             return;
         }
+        
         try {
             setIsLoading(true);
-            await handleWriteContract("createDemocraticVote", [title.text], address);
+            const receipt = await handleWriteContract("voteForHODL", [], address);
+            
+            showToast("Successfully voted for HODL!", "success");
         } catch (error) {
             const errMsg = error?.data?.message || error?.reason || error?.message || "Voting failed";
             showToast(errMsg, "error");
@@ -34,6 +68,10 @@ export default function HodleVoting() {
         }
     };
 
+    const hodlActive = hodlTimestamp && Number(hodlTimestamp) > 0;
+    const daysUntilActivation = hodlTimestamp ? 
+        Math.ceil((Number(hodlTimestamp) - Date.now() / 1000) / 86400) : 0;
+
     return (
         <>
             <Loading isLoading={isLoading} />
@@ -41,57 +79,55 @@ export default function HodleVoting() {
                 <VoteContainer>
                     <Fade in timeout={300}>
                         <Stack spacing={2}>
-                            <Typography variant="h4" fontWeight={600} color="text.primary">
-                                🏦 HODL Voting
-                            </Typography>
+                            <Stack direction="row" alignItems="center" justifyContent="space-between">
+                                <Typography variant="h4" fontWeight={600} color="text.primary">
+                                    🏦 HODL Voting
+                                </Typography>
+                                {isSaleRestricted && (
+                                    <Chip 
+                                        label="Restrictions Active" 
+                                        color="success" 
+                                        size="small" 
+                                    />
+                                )}
+                            </Stack>
 
                             <Typography variant="body1" color="text.secondary" fontWeight={500}>
-                                Voting ends in 6 days
+                                {hodlActive ? 
+                                    `HODL mode activates in ${daysUntilActivation} days` :
+                                    "Vote to activate HODL mode and protect token holders"
+                                }
                             </Typography>
 
                             <Divider sx={{ my: 2, borderColor: theme.palette.divider }} />
 
                             <Typography variant="h6" fontWeight={500} color="text.secondary">
-                                Reduce the maximum sell limit to 10% of holdings.
+                                Reduce the maximum sell limit to protect long-term holders
                             </Typography>
 
-                            <Stack spacing={2}>
-                                <Box>
-                                    <Stack direction="row" justifyContent="space-between">
-                                        <Typography variant="body1" fontWeight={600} color="text.primary">
-                                            Yes
+                            {address && (
+                                <Box sx={{ 
+                                    p: 2, 
+                                    borderRadius: 2, 
+                                    bgcolor: theme.palette.background.paper,
+                                    border: `1px solid ${theme.palette.divider}`
+                                }}>
+                                    <Stack spacing={1}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Your Balance: {balance ? formatUnits(balance, 18) : '0'} TUP
                                         </Typography>
-                                        <Typography variant="body1" fontWeight={600} color="text.primary">
-                                            No
-                                        </Typography>
-                                    </Stack>
-                                    <LinearProgress
-                                        variant="determinate"
-                                        value={40}
-                                        sx={{
-                                            height: 10,
-                                            borderRadius: 5,
-                                            backgroundColor: theme.palette.background.default,
-                                            "& .MuiLinearProgress-bar": {
-                                                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
-                                                boxShadow: `0 0 8px ${theme.palette.primary.main}`,
-                                            },
-                                        }}
-                                    />
-                                    <Stack direction="row" justifyContent="space-between" mt={1}>
-                                        <Typography variant="body2" fontWeight={600} color="text.secondary">
-                                            40%
-                                        </Typography>
-                                        <Typography variant="body2" fontWeight={600} color="text.secondary">
-                                            60%
-                                        </Typography>
+                                        {cooldownRemaining > 0 && (
+                                            <Typography variant="body2" color="warning.main">
+                                                Cooldown: {formatCooldown(cooldownRemaining)}
+                                            </Typography>
+                                        )}
                                     </Stack>
                                 </Box>
-                            </Stack>
+                            )}
 
                             <Stack spacing={1} mt={2}>
                                 <Typography variant="body2" color="text.secondary" textAlign="center">
-                                    Accepted Currencies: ETH, Trendup
+                                    Vote with your TUP tokens to activate HODL protection
                                 </Typography>
                                 <Typography
                                     variant="body2"
@@ -99,13 +135,14 @@ export default function HodleVoting() {
                                     textAlign="center"
                                     sx={{ wordBreak: "break-word" }}
                                 >
-                                    Token address TUP: 0x52c06a62d9495bee1dadf2ba0f5c0588a4f3c14c
+                                    Token address: 0x52c06a62d9495bee1dadf2ba0f5c0588a4f3c14c
                                 </Typography>
                             </Stack>
 
                             <MainButton
-                                onClick={address ? vote : open}
+                                onClick={address ? voteForHODL : open}
                                 fullWidth
+                                disabled={address && cooldownRemaining > 0}
                                 sx={{
                                     mt: 3,
                                     fontWeight: 600,
@@ -115,7 +152,11 @@ export default function HodleVoting() {
                                     },
                                 }}
                             >
-                                {address ? "Submit Vote" : "Connect Wallet"}
+                                {address ? 
+                                    (cooldownRemaining > 0 ? 
+                                        `Wait ${formatCooldown(cooldownRemaining)}` : 
+                                        "Vote for HODL") : 
+                                    "Connect Wallet"}
                             </MainButton>
                         </Stack>
                     </Fade>

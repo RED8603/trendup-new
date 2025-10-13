@@ -8,11 +8,11 @@ class ErrorHandler {
     error.message = err.message;
 
     // Log error
-    logger.error({
+    logger.error(`${req.method} ${req.originalUrl} - ${err.message}`, {
       error: err.message,
       stack: err.stack,
-      url: req.originalUrl,
-      method: req.method,
+      statusCode: err.statusCode || 500,
+      name: err.name,
       ip: req.ip,
       userAgent: req.get('User-Agent'),
       userId: req.user?.id,
@@ -90,14 +90,25 @@ class ErrorHandler {
 
   static handleUncaughtException() {
     process.on('uncaughtException', (err) => {
-      logger.error('UNCAUGHT EXCEPTION! Shutting down...', err);
+      logger.error('UNCAUGHT EXCEPTION! Shutting down...', {
+        error: err.message,
+        stack: err.stack,
+        name: err.name,
+        code: err.code
+      });
       process.exit(1);
     });
   }
 
   static handleUnhandledRejection() {
     process.on('unhandledRejection', (err) => {
-      logger.error('UNHANDLED REJECTION! Shutting down...', err);
+      logger.error('UNHANDLED REJECTION! Shutting down...', {
+        error: err?.message || String(err),
+        stack: err?.stack,
+        name: err?.name,
+        code: err?.code,
+        reason: err?.reason
+      });
       process.exit(1);
     });
   }
