@@ -12,7 +12,11 @@ const connectDatabase = async () => {
     
     // Handle connection events
     mongoose.connection.on('error', (err) => {
-      logger.error('MongoDB connection error:', err);
+      logger.error('MongoDB connection error:', {
+        error: err.message,
+        stack: err.stack,
+        name: err.name
+      });
     });
 
     mongoose.connection.on('disconnected', () => {
@@ -31,7 +35,11 @@ const connectDatabase = async () => {
     });
 
   } catch (error) {
-    logger.error('Database connection failed:', error);
+    logger.error('Database connection failed:', {
+      error: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     process.exit(1);
   }
 };
@@ -41,7 +49,10 @@ const disconnectDatabase = async () => {
     await mongoose.connection.close();
     logger.info('Database disconnected');
   } catch (error) {
-    logger.error('Error disconnecting database:', error);
+    logger.error('Error disconnecting database:', {
+      error: error.message,
+      stack: error.stack
+    });
   }
 };
 

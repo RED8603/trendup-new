@@ -7,10 +7,12 @@ import { ReplyIcon, Visibility, VisibilityOff } from "@/assets/icons";
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useResetPasswordMutation, useValidateResetTokenQuery } from "@/api/slices/authApi";
+import { useToast } from "@/hooks/useToast";
 
 const ResetPassword = () => {
     const navigate = useNavigate();
     const theme = useTheme();
+    const { showToast } = useToast();
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
 
@@ -18,7 +20,6 @@ const ResetPassword = () => {
     const [confirmPassword, setConfirmPassword] = useState({ value: "", error: "" });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [apiError, setApiError] = useState("");
     const [resetSuccess, setResetSuccess] = useState(false);
 
     // Validate token on mount
@@ -30,9 +31,9 @@ const ResetPassword = () => {
 
     useEffect(() => {
         if (tokenError) {
-            setApiError(tokenError.data?.message || "Invalid or expired reset link");
+            showToast(tokenError.data?.message || "Invalid or expired reset link", "error");
         }
-    }, [tokenError]);
+    }, [tokenError, showToast]);
 
     const validatePassword = (pwd) => {
         const minLength = pwd.length >= 8;
@@ -53,14 +54,12 @@ const ResetPassword = () => {
         const pwd = e.target.value;
         const error = validatePassword(pwd);
         setPassword({ value: pwd, error });
-        if (apiError) setApiError("");
     };
 
     const handleConfirmPasswordChange = (e) => {
         const confirmPwd = e.target.value;
         const error = confirmPwd !== password.value ? "Passwords do not match" : "";
         setConfirmPassword({ value: confirmPwd, error });
-        if (apiError) setApiError("");
     };
 
     const handleSubmit = async (e) => {
@@ -71,29 +70,31 @@ const ResetPassword = () => {
         const pwdError = validatePassword(password.value);
         if (pwdError) {
             setPassword((prev) => ({ ...prev, error: pwdError }));
+            showToast(pwdError, "error");
             return;
         }
 
         if (password.value !== confirmPassword.value) {
             setConfirmPassword((prev) => ({ ...prev, error: "Passwords do not match" }));
+            showToast("Passwords do not match", "error");
             return;
         }
 
         try {
-            setApiError("");
             await resetPassword({
                 token,
                 password: password.value,
                 passwordConfirm: confirmPassword.value,
             }).unwrap();
             setResetSuccess(true);
+            showToast("Password reset successful! Redirecting to login...", "success", 3000);
             
             // Redirect to login after 3 seconds
             setTimeout(() => {
                 navigate("/login");
             }, 3000);
         } catch (error) {
-            setApiError(error.data?.message || "Failed to reset password. Please try again.");
+            showToast(error.data?.message || "Failed to reset password. Please try again.", "error");
         }
     };
 
@@ -181,21 +182,6 @@ const ResetPassword = () => {
                             ? "Your password has been reset. Redirecting to login..."
                             : "Enter your new password below."}
                     </Typography>
-
-                    {apiError && (
-                        <Box
-                            sx={{
-                                bgcolor: "error.main",
-                                color: "white",
-                                p: 2,
-                                borderRadius: 1,
-                                mb: 2,
-                                textAlign: "center",
-                            }}
-                        >
-                            <Typography variant="body2">{apiError}</Typography>
-                        </Box>
-                    )}
 
                     {resetSuccess ? (
                         <Stack direction="column" alignItems="center" justifyContent="center" spacing={2}>

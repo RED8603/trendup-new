@@ -7,14 +7,15 @@ import { ReplyIcon } from "@/assets/icons";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForgotPasswordMutation } from "@/api/slices/authApi";
+import { useToast } from "@/hooks/useToast";
 
 const ForgotPassword = () => {
     const navigate = useNavigate();
     const theme = useTheme();
+    const { showToast } = useToast();
 
     const [email, setEmail] = useState({ email: "", error: "" });
     const [isEmailSent, setIsEmailSent] = useState(false);
-    const [apiError, setApiError] = useState("");
 
     const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
@@ -26,7 +27,6 @@ const ForgotPassword = () => {
             email: _email,
             error: isValidEmail || _email === "" ? "" : "Invalid email address",
         }));
-        if (apiError) setApiError("");
     };
 
     const handleSubmit = async (e) => {
@@ -39,15 +39,16 @@ const ForgotPassword = () => {
                 ...prev,
                 error: "Please enter a valid email address",
             }));
+            showToast("Please enter a valid email address", "error");
             return;
         }
 
         try {
-            setApiError("");
             await forgotPassword({ email: email.email }).unwrap();
             setIsEmailSent(true);
+            showToast("Password reset link sent to your email", "success", 5000);
         } catch (error) {
-            setApiError(error.data?.message || "Failed to send reset email. Please try again.");
+            showToast(error.data?.message || "Failed to send reset email. Please try again.", "error");
         }
     };
 
@@ -116,19 +117,6 @@ const ForgotPassword = () => {
                             ? "We've sent a password reset link to your email address. Check your inbox (or Mailtrap if testing)."
                             : "Enter your email address and we'll send you a link to reset your password."}
                     </Typography>
-
-                    {apiError && (
-                        <Box sx={{ 
-                            bgcolor: 'error.main', 
-                            color: 'white', 
-                            p: 2, 
-                            borderRadius: 1, 
-                            mb: 2,
-                            textAlign: 'center'
-                        }}>
-                            <Typography variant="body2">{apiError}</Typography>
-                        </Box>
-                    )}
 
                     {!isEmailSent ? (
                         <form onSubmit={handleSubmit}>

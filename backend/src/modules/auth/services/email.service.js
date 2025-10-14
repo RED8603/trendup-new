@@ -22,7 +22,10 @@ class EmailService {
 
       logger.info('Email transporter initialized successfully');
     } catch (error) {
-      logger.error('Failed to initialize email transporter:', error);
+      logger.error('Failed to initialize email transporter:', {
+        error: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   }
@@ -33,7 +36,10 @@ class EmailService {
       logger.info('Email server connection verified');
       return true;
     } catch (error) {
-      logger.error('Email server connection failed:', error);
+      logger.error('Email server connection failed:', {
+        error: error.message,
+        stack: error.stack
+      });
       return false;
     }
   }
@@ -60,7 +66,11 @@ class EmailService {
         messageId: result.messageId,
       };
     } catch (error) {
-      logger.error(`Failed to send email to ${to}:`, error);
+      logger.error(`Failed to send email to ${to}:`, {
+        error: error.message,
+        stack: error.stack,
+        subject
+      });
       throw error;
     }
   }

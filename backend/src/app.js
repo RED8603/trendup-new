@@ -3,7 +3,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
-const path = require('path');
 
 const config = require('./config');
 const { logger } = require('./core/utils/logger');
@@ -30,18 +29,8 @@ app.use(morgan('combined', {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve static files (uploaded images) with CORS headers
-app.use('/uploads', (req, res, next) => {
-  const allowedOrigins = config.cors.origin;
-  const origin = req.headers.origin;
-  
-  if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
-  next();
-}, express.static(path.join(__dirname, 'uploads')));
+// Static file serving removed - using S3 for file storage
+// Images are now served directly from S3 bucket with public-read ACL
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -60,6 +49,9 @@ app.use('/api/v1/auth', authRoutes);
 
 const userRoutes = require('./modules/user/routes/user.routes');
 app.use('/api/v1/users', userRoutes);
+
+const { votingRoutes } = require('./modules/voting');
+app.use('/api/v1/voting', votingRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

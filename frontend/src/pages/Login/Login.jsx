@@ -11,19 +11,20 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useRequestWalletNonceMutation } from "@/api/slices/authApi";
 import { useSignMessage } from "wagmi";
+import { useToast } from "@/hooks/useToast";
 
 const Login = () => {
     const { open } = useAppKit();
     const { address } = useAppKitAccount();
     const theme = useTheme();
     const { login, loginWithWallet, loading } = useAuth();
+    const { showToast } = useToast();
 
     const [email, setEmail] = useState({ email: "", error: "" });
     const [password, setPassword] = useState({ password: "", error: "" });
     const [showPassword, setShowPassword] = useState(false);
     const [loginWithEmail, setLoginWithEmail] = useState(false);
     const [checked, setChecked] = useState(false);
-    const [apiError, setApiError] = useState("");
 
     const [requestWalletNonce] = useRequestWalletNonceMutation();
     const { signMessageAsync } = useSignMessage();
@@ -89,23 +90,23 @@ const Login = () => {
         if (loading) return;
 
         if (!email.email || email.error) {
-            setApiError("Please enter a valid email");
+            showToast("Please enter a valid email", "error");
             return;
         }
 
         if (!password.password || password.error) {
-            setApiError("Please enter a valid password");
+            showToast("Please enter a valid password", "error");
             return;
         }
 
         try {
-            setApiError("");
             await login({
                 email: email.email,
                 password: password.password,
             });
+            showToast("Login successful! Welcome back", "success");
         } catch (error) {
-            setApiError(error.data?.message || "Login failed. Please try again.");
+            showToast(error.data?.message || "Login failed. Please try again.", "error");
         }
     };
 
@@ -118,8 +119,6 @@ const Login = () => {
         }
 
         try {
-            setApiError("");
-            
             const nonceResult = await requestWalletNonce({
                 walletAddress: address
             }).unwrap();
@@ -130,14 +129,14 @@ const Login = () => {
             const signature = await signMessageAsync({ message });
 
             await loginWithWallet(address, signature, nonce);
+            showToast("Wallet login successful!", "success");
         } catch (error) {
-            setApiError(error.data?.message || "Wallet login failed. Please try again.");
+            showToast(error.data?.message || "Wallet login failed. Please try again.", "error");
         }
     };
 
     const handleSkip = () => {
         setLoginWithEmail(false);
-        setApiError("");
     };
 
     if (loading) return <Loading isLoading={true} />;
@@ -205,19 +204,6 @@ const Login = () => {
                         Login to continue
                     </Typography>
 
-                    {apiError && (
-                        <Box sx={{ 
-                            bgcolor: 'error.main', 
-                            color: 'white', 
-                            p: 2, 
-                            borderRadius: 1, 
-                            mt: 2,
-                            textAlign: 'center'
-                        }}>
-                            <Typography variant="body2">{apiError}</Typography>
-                        </Box>
-                    )}
-
                     {loginWithEmail ? (
                         <form onSubmit={handleEmailLogin}>
                             <InputFeild
@@ -267,7 +253,6 @@ const Login = () => {
                                 <MainButton
                                     sx={{ width: "230px" }}
                                     type="submit"
-                                    onClick={() => setLoginWithEmail(true)}
                                 >
                                     Login
                                 </MainButton>
