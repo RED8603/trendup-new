@@ -112,14 +112,14 @@ const config = {
 
   // CORS
   cors: {
-    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:5173'],
+    origin: true,
     credentials: true
   },
 
   // Socket.io
   socket: {
     cors: {
-      origin: process.env.SOCKET_CORS_ORIGIN ? process.env.SOCKET_CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:5173'],
+      origin: true,
       methods: ['GET', 'POST'],
       credentials: true
     }
