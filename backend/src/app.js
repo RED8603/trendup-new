@@ -53,6 +53,18 @@ app.use('/api/v1/users', userRoutes);
 const { votingRoutes } = require('./modules/voting');
 app.use('/api/v1/voting', votingRoutes);
 
+const { postRoutes, karmaRoutes, badgeRoutes, followRoutes, commentRoutes, categoryRoutes, hashtagRoutes, topicRoutes, feedRoutes, mediaRoutes } = require('./modules/social');
+app.use('/api/v1/social/posts', postRoutes);
+app.use('/api/v1/social/karma', karmaRoutes);
+app.use('/api/v1/social/badges', badgeRoutes);
+app.use('/api/v1/social/follow', followRoutes);
+app.use('/api/v1/social/comments', commentRoutes);
+app.use('/api/v1/social/categories', categoryRoutes);
+app.use('/api/v1/social/hashtags', hashtagRoutes);
+app.use('/api/v1/social/topics', topicRoutes);
+app.use('/api/v1/social/feed', feedRoutes);
+app.use('/api/v1/social/media', mediaRoutes);
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({

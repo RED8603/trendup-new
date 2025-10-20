@@ -1,14 +1,18 @@
 import React, { createContext, useState, useContext, useMemo, useCallback } from "react";
 import { useAccount, useWalletClient } from "wagmi";
+import { DISABLE_WEB3, MOCK_WALLET_ADDRESS } from "@/constants";
 
 const GenrelContext = createContext();
 
 export const ConfigProvider = ({ children }) => {
     const [isDarkMode, setIsDarkMode] = useState(true);
 
-    // Get wallet data from wagmi
-    const { address, isConnected } = useAccount();
+    // Get wallet data from wagmi (or use mock if Web3 disabled)
+    const { address: realAddress, isConnected: realIsConnected } = useAccount();
     const { data: signer } = useWalletClient();
+    
+    const address = DISABLE_WEB3 ? MOCK_WALLET_ADDRESS : realAddress;
+    const isConnected = DISABLE_WEB3 ? true : realIsConnected;
 
     // Toggle theme function - memoized to prevent re-creation
     const toggleTheme = useCallback(() => {

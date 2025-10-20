@@ -1,3 +1,66 @@
+// ==================== WEB3 CONFIGURATION ====================
+
+// Web3 Feature Toggle - Set to true to disable Web3 and use mock data
+export const DISABLE_WEB3 = import.meta.env.VITE_DISABLE_WEB3 === 'true' || false;
+
+// Mock wallet address for testing
+export const MOCK_WALLET_ADDRESS = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
+
+// Mock Web3 data for when Web3 is disabled
+export const MOCK_WEB3_DATA = {
+  // Token info
+  tokenBalance: '1000000000000000000000', // 1000 tokens (18 decimals)
+  tokenName: 'TrendUp',
+  tokenSymbol: 'TUP',
+  tokenDecimals: 18,
+  totalSupply: '100000000000000000000000000', // 100M tokens
+  
+  // Voting
+  democraticVotesCount: 3,
+  hodlVotingActive: false,
+  userVotingPower: '1000000000000000000000', // 1000 tokens
+  voteCooldown: 0, // No cooldown in mock
+  
+  // Democratic votes mock data
+  democraticVotes: [
+    {
+      id: 0,
+      title: 'Should we reduce transaction fees to 1%?',
+      totalVotes: 150,
+      votedYes: 95,
+      votedNo: 55,
+      expiryTimestamp: Math.floor(Date.now() / 1000) + 86400 * 5, // 5 days from now
+    },
+    {
+      id: 1,
+      title: 'Implement automatic liquidity provision?',
+      totalVotes: 89,
+      votedYes: 67,
+      votedNo: 22,
+      expiryTimestamp: Math.floor(Date.now() / 1000) + 86400 * 3, // 3 days from now
+    },
+    {
+      id: 2,
+      title: 'Enable token burning mechanism?',
+      totalVotes: 200,
+      votedYes: 120,
+      votedNo: 80,
+      expiryTimestamp: Math.floor(Date.now() / 1000) + 86400 * 7, // 7 days from now
+    },
+  ],
+  
+  // Fees
+  buyTeamFee: '3',
+  sellTeamFee: '3',
+  liquidityFee: '2',
+  
+  // HODL
+  hodlActivationTimestamp: 0,
+  isSaleRestricted: false,
+};
+
+// ==================== APP CONSTANTS ====================
+
 export const mockNotifications = [
     {
         id: 1,

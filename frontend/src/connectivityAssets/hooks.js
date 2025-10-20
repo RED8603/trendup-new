@@ -4,6 +4,7 @@ import { waitForTransactionReceipt } from "@wagmi/core";
 import tokenAbi from "./tokenAbi.json";
 import { tokenAddress } from "./environment";
 import { useReadContract, useWriteContract } from "wagmi";
+import { DISABLE_WEB3, MOCK_WEB3_DATA } from "@/constants";
 
 export const useTokenReadFunction = (functionName, args, address) => {
     const readContract = useReadContract({
@@ -33,6 +34,22 @@ export const useTokenWriteFunction = () => {
     const { writeContractAsync } = useWriteContract();
 
     const handleWriteContract = async (functionName, args, address) => {
+        // Mock mode - simulate transaction
+        if (DISABLE_WEB3) {
+            console.log('🔶 [MOCK WEB3] Would call:', functionName, 'with args:', args);
+            
+            // Simulate transaction delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Return mock receipt
+            return {
+                transactionHash: '0x' + Math.random().toString(16).substr(2, 64),
+                status: 'success',
+                blockNumber: Date.now()
+            };
+        }
+        
+        // Real blockchain transaction
         try {
             const { hash } = await writeContractAsync({
                 abi: tokenAbi,
@@ -59,9 +76,18 @@ export const useTokenBalance = (address) => {
         abi: tokenAbi,
         functionName: 'balanceOf',
         args: address ? [address] : undefined,
-        enabled: !!address,
-        watch: true, // Real-time updates
+        enabled: !!address && !DISABLE_WEB3,
+        watch: !DISABLE_WEB3,
     });
+    
+    // Return mock data if Web3 disabled
+    if (DISABLE_WEB3) {
+        return {
+            balance: BigInt(MOCK_WEB3_DATA.tokenBalance),
+            isLoading: false,
+            refetch: () => {}
+        };
+    }
     
     return { 
         balance: data || 0n, 
@@ -77,9 +103,16 @@ export const useVoteCooldown = (voterAddress) => {
         abi: tokenAbi,
         functionName: 'votersToVoteExpiry',
         args: voterAddress ? [voterAddress] : undefined,
-        enabled: !!voterAddress,
-        watch: true,
+        enabled: !!voterAddress && !DISABLE_WEB3,
+        watch: !DISABLE_WEB3,
     });
+    
+    if (DISABLE_WEB3) {
+        return {
+            expiryTimestamp: BigInt(MOCK_WEB3_DATA.voteCooldown),
+            refetch: () => {}
+        };
+    }
     
     return { 
         expiryTimestamp: data || 0n, 
@@ -93,8 +126,17 @@ export const useDemocraticVotesLength = () => {
         address: tokenAddress,
         abi: tokenAbi,
         functionName: 'getDemocraticVotesLength',
-        watch: true,
+        enabled: !DISABLE_WEB3,
+        watch: !DISABLE_WEB3,
     });
+    
+    if (DISABLE_WEB3) {
+        return {
+            votesCount: BigInt(MOCK_WEB3_DATA.democraticVotesCount),
+            isLoading: false,
+            refetch: () => {}
+        };
+    }
     
     return { 
         votesCount: data || 0n, 
@@ -110,9 +152,25 @@ export const useDemocraticVote = (voteId) => {
         abi: tokenAbi,
         functionName: 'democraticVotes',
         args: voteId !== undefined && voteId !== null ? [voteId] : undefined,
-        enabled: voteId !== undefined && voteId !== null,
-        watch: true,
+        enabled: voteId !== undefined && voteId !== null && !DISABLE_WEB3,
+        watch: !DISABLE_WEB3,
     });
+    
+    if (DISABLE_WEB3 && voteId !== undefined && voteId !== null) {
+        const mockVote = MOCK_WEB3_DATA.democraticVotes[voteId];
+        if (mockVote) {
+            return {
+                voteData: [
+                    mockVote.title,
+                    BigInt(mockVote.totalVotes),
+                    BigInt(mockVote.votedYes),
+                    BigInt(mockVote.expiryTimestamp)
+                ],
+                isLoading: false,
+                refetch: () => {}
+            };
+        }
+    }
     
     return { 
         voteData: data, 
@@ -128,8 +186,26 @@ export const useDemocraticVoteResult = (voteId) => {
         abi: tokenAbi,
         functionName: 'getDemocraticVoteResult',
         args: voteId !== undefined && voteId !== null ? [voteId] : undefined,
-        enabled: voteId !== undefined && voteId !== null,
+        enabled: voteId !== undefined && voteId !== null && !DISABLE_WEB3,
     });
+    
+    if (DISABLE_WEB3 && voteId !== undefined && voteId !== null) {
+        const mockVote = MOCK_WEB3_DATA.democraticVotes[voteId];
+        if (mockVote) {
+            const yesPercent = Math.round((mockVote.votedYes / mockVote.totalVotes) * 100);
+            const noPercent = 100 - yesPercent;
+            return {
+                result: [
+                    mockVote.votedYes > mockVote.votedNo ? 'Proposal Passing' : 'Proposal Failing',
+                    BigInt(yesPercent),
+                    BigInt(noPercent),
+                    BigInt(mockVote.totalVotes)
+                ],
+                isLoading: false,
+                refetch: () => {}
+            };
+        }
+    }
     
     return { 
         result: data, 
@@ -144,8 +220,16 @@ export const useHodlActivationTimestamp = () => {
         address: tokenAddress,
         abi: tokenAbi,
         functionName: 'hodlActivationTimestamp',
-        watch: true,
+        enabled: !DISABLE_WEB3,
+        watch: !DISABLE_WEB3,
     });
+    
+    if (DISABLE_WEB3) {
+        return {
+            hodlTimestamp: BigInt(MOCK_WEB3_DATA.hodlActivationTimestamp),
+            refetch: () => {}
+        };
+    }
     
     return { 
         hodlTimestamp: data || 0n, 
@@ -159,8 +243,16 @@ export const useIsSaleRestricted = () => {
         address: tokenAddress,
         abi: tokenAbi,
         functionName: 'isSaleRestricted',
-        watch: true,
+        enabled: !DISABLE_WEB3,
+        watch: !DISABLE_WEB3,
     });
+    
+    if (DISABLE_WEB3) {
+        return {
+            isSaleRestricted: MOCK_WEB3_DATA.isSaleRestricted,
+            refetch: () => {}
+        };
+    }
     
     return { 
         isSaleRestricted: !!data, 

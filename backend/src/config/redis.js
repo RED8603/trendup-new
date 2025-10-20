@@ -6,23 +6,32 @@ let redisClient;
 
 const connectRedis = async () => {
   try {
+    console.log(`[INFO] Connecting to Redis...`);
+    console.log(`[INFO]   URL: ${config.redis.url}`);
+    console.log(`[INFO]   Password: ${config.redis.password ? 'Set' : 'Not set'}`);
+    
     redisClient = new Redis(config.redis.url, {
       password: config.redis.password,
       retryDelayOnFailover: config.redis.retryDelayOnFailover,
       enableReadyCheck: config.redis.enableReadyCheck,
       maxRetriesPerRequest: config.redis.maxRetriesPerRequest,
-      lazyConnect: true
+      lazyConnect: true,
+      connectTimeout: 10000,
+      commandTimeout: 5000
     });
 
     redisClient.on('connect', () => {
+      console.log('[INFO] Redis client connecting...');
       logger.info('Redis client connected');
     });
 
     redisClient.on('ready', () => {
+      console.log('[INFO] Redis client ready');
       logger.info('Redis client ready');
     });
 
     redisClient.on('error', (err) => {
+      console.error('[ERROR] Redis client error:', err.message);
       logger.error('Redis client error:', {
         error: err.message,
         stack: err.stack,
@@ -31,22 +40,35 @@ const connectRedis = async () => {
     });
 
     redisClient.on('close', () => {
+      console.warn('[WARN] Redis client connection closed');
       logger.warn('Redis client connection closed');
     });
 
     redisClient.on('reconnecting', () => {
+      console.log('[INFO] Redis client reconnecting...');
       logger.info('Redis client reconnecting...');
     });
 
     await redisClient.connect();
+    console.log('[INFO] Redis connected successfully!');
     
   } catch (error) {
+    console.error('[ERROR] Redis connection failed:');
+    console.error('[ERROR]   Error:', error.message);
+    console.error('[ERROR]   Name:', error.name);
+    console.error('[ERROR]   Code:', error.code);
+    console.error('[ERROR]   URL:', config.redis.url);
+    
     logger.error('Redis connection failed:', {
       error: error.message,
       stack: error.stack,
-      name: error.name
+      name: error.name,
+      code: error.code,
+      url: config.redis.url
     });
-    process.exit(1);
+    
+    // Don't exit here, let the server handle it
+    throw error;
   }
 };
 
