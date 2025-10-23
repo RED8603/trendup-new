@@ -1,6 +1,7 @@
 const postService = require('../services/post.service');
 const s3Service = require('../../../core/services/s3.service');
 const notificationService = require('../../../core/services/notification.service');
+const karmaService = require('../services/karma.service');
 const { sendSuccessResponse } = require('../../../core/utils/response');
 const ErrorHandler = require('../../../core/errors/ErrorHandler');
 
@@ -52,6 +53,15 @@ class PostController {
       }
 
       const result = await postService.createPost(userId, postData);
+      
+      // Award karma for creating a post
+      try {
+        await karmaService.handlePostCreated(userId, result.post._id);
+      } catch (karmaError) {
+        console.error('Failed to award karma for post creation:', karmaError);
+        // Don't fail the post creation if karma fails
+      }
+      
       sendSuccessResponse(res, result, 'Post created successfully', 201);
     } catch (error) {
       console.error('Post creation error:', error);
@@ -212,6 +222,26 @@ class PostController {
     const { reactionType } = req.body;
 
     const result = await postService.reactToPost(id, userId, reactionType);
+    
+    // Award karma for giving a reaction
+    if (result.action === 'added') {
+      try {
+        await karmaService.handleReactionGiven(userId, reactionType);
+      } catch (karmaError) {
+        console.error('Failed to award karma for reaction:', karmaError);
+        // Don't fail the request if karma fails
+      }
+    }
+    
+    // Award karma for receiving a reaction (if not own post)
+    if (result.action === 'added' && result.post && result.post.userId.toString() !== userId.toString()) {
+      try {
+        await karmaService.handleReactionReceived(result.post.userId.toString(), reactionType);
+      } catch (karmaError) {
+        console.error('Failed to award karma for received reaction:', karmaError);
+        // Don't fail the request if karma fails
+      }
+    }
     
     // Send notification if reaction was added (not removed) and not reacting to own post
     if (result.action === 'added' && result.post && result.post.userId.toString() !== userId.toString()) {

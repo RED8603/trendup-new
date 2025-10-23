@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Box, Typography, Avatar, IconButton, TextField, Button, Stack } from '@mui/material';
+import { Box, Typography, Avatar, IconButton, Button, Stack } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { useTheme } from '@mui/material';
@@ -12,6 +12,7 @@ import {
   LocalFireDepartmentIcon,
   TrendingUpIcon
 } from '@/assets/icons';
+import CommentInput from '../CommentInput';
 
 const CommentThread = React.memo(({ 
   comment, 
@@ -19,19 +20,11 @@ const CommentThread = React.memo(({
   onReply, 
   onReact,
   currentUserId,
-  maxLevel = 2 
+  maxLevel = 2 // Reddit-style: only show 3 levels (0, 1, 2)
 }) => {
   const theme = useTheme();
   const [showReplyBox, setShowReplyBox] = useState(false);
-  const [replyText, setReplyText] = useState('');
   const [userReactions, setUserReactions] = useState({});
-
-  const handleReplySubmit = useCallback(() => {
-    if (!replyText.trim()) return;
-    onReply(comment._id, replyText);
-    setReplyText('');
-    setShowReplyBox(false);
-  }, [replyText, onReply, comment._id]);
 
   const handleReaction = useCallback(async (reactionType) => {
     setUserReactions(prev => {
@@ -68,12 +61,15 @@ const CommentThread = React.memo(({
 
   return (
     <Box 
+      className="custom-scrollbar"
       sx={{ 
         ml: level > 0 ? 3 : 0,
         mb: level === 0 ? 2 : 0.5,
         borderLeft: level > 0 ? `3px solid ${borderColor}` : 'none',
         pl: level > 0 ? 2 : 0,
-        position: 'relative'
+        position: 'relative',
+        maxHeight: level === 0 ? '400px' : 'none',
+        overflowY: level === 0 ? 'auto' : 'visible'
       }}
     >
       <motion.div
@@ -322,49 +318,19 @@ const CommentThread = React.memo(({
                     transition={{ duration: 0.2 }}
                   >
                     <Box sx={{ mt: 2, pl: 1, borderLeft: `2px solid ${theme.palette.primary.main}` }}>
-                      <Stack spacing={1}>
-                        <TextField
-                          fullWidth
-                          size="small"
-                          multiline
-                          maxRows={4}
-                          placeholder={`Reply to ${comment.userId?.username}...`}
-                          value={replyText}
-                          onChange={(e) => setReplyText(e.target.value)}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                              e.preventDefault();
-                              handleReplySubmit();
-                            }
-                          }}
-                          autoFocus
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              backgroundColor: theme.palette.background.paper
-                            }
-                          }}
-                        />
-                        <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Button 
-                            size="small" 
-                            variant="text"
-                            onClick={() => {
-                              setShowReplyBox(false);
-                              setReplyText('');
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                          <Button 
-                            size="small" 
-                            variant="contained"
-                            onClick={handleReplySubmit}
-                            disabled={!replyText.trim()}
-                          >
-                            Reply
-                          </Button>
-                        </Stack>
-                      </Stack>
+                      <CommentInput
+                        onSubmit={(content) => {
+                          onReply(content, comment._id);
+                          setShowReplyBox(false);
+                        }}
+                        placeholder={`Reply to ${comment.userId?.username}...`}
+                        maxLength={500}
+                        showEmojiPicker={true}
+                        showMentions={true}
+                        parentCommentId={comment._id}
+                        onCancel={() => setShowReplyBox(false)}
+                        initialValue=""
+                      />
                     </Box>
                   </motion.div>
                 )}
@@ -377,7 +343,7 @@ const CommentThread = React.memo(({
         {comment.replies && comment.replies.length > 0 && (
           <Box sx={{ mt: 0.5 }}>
             <AnimatePresence>
-              {comment.replies.map((reply) => (
+              {comment.replies.map((reply, index) => (
                 <CommentThread
                   key={reply._id}
                   comment={reply}
@@ -389,6 +355,26 @@ const CommentThread = React.memo(({
                 />
               ))}
             </AnimatePresence>
+            
+            {/* Reddit-style "Continue thread" indicator for level 2 with many replies */}
+            {level === 2 && comment.replies && comment.replies.length > 3 && (
+              <Box sx={{ 
+                ml: 2, 
+                mt: 1, 
+                p: 1, 
+                backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                borderRadius: 1,
+                borderLeft: `3px solid ${theme.palette.primary.main}`,
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                }
+              }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                  {comment.replies.length - 3} more replies in this thread
+                </Typography>
+              </Box>
+            )}
           </Box>
         )}
       </motion.div>

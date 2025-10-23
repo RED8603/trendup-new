@@ -1,5 +1,6 @@
 const commentService = require('../services/comment.service');
 const notificationService = require('../../../core/services/notification.service');
+const karmaService = require('../services/karma.service');
 const { logger } = require('../../../core/utils/logger');
 const { ResponseHandler } = require('../../../core/utils/response');
 
@@ -17,6 +18,14 @@ class CommentController {
         content,
         parentCommentId
       );
+
+      // Award karma for creating a comment
+      try {
+        await karmaService.handleCommentCreated(userId, comment._id);
+      } catch (karmaError) {
+        logger.error('Failed to award karma for comment creation:', karmaError);
+        // Don't fail the comment creation if karma fails
+      }
 
       // Send notification to post author or parent comment author
       if (comment && comment.postId) {
@@ -407,6 +416,26 @@ class CommentController {
       const { reactionType } = req.body;
 
       const result = await commentService.reactToComment(commentId, userId, reactionType);
+
+      // Award karma for giving a reaction
+      if (result.action === 'added') {
+        try {
+          await karmaService.handleReactionGiven(userId, reactionType);
+        } catch (karmaError) {
+          logger.error('Failed to award karma for comment reaction:', karmaError);
+          // Don't fail the request if karma fails
+        }
+      }
+
+      // Award karma for receiving a reaction (if not own comment)
+      if (result.action === 'added' && result.comment && result.comment.userId && result.comment.userId.toString() !== userId.toString()) {
+        try {
+          await karmaService.handleReactionReceived(result.comment.userId.toString(), reactionType);
+        } catch (karmaError) {
+          logger.error('Failed to award karma for received comment reaction:', karmaError);
+          // Don't fail the request if karma fails
+        }
+      }
 
       // Send notification if reaction was added (not removed) and not reacting to own comment
       if (result.action === 'added' && result.comment && result.comment.userId && result.comment.userId.toString() !== userId.toString()) {

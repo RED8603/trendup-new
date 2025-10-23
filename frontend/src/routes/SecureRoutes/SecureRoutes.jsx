@@ -9,6 +9,7 @@ import Social from "@/pages/Social/Social";
 import NotificationCenter from "@/pages/Notifications/NotificationCenter";
 import OtherUserProfile from "@/pages/User/OtherUserProfile";
 import UserSearch from "@/components/User/UserSearch";
+import KarmaDashboard from "@/pages/Karma/KarmaDashboard";
 import { Route, Routes } from "react-router-dom";
 
 const SecureRoutes = () => {
@@ -25,6 +26,7 @@ const SecureRoutes = () => {
             <Route element={<UserSearch />} path="/users/search" />
             <Route element={<OtherUserProfile />} path="/user/:userId" />
             <Route element={<NotificationCenter />} path="/notifications" />
+            <Route element={<KarmaDashboard />} path="/karma" />
         </Routes>
     );
 };

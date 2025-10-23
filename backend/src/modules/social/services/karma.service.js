@@ -7,17 +7,17 @@ class KarmaService {
     // Karma earning rates
     this.karmaRates = {
       // Post-related karma
-      POST_CREATED: 5,
+      POST_CREATED: 10,
       POST_TRENDING: 50,
       POST_VIRAL: 100,
       
       // Comment-related karma
-      COMMENT_CREATED: 2,
+      COMMENT_CREATED: 5,
       COMMENT_UPVOTED: 1,
       
       // Reaction-related karma
-      REACTION_RECEIVED: 1,
-      REACTION_GIVEN: 0.5,
+      REACTION_RECEIVED: 2,
+      REACTION_GIVEN: 1,
       
       // Prediction-related karma
       PREDICTION_CREATED: 10,
@@ -54,8 +54,11 @@ class KarmaService {
   // Initialize karma for a new user
   async initializeKarma(userId) {
     try {
+      logger.info(`[DEBUG] Initializing karma for user: ${userId}`);
+      
       const existingKarma = await Karma.findOne({ userId });
       if (existingKarma) {
+        logger.info(`[INFO] Karma already exists for user ${userId} with totalKarma: ${existingKarma.totalKarma}`);
         return existingKarma;
       }
 
@@ -76,7 +79,7 @@ class KarmaService {
       });
 
       await karma.save();
-      logger.info(`[INFO] Karma initialized for user ${userId}`);
+      logger.info(`[INFO] Successfully initialized karma for user ${userId} with totalKarma: ${karma.totalKarma}, level: ${karma.currentLevel}`);
       return karma;
     } catch (error) {
       logger.error(`[ERROR] Failed to initialize karma for user ${userId}:`, error);
@@ -87,9 +90,14 @@ class KarmaService {
   // Get user karma
   async getUserKarma(userId) {
     try {
+      logger.info(`[DEBUG] Getting karma for user: ${userId}`);
+      
       let karma = await Karma.findOne({ userId }).populate('userId', 'name username email avatar');
       if (!karma) {
+        logger.info(`[DEBUG] No karma found for user ${userId}, initializing...`);
         karma = await this.initializeKarma(userId);
+      } else {
+        logger.info(`[DEBUG] Found existing karma for user ${userId}: totalKarma=${karma.totalKarma}, level=${karma.currentLevel}`);
       }
       return karma;
     } catch (error) {
@@ -101,21 +109,34 @@ class KarmaService {
   // Add karma to user
   async addKarma(userId, amount, source, sourceId, description) {
     try {
+      logger.info(`[DEBUG] Starting karma addition: userId=${userId}, amount=${amount}, source=${source}, sourceId=${sourceId}, description=${description}`);
+      
       const karma = await this.getUserKarma(userId);
       const oldLevel = karma.currentLevel;
+      const oldTotal = karma.totalKarma;
+      
+      logger.info(`[DEBUG] Before karma addition: totalKarma=${oldTotal}, level=${oldLevel}`);
       
       await karma.addKarma(amount, source, sourceId, description);
       
+      // Refresh karma object to get updated values
+      const updatedKarma = await this.getUserKarma(userId);
+      const newTotal = updatedKarma.totalKarma;
+      const newLevel = updatedKarma.currentLevel;
+      
+      logger.info(`[DEBUG] After karma addition: totalKarma=${newTotal} (${oldTotal} + ${amount}), level=${newLevel}`);
+      
       // Check for level up
-      if (karma.currentLevel !== oldLevel) {
-        await this.handleLevelUp(karma, oldLevel);
+      if (newLevel !== oldLevel) {
+        logger.info(`[DEBUG] Level up detected: ${oldLevel} -> ${newLevel}`);
+        await this.handleLevelUp(updatedKarma, oldLevel);
       }
       
       // Check for badge eligibility
-      await this.checkBadgeEligibility(karma);
+      await this.checkBadgeEligibility(updatedKarma);
       
-      logger.info(`[INFO] Added ${amount} karma to user ${userId} for ${source}: ${description}`);
-      return karma;
+      logger.info(`[INFO] Successfully added ${amount} karma to user ${userId} for ${source}: ${description}. New total: ${newTotal}`);
+      return updatedKarma;
     } catch (error) {
       logger.error(`[ERROR] Failed to add karma to user ${userId}:`, error);
       throw error;
@@ -455,18 +476,26 @@ class KarmaService {
   // Get user karma history
   async getUserKarmaHistory(userId, limit = 50, offset = 0) {
     try {
+      logger.info(`[DEBUG] Getting karma history for user: ${userId}, limit: ${limit}, offset: ${offset}`);
+      
       const karma = await this.getUserKarma(userId);
+      const totalHistoryItems = karma.karmaHistory.length;
+      
+      logger.info(`[DEBUG] Found ${totalHistoryItems} total karma history items for user ${userId}`);
+      
       const history = karma.karmaHistory
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
         .slice(offset, offset + limit);
       
+      logger.info(`[DEBUG] Returning ${history.length} karma history items (offset: ${offset}, limit: ${limit})`);
+      
       return {
         history,
-        total: karma.karmaHistory.length,
+        total: totalHistoryItems,
         pagination: {
           limit,
           offset,
-          hasMore: offset + limit < karma.karmaHistory.length
+          hasMore: offset + limit < totalHistoryItems
         }
       };
     } catch (error) {

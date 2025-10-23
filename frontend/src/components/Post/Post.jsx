@@ -7,6 +7,8 @@ import LiveCommentFeed from "../common/LiveCommentFeed";
 import ReactionPicker from "../common/ReactionPicker";
 import ReactionButton from "../common/ReactionButton";
 import CommentThread from "../common/CommentThread";
+import CommentSection from "../common/CommentSection";
+import ShareModal from "../common/ShareModal";
 import {
   IconButton, 
   Stack, 
@@ -154,13 +156,13 @@ const Post = ({ data }) => {
     
     // Local state
     const [showComments, setShowComments] = useState(false);
-    const [commentText, setCommentText] = useState('');
     const [menuAnchor, setMenuAnchor] = useState(null);
     const [isFollowing, setIsFollowing] = useState(false);
     const [userReactions, setUserReactions] = useState({});
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showReactionPicker, setShowReactionPicker] = useState(false);
     const [reactionPickerAnchor, setReactionPickerAnchor] = useState(null);
+    const [shareModalOpen, setShareModalOpen] = useState(false);
 
     // Handle reactions
     const handleReaction = useCallback(async (reactionType) => {
@@ -204,38 +206,25 @@ const Post = ({ data }) => {
     };
 
     // Handle comment submission
-    const handleCommentSubmit = async () => {
-        if (!commentText.trim()) return;
+    const handleCommentSubmit = useCallback(async (content, parentCommentId = null) => {
+        if (!content || !content.trim()) return;
         
         try {
             await createComment({ 
                 postId: data._id, 
-                content: commentText 
+                content: content.trim(),
+                parentCommentId: parentCommentId
             }).unwrap();
-            setCommentText('');
-            showToast('Comment added', 'success');
+            
+            showToast(parentCommentId ? 'Reply added' : 'Comment added', 'success');
             // Refetch comments to show the new comment
             refetchComments();
         } catch (error) {
-            showToast('Failed to add comment', 'error');
-        }
-    };
-
-    // Handle reply to comment
-    const handleReplySubmit = useCallback(async (parentCommentId, content) => {
-        try {
-            await createComment({ 
-                postId: data._id, 
-                content,
-                parentCommentId 
-            }).unwrap();
-            showToast('Reply added', 'success');
-            // Refetch comments to show the new reply
-            refetchComments();
-        } catch (error) {
-            showToast('Failed to add reply', 'error');
+            console.error('Comment submission error:', error);
+            showToast(parentCommentId ? 'Failed to add reply' : 'Failed to add comment', 'error');
         }
     }, [createComment, data._id, showToast, refetchComments]);
+
 
     // Handle comment reaction
     const handleCommentReaction = useCallback(async (commentId, reactionType) => {
@@ -507,7 +496,7 @@ const Post = ({ data }) => {
 
                 {/* Share */}
                 <MotionIconButton
-                    onClick={() => navigator.clipboard.writeText(window.location.href)}
+                    onClick={() => setShareModalOpen(true)}
                     sx={{ color: theme.palette.text.secondary }}
                     {...bounceEffect}
                 >
@@ -572,80 +561,18 @@ const Post = ({ data }) => {
                 </Box>
             </Stack>
 
-            {/* Comments Section */}
+            {/* Enhanced Comments Section */}
             {showComments && (
-                <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-                    {/* Comment Input */}
-                    <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                        <Avatar 
-                            src={currentUser?.avatar} 
-                            alt={currentUser?.username}
-                            sx={{ width: 32, height: 32 }}
-                        />
-                        <TextField
-                            fullWidth
-                            placeholder="Write a comment..."
-                            value={commentText}
-                            onChange={(e) => {
-                                setCommentText(e.target.value);
-                                // Handle typing indicators
-                                if (e.target.value.length > 0) {
-                                    startTyping();
-                                } else {
-                                    stopTyping();
-                                }
-                            }}
-                            onBlur={() => stopTyping()}
-                            size="small"
-                            onKeyPress={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleCommentSubmit();
-                                    stopTyping();
-                                }
-                            }}
-                        />
-                        <Button 
-                            variant="contained" 
-                            onClick={handleCommentSubmit}
-                            disabled={!commentText.trim()}
-                        >
-                            Post
-                        </Button>
-                    </Stack>
-
-                    {/* Comments List - Reddit Style */}
-                    <Box sx={{ maxHeight: '600px', overflowY: 'auto' }}>
-                        {comments?.data?.comments && comments.data.comments.length > 0 ? (
-                            comments.data.comments.map((comment) => (
-                                <CommentThread
-                                    key={comment._id}
-                                    comment={comment}
-                                    level={0}
-                                    onReply={handleReplySubmit}
-                                    onReact={handleCommentReaction}
-                                    currentUserId={currentUser?._id}
-                                    maxLevel={2}
-                                />
-                            ))
-                        ) : (
-                            <Box 
-                                sx={{ 
-                                    py: 4, 
-                                    textAlign: 'center',
-                                    color: theme.palette.text.secondary 
-                                }}
-                            >
-                                <Typography variant="body2" sx={{ mb: 1 }}>
-                                    No comments yet
-                                </Typography>
-                                <Typography variant="caption">
-                                    Be the first to share your thoughts!
-                                </Typography>
-                            </Box>
-                        )}
-                    </Box>
-                </Box>
+                <CommentSection
+                    postId={data._id}
+                    onCommentSubmit={handleCommentSubmit}
+                    onCommentReact={handleCommentReaction}
+                    showInput={true}
+                    maxHeight="600px"
+                    autoLoad={true}
+                    onTypingStart={startTyping}
+                    onTypingStop={stopTyping}
+                />
             )}
 
             {/* Post Menu */}
@@ -749,6 +676,17 @@ const Post = ({ data }) => {
                     The post and all its comments, reactions, and associated data will be permanently removed.
                 </Typography>
             </AnimatedDialog>
+
+            {/* Share Modal */}
+            <ShareModal
+                open={shareModalOpen}
+                onClose={() => setShareModalOpen(false)}
+                postData={data}
+                onShare={(platform, data) => {
+                    console.log(`Shared to ${platform}:`, data);
+                    // Track sharing for karma rewards
+                }}
+            />
         </BoxConatner>
     );
 };

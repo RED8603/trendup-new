@@ -97,7 +97,7 @@ const NotificationBell = () => {
                     )}
                 </Box>
 
-                <Box sx={{ maxHeight: 400, overflowY: "auto" }}>
+                <Box className="custom-scrollbar" sx={{ maxHeight: 400, overflowY: "auto" }}>
                     {isLoading ? (
                         <Loading isLoading={true} />
                     ) : notifications.length === 0 ? (

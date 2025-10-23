@@ -376,6 +376,144 @@ export const socialApi = baseApi.injectEndpoints({
       providesTags: ['KarmaStats'],
     }),
 
+    // Get users by level
+    getUsersByLevel: builder.query({
+      query: ({ level, limit = 50, offset = 0 } = {}) => 
+        `/social/karma/users/level/${level}?limit=${limit}&offset=${offset}`,
+      providesTags: (result, error, { level }) => [
+        { type: 'UsersByLevel', id: level }
+      ],
+    }),
+
+    // Get user karma history
+    getUserKarmaHistory: builder.query({
+      query: ({ userId, limit = 50, offset = 0 } = {}) => 
+        `/social/karma/users/${userId}/history?limit=${limit}&offset=${offset}`,
+      providesTags: (result, error, { userId }) => [
+        { type: 'UserKarmaHistory', id: userId }
+      ],
+    }),
+
+    // Get user unlocked reactions
+    getUserUnlockedReactions: builder.query({
+      query: (userId) => `/social/karma/users/${userId}/reactions`,
+      providesTags: (result, error, userId) => [
+        { type: 'UserReactions', id: userId }
+      ],
+    }),
+
+    // Check if user can use reaction
+    canUseReaction: builder.query({
+      query: ({ userId, reactionType }) => 
+        `/social/karma/users/${userId}/can-use-reaction?reactionType=${reactionType}`,
+      providesTags: (result, error, { userId, reactionType }) => [
+        { type: 'ReactionPermission', id: `${userId}-${reactionType}` }
+      ],
+    }),
+
+    // Get user reaction weight
+    getUserReactionWeight: builder.query({
+      query: (userId) => `/social/karma/users/${userId}/reaction-weight`,
+      providesTags: (result, error, userId) => [
+        { type: 'UserReactionWeight', id: userId }
+      ],
+    }),
+
+    // Get current user karma
+    getMyKarma: builder.query({
+      query: () => `/social/karma/me`,
+      providesTags: ['MyKarma'],
+    }),
+
+    // Get current user badges
+    getMyBadges: builder.query({
+      query: () => `/social/karma/me/badges`,
+      providesTags: ['MyBadges'],
+    }),
+
+    // Get current user unlocked reactions
+    getMyUnlockedReactions: builder.query({
+      query: () => `/social/karma/me/reactions`,
+      providesTags: ['MyReactions'],
+    }),
+
+    // Get current user karma history
+    getMyKarmaHistory: builder.query({
+      query: ({ limit = 50, offset = 0 } = {}) => 
+        `/social/karma/me/history?limit=${limit}&offset=${offset}`,
+      providesTags: ['MyKarmaHistory'],
+    }),
+
+    // ==========================================
+    // BADGE ENDPOINTS
+    // ==========================================
+
+    // Get all badges
+    getAllBadges: builder.query({
+      query: ({ active = true } = {}) => `/social/badges?active=${active}`,
+      providesTags: ['Badges'],
+    }),
+
+    // Get badge stats
+    getBadgeStats: builder.query({
+      query: () => `/social/badges/stats`,
+      providesTags: ['BadgeStats'],
+    }),
+
+    // Get badges by category
+    getBadgesByCategory: builder.query({
+      query: ({ category, active = true } = {}) => 
+        `/social/badges/category/${category}?active=${active}`,
+      providesTags: (result, error, { category }) => [
+        { type: 'BadgesByCategory', id: category }
+      ],
+    }),
+
+    // Get badges by rarity
+    getBadgesByRarity: builder.query({
+      query: ({ rarity, active = true } = {}) => 
+        `/social/badges/rarity/${rarity}?active=${active}`,
+      providesTags: (result, error, { rarity }) => [
+        { type: 'BadgesByRarity', id: rarity }
+      ],
+    }),
+
+    // Get badge by ID
+    getBadgeById: builder.query({
+      query: (badgeId) => `/social/badges/${badgeId}`,
+      providesTags: (result, error, badgeId) => [
+        { type: 'Badge', id: badgeId }
+      ],
+    }),
+
+    // Get available badges for user
+    getAvailableBadgesForUser: builder.query({
+      query: (userId) => `/social/badges/users/${userId}/available`,
+      providesTags: (result, error, userId) => [
+        { type: 'AvailableBadges', id: userId }
+      ],
+    }),
+
+    // Get user badge progress
+    getUserBadgeProgress: builder.query({
+      query: (userId) => `/social/badges/users/${userId}/progress`,
+      providesTags: (result, error, userId) => [
+        { type: 'UserBadgeProgress', id: userId }
+      ],
+    }),
+
+    // Get current user available badges
+    getMyAvailableBadges: builder.query({
+      query: () => `/social/badges/me/available`,
+      providesTags: ['MyAvailableBadges'],
+    }),
+
+    // Get current user badge progress
+    getMyBadgeProgress: builder.query({
+      query: () => `/social/badges/me/progress`,
+      providesTags: ['MyBadgeProgress'],
+    }),
+
     // ==========================================
     // MEDIA ENDPOINTS
     // ==========================================
@@ -569,6 +707,26 @@ export const {
   useGetKarmaLeaderboardQuery,
   useGetUserBadgesQuery,
   useGetKarmaStatsQuery,
+  useGetUsersByLevelQuery,
+  useGetUserKarmaHistoryQuery,
+  useGetUserUnlockedReactionsQuery,
+  useCanUseReactionQuery,
+  useGetUserReactionWeightQuery,
+  useGetMyKarmaQuery,
+  useGetMyBadgesQuery,
+  useGetMyUnlockedReactionsQuery,
+  useGetMyKarmaHistoryQuery,
+
+  // Badge hooks
+  useGetAllBadgesQuery,
+  useGetBadgeStatsQuery,
+  useGetBadgesByCategoryQuery,
+  useGetBadgesByRarityQuery,
+  useGetBadgeByIdQuery,
+  useGetAvailableBadgesForUserQuery,
+  useGetUserBadgeProgressQuery,
+  useGetMyAvailableBadgesQuery,
+  useGetMyBadgeProgressQuery,
 
   // Media hooks
   useUploadMediaMutation,

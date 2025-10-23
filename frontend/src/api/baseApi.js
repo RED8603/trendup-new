@@ -59,5 +59,16 @@ export const baseApi = createApi({
     reducerPath: "api",
     baseQuery: baseQueryWithReauth,
     endpoints: () => ({}),
-    tagTypes: ["Auth", "Users", "Posts", "Comments", "Reactions", "Feed", "Following", "Followers", "Karma", "Badges", "Polls", "Predictions", "Categories", "Hashtags", "Trending", "Discover", "FollowSuggestions", "KarmaLeaderboard", "KarmaStats", "Notifications", "NotificationCount", "UserProfile", "UserSearch", "FollowerStats", "FollowingStats"],
+    tagTypes: [
+        "Auth", "Users", "Posts", "Comments", "Reactions", "Feed", "Following", "Followers", 
+        "Karma", "Badges", "Polls", "Predictions", "Categories", "Hashtags", "Trending", "Discover", 
+        "FollowSuggestions", "KarmaLeaderboard", "KarmaStats", "Notifications", "NotificationCount", 
+        "UserProfile", "UserSearch", "FollowerStats", "FollowingStats",
+        // Karma system tags
+        "UsersByLevel", "UserKarmaHistory", "UserReactions", "ReactionPermission", "UserReactionWeight",
+        "MyKarma", "MyBadges", "MyReactions", "MyKarmaHistory",
+        // Badge system tags
+        "BadgeStats", "BadgesByCategory", "BadgesByRarity", "Badge", "AvailableBadges", 
+        "UserBadgeProgress", "MyAvailableBadges", "MyBadgeProgress"
+    ],
 });

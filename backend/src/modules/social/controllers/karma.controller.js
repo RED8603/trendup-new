@@ -253,6 +253,40 @@ class KarmaController {
       next(error);
     }
   }
+
+  // Add karma (admin only)
+  async addKarma(req, res, next) {
+    try {
+      const { userId, amount, source, description, sourceId } = req.body;
+      
+      const result = await karmaService.addKarma(userId, amount, source, description, sourceId);
+      
+      return ResponseHandler.success(res, {
+        result,
+        message: 'Karma added successfully'
+      });
+    } catch (error) {
+      logger.error(`[ERROR] Failed to add karma:`, error);
+      next(error);
+    }
+  }
+
+  // Deduct karma (admin only)
+  async deductKarma(req, res, next) {
+    try {
+      const { userId, amount, source, description, sourceId } = req.body;
+      
+      const result = await karmaService.deductKarma(userId, amount, source, description, sourceId);
+      
+      return ResponseHandler.success(res, {
+        result,
+        message: 'Karma deducted successfully'
+      });
+    } catch (error) {
+      logger.error(`[ERROR] Failed to deduct karma:`, error);
+      next(error);
+    }
+  }
 }
 
 module.exports = new KarmaController();

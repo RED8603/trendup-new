@@ -24,7 +24,7 @@ import { useEffect, useState } from "react";
 import { useMediaQuery } from "@mui/material";
 import Header from "./Header";
 import Navbar from "./Navbar";
-import { ChatIcon, ChevronLeftIcon, HomeIcon, LiveIcon, MenuIcon, VoteIcon , StreamIcon, ExploreIcon, FollowingIcon, ForYouIcon, AccountBoxIcon, TimelineIcon} from "@/assets/icons";
+import { ChatIcon, ChevronLeftIcon, HomeIcon, LiveIcon, MenuIcon, VoteIcon , StreamIcon, ExploreIcon, FollowingIcon, ForYouIcon, AccountBoxIcon, TimelineIcon, KarmaIcon} from "@/assets/icons";
 import SearchIcon from "@mui/icons-material/Search";
 import { motion } from "framer-motion";
 import Logo from "../common/Logo/Logo";
@@ -172,10 +172,16 @@ const array = [
         id: 9,
     },
     {
+        name: "Karma",
+        link1: "/karma",
+        Icon: KarmaIcon,
+        id: 10,
+    },
+    {
         name: "Profile",
         link1: "/user/profile",
         Icon: AccountBoxIcon,
-        id: 10,
+        id: 11,
     },
 ];
 

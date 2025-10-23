@@ -280,6 +280,7 @@ export default function ChatDetail({
 
             {/* Messages area */}
             <Box
+                className="custom-scrollbar"
                 sx={{
                     flex: 1,
                     overflowY: "auto",

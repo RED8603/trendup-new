@@ -42,10 +42,7 @@ class CommentService {
           throw new Error('Parent comment does not belong to this post');
         }
 
-        if (parentComment.level >= this.commentLimits.maxNestingLevel) {
-          throw new Error('Maximum nesting level reached');
-        }
-
+        // Reddit-style threading: allow deeper nesting but flatten in the model
         level = parentComment.level + 1;
       }
 
@@ -108,12 +105,12 @@ class CommentService {
       const skip = (page - 1) * limit;
       const sort = { [sortBy]: sortOrder === 'desc' ? -1 : 1 };
 
-      // Build query
+      // Build query for top-level comments
       const query = {
         postId: new mongoose.Types.ObjectId(postId),
         isDeleted: false,
         status: 'approved',
-        level
+        level: 0 // Always start with level 0 for Reddit-style threading
       };
 
       // If not including replies, only get top-level comments
@@ -121,12 +118,13 @@ class CommentService {
         query.parentCommentId = null;
       }
 
-      const comments = await Comment.find(query)
+      // Get top-level comments with replies using virtual populate
+      const topLevelComments = await Comment.find(query)
         .populate('userId', 'name username avatar')
         .populate({
           path: 'replies',
           match: { isDeleted: false, status: 'approved' },
-          options: { sort: { createdAt: 1 }, limit: 5 },
+          options: { sort: { createdAt: 1 } },
           populate: {
             path: 'userId',
             select: 'name username avatar'
@@ -137,11 +135,66 @@ class CommentService {
         .skip(skip)
         .lean();
 
+      // If including replies, populate nested replies for level 1 comments
+      if (includeReplies) {
+        for (const comment of topLevelComments) {
+          if (comment.replies && comment.replies.length > 0) {
+            // Populate replies for level 1 comments (level 2)
+            for (const reply of comment.replies) {
+              // Get all level 2 replies that have this comment as parent
+              // This includes both direct replies and flattened replies
+              const nestedReplies = await Comment.find({
+                parentCommentId: reply._id,
+                isDeleted: false,
+                status: 'approved',
+                level: 2
+              })
+                .populate('userId', 'name username avatar')
+                .sort({ createdAt: 1 })
+                .lean();
+              
+              reply.replies = nestedReplies;
+            }
+          }
+        }
+        
+        // Also get any additional level 2 replies that might be flattened siblings
+        // These are level 2 comments that have the same parent as level 1 comments
+        for (const comment of topLevelComments) {
+          if (comment.replies && comment.replies.length > 0) {
+            // Get all level 2 comments that are siblings of level 1 replies
+            const level1Ids = comment.replies.map(reply => reply._id);
+            const siblingReplies = await Comment.find({
+              postId: new mongoose.Types.ObjectId(postId),
+              parentCommentId: { $in: level1Ids },
+              isDeleted: false,
+              status: 'approved',
+              level: 2,
+              _id: { $nin: level1Ids } // Exclude the level 1 comments themselves
+            })
+              .populate('userId', 'name username avatar')
+              .sort({ createdAt: 1 })
+              .lean();
+            
+            // Add sibling replies to the appropriate level 1 comments
+            siblingReplies.forEach(sibling => {
+              const parentReply = comment.replies.find(reply => 
+                reply._id.toString() === sibling.parentCommentId.toString()
+              );
+              if (parentReply) {
+                if (!parentReply.replies) parentReply.replies = [];
+                parentReply.replies.push(sibling);
+              }
+            });
+          }
+        }
+      }
+
       // Get total count for pagination
       const totalCount = await Comment.countDocuments(query);
 
       return {
-        comments,
+        comments: topLevelComments,
         pagination: {
           page,
           limit,

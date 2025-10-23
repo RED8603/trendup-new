@@ -29,7 +29,7 @@ import ChatIcon from "@mui/icons-material/Chat";
 import LiveIcon from "@mui/icons-material/LiveTv";
 import VoteIcon from "@mui/icons-material/HowToVote";
 import SearchIcon from "@mui/icons-material/Search";
-import { ForYouIcon, FollowingIcon, TimelineIcon, ExploreIcon } from "@/assets/icons";
+import { ForYouIcon, FollowingIcon, TimelineIcon, ExploreIcon, KarmaIcon } from "@/assets/icons";
 import { mockNotifications } from "@/constants";
 import { useSelector } from "react-redux";
 import { ThemeToggle } from "../common/ToggelTheme/ToggelTheme";
@@ -52,6 +52,7 @@ const drawerLinks = [
     { name: "Vote", path: "/vote", Icon: VoteIcon },
     { name: "Chats", path: "/chat", Icon: ChatIcon },
     { name: "Go Live", path: "/live", Icon: LiveIcon },
+    { name: "Karma", path: "/karma", Icon: KarmaIcon },
 ];
 
 export default function HeaderDrawer() {

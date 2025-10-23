@@ -41,13 +41,26 @@ import ExploreIcon from "@mui/icons-material/TravelExplore";
 import FollowingIcon from "@mui/icons-material/PeopleAlt";
 import ForYouIcon from "@mui/icons-material/Stars";
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
-export { StreamIcon, ExploreIcon, FollowingIcon, ForYouIcon,AccountBoxIcon };
+import KarmaIcon from '@mui/icons-material/EmojiEvents';
+export { StreamIcon, ExploreIcon, FollowingIcon, ForYouIcon, AccountBoxIcon, KarmaIcon };
 
 // Social Media Icons
 export { default as ShareIcon } from "@mui/icons-material/Share";
 export { default as BookmarkBorderIcon } from "@mui/icons-material/BookmarkBorder";
 export { default as BookmarkIcon } from "@mui/icons-material/Bookmark";
 export { default as FlagIcon } from "@mui/icons-material/Flag";
+
+// Comment and Share Icons
+export { default as SortIcon } from "@mui/icons-material/Sort";
+export { default as ScheduleIcon } from "@mui/icons-material/Schedule";
+export { default as AccessTimeIcon } from "@mui/icons-material/AccessTime";
+export { default as SendIcon } from "@mui/icons-material/Send";
+export { default as AtSignIcon } from "@mui/icons-material/AlternateEmail";
+export { default as ContentCopyIcon } from "@mui/icons-material/ContentCopy";
+export { default as TwitterIcon } from "@mui/icons-material/Twitter";
+export { default as TelegramIcon } from "@mui/icons-material/Telegram";
+export { default as LinkIcon } from "@mui/icons-material/Link";
+export { default as CloseIcon } from "@mui/icons-material/Close";
 export { default as DeleteIcon } from "@mui/icons-material/Delete";
 
 // Reaction Icons
@@ -66,6 +79,7 @@ export { default as DiamondIcon } from "@mui/icons-material/Diamond";
 export { default as RocketLaunchIcon } from "@mui/icons-material/RocketLaunch";
 export { default as TrendingUpIcon } from "@mui/icons-material/TrendingUp";
 export { default as TrendingDownIcon } from "@mui/icons-material/TrendingDown";
+export { default as StarIcon } from "@mui/icons-material/Star";
 export { default as LocalFireDepartmentIcon } from "@mui/icons-material/Whatshot";
 export { default as WbSunnyIcon } from "@mui/icons-material/WbSunny";
 export { default as NightlightIcon } from "@mui/icons-material/NightsStay";
@@ -78,7 +92,6 @@ export { default as PredictionIcon } from "@mui/icons-material/TrendingFlat";
 export { default as EmojiIcon } from "@mui/icons-material/SentimentSatisfied";
 export { default as HashtagIcon } from "@mui/icons-material/Tag";
 export { default as CategoryIcon } from "@mui/icons-material/Category";
-export { default as CloseIcon } from "@mui/icons-material/Close";
 export { default as PlayArrowIcon } from "@mui/icons-material/PlayArrow";
 export { default as PauseIcon } from "@mui/icons-material/Pause";
 export { default as AudioIcon } from "@mui/icons-material/AudioFile";

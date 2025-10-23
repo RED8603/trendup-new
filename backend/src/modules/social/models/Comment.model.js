@@ -218,15 +218,30 @@ commentSchema.statics.getUserComments = function(userId, options = {}) {
     .populate('author', 'name username avatar karmaScore karmaLevel badges');
 };
 
-// Pre-save middleware to calculate level based on parent
+// Pre-save middleware to calculate level based on parent (Reddit-style)
 commentSchema.pre('save', async function(next) {
   if (this.isNew && this.parentCommentId) {
     const parentComment = await this.constructor.findById(this.parentCommentId);
     if (parentComment) {
       this.level = parentComment.level + 1;
-      // Prevent nesting deeper than 3 levels
+      
+      // Reddit-style flattening: after level 2, make new replies siblings
       if (this.level > 2) {
-        return next(new Error('Maximum comment nesting level (3) exceeded'));
+        // Find the level 2 parent and make this a sibling
+        let currentParent = parentComment;
+        while (currentParent && currentParent.level > 2) {
+          currentParent = await this.constructor.findById(currentParent.parentCommentId);
+        }
+        
+        if (currentParent && currentParent.level === 2) {
+          // Make this comment a sibling of the level 2 comment
+          this.parentCommentId = currentParent.parentCommentId;
+          this.level = 2; // Keep at level 2
+        } else if (currentParent && currentParent.level === 1) {
+          // If we can't find a level 2 parent, make it a sibling of level 1
+          this.parentCommentId = currentParent.parentCommentId;
+          this.level = 1;
+        }
       }
     }
   }

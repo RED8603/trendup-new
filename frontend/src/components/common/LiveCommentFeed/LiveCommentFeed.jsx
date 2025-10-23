@@ -121,7 +121,7 @@ const LiveCommentFeed = ({
   return (
     <Box sx={{ position: 'relative' }}>
       {/* Comments */}
-      <Box sx={{ maxHeight: '400px', overflowY: 'auto', pr: 1 }}>
+      <Box className="custom-scrollbar" sx={{ maxHeight: '400px', overflowY: 'auto', pr: 1 }}>
         <AnimatePresence mode="popLayout">
           {comments.map((comment, index) => (
             <motion.div

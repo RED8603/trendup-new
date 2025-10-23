@@ -133,16 +133,6 @@ const MessagesContainer = styled(Box)(({ theme }) => ({
     flex: 1,
     overflowY: "auto",
     padding: theme.spacing(0.5),
-    "&::-webkit-scrollbar": {
-        width: "6px",
-    },
-    "&::-webkit-scrollbar-thumb": {
-        backgroundColor: alpha(theme.palette.primary.main, 0.3),
-        borderRadius: "3px",
-    },
-    "&::-webkit-scrollbar-thumb:hover": {
-        backgroundColor: alpha(theme.palette.primary.main, 0.5),
-    },
 }));
 
 const LiveChat = ({
@@ -372,7 +362,7 @@ const LiveChat = ({
             </Box>
 
             {/* Messages List with Animations */}
-            <MessagesContainer>
+            <MessagesContainer className="custom-scrollbar">
                 <AnimatePresence initial={false}>
                     {messages.map((msg) => (
                         <MessageItem
