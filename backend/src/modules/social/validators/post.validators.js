@@ -14,17 +14,21 @@ const createPostValidation = [
   body('category')
     .optional()
     .isIn([
+      'general',
+      'technology',
+      'business',
+      'entertainment',
+      'sports',
+      'science',
       'crypto_news',
       'defi',
       'nfts',
       'trading_signals',
       'market_analysis',
       'memes',
-      'technology',
       'tutorials',
       'ama',
       'events',
-      'general',
     ])
     .withMessage('Invalid category'),
   
@@ -126,17 +130,21 @@ const updatePostValidation = [
   body('category')
     .optional()
     .isIn([
+      'general',
+      'technology',
+      'business',
+      'entertainment',
+      'sports',
+      'science',
       'crypto_news',
       'defi',
       'nfts',
       'trading_signals',
       'market_analysis',
       'memes',
-      'technology',
       'tutorials',
       'ama',
       'events',
-      'general',
     ])
     .withMessage('Invalid category'),
   

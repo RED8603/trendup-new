@@ -6,10 +6,22 @@ let redisClient;
 
 const connectRedis = async () => {
   try {
-    console.log(`[INFO] Connecting to Redis...`);
-    console.log(`[INFO]   URL: ${config.redis.url}`);
-    console.log(`[INFO]   Password: ${config.redis.password ? 'Set' : 'Not set'}`);
+    console.log(`[INFO] ==========================================`);
+    console.log(`[INFO] Redis Connection Attempt`);
+    console.log(`[INFO] ==========================================`);
+    console.log(`[INFO] URL: ${config.redis.url}`);
+    console.log(`[INFO] Password: ${config.redis.password ? 'Set' : 'Not set'}`);
+    console.log(`[INFO] Options:`, JSON.stringify({
+      retryDelayOnFailover: config.redis.retryDelayOnFailover,
+      enableReadyCheck: config.redis.enableReadyCheck,
+      maxRetriesPerRequest: config.redis.maxRetriesPerRequest,
+      lazyConnect: true,
+      connectTimeout: 10000,
+      commandTimeout: 5000
+    }, null, 2));
+    console.log(`[INFO] Starting connection...`);
     
+    const startTime = Date.now();
     redisClient = new Redis(config.redis.url, {
       password: config.redis.password,
       retryDelayOnFailover: config.redis.retryDelayOnFailover,
@@ -26,8 +38,14 @@ const connectRedis = async () => {
     });
 
     redisClient.on('ready', () => {
-      console.log('[INFO] Redis client ready');
-      logger.info('Redis client ready');
+      const connectionTime = Date.now() - startTime;
+      console.log(`[INFO] ==========================================`);
+      console.log(`[INFO] Redis Connected Successfully!`);
+      console.log(`[INFO] ==========================================`);
+      console.log(`[INFO] Connection Time: ${connectionTime}ms`);
+      console.log(`[INFO] Status: Ready`);
+      console.log(`[INFO] ==========================================`);
+      logger.info(`Redis client ready in ${connectionTime}ms`);
     });
 
     redisClient.on('error', (err) => {
@@ -50,14 +68,17 @@ const connectRedis = async () => {
     });
 
     await redisClient.connect();
-    console.log('[INFO] Redis connected successfully!');
     
   } catch (error) {
-    console.error('[ERROR] Redis connection failed:');
-    console.error('[ERROR]   Error:', error.message);
-    console.error('[ERROR]   Name:', error.name);
-    console.error('[ERROR]   Code:', error.code);
-    console.error('[ERROR]   URL:', config.redis.url);
+    console.error('[ERROR] ==========================================');
+    console.error('[ERROR] Redis Connection Failed!');
+    console.error('[ERROR] ==========================================');
+    console.error('[ERROR] Error Message:', error.message);
+    console.error('[ERROR] Error Name:', error.name);
+    console.error('[ERROR] Error Code:', error.code);
+    console.error('[ERROR] URL Attempted:', config.redis.url);
+    console.error('[ERROR] Full Error Object:', JSON.stringify(error, null, 2));
+    console.error('[ERROR] ==========================================');
     
     logger.error('Redis connection failed:', {
       error: error.message,

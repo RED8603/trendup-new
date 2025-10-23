@@ -9,7 +9,6 @@ const topicSchema = new mongoose.Schema(
       trim: true,
       minlength: 2,
       maxlength: 100,
-      index: true,
     },
     slug: {
       type: String,
@@ -17,7 +16,6 @@ const topicSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true,
     },
     description: {
       type: String,
@@ -60,7 +58,6 @@ const topicSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
-      index: true,
     },
     isPublic: {
       type: Boolean,
@@ -162,25 +159,21 @@ const topicSchema = new mongoose.Schema(
     lastActivityAt: {
       type: Date,
       default: Date.now,
-      index: true,
     },
     // Topic engagement metrics
     engagementScore: {
       type: Number,
       default: 0,
-      index: true,
     },
     trendingScore: {
       type: Number,
       default: 0,
-      index: true,
     },
     // Topic status
     status: {
       type: String,
       enum: ['active', 'archived', 'suspended', 'pending'],
       default: 'active',
-      index: true,
     },
     // Moderation
     flaggedCount: {

@@ -1,4 +1,6 @@
 const postService = require('../services/post.service');
+const s3Service = require('../../../core/services/s3.service');
+const notificationService = require('../../../core/services/notification.service');
 const { sendSuccessResponse } = require('../../../core/utils/response');
 const ErrorHandler = require('../../../core/errors/ErrorHandler');
 
@@ -7,11 +9,145 @@ class PostController {
    * Create a new post
    */
   async createPost(req, res) {
-    const userId = req.user._id;
-    const postData = req.body;
+    try {
+      const userId = req.user._id;
+      const postData = req.body;
+      const files = req.files || [];
 
-    const result = await postService.createPost(userId, postData);
-    sendSuccessResponse(res, result, 'Post created successfully', 201);
+      console.log('Creating post with data:', { 
+        userId, 
+        postType: postData.postType, 
+        hasContent: !!postData.content,
+        hasMedia: files.length > 0,
+        pollOptions: postData.pollOptions?.length || 0,
+        predictionData: !!postData.predictionData
+      });
+
+      // Handle media uploads if files are provided
+      if (files.length > 0) {
+        const mediaUrls = [];
+        
+        for (const file of files) {
+          try {
+            // Generate unique filename
+            const filename = s3Service.generateFilename(userId, file.originalname, 'post');
+            
+            // Upload to S3
+            const uploadResult = await s3Service.uploadFile(
+              file.buffer,
+              'posts',
+              filename,
+              file.mimetype
+            );
+            
+            mediaUrls.push(uploadResult.url);
+          } catch (error) {
+            console.error('Failed to upload media:', error);
+            // Continue with other files, don't fail the entire post
+          }
+        }
+        
+        // Add media URLs to post data
+        postData.mediaUrls = mediaUrls;
+      }
+
+      const result = await postService.createPost(userId, postData);
+      sendSuccessResponse(res, result, 'Post created successfully', 201);
+    } catch (error) {
+      console.error('Post creation error:', error);
+      ErrorHandler.handleAsync(error, req, res);
+    }
+  }
+
+  /**
+   * Vote on a post-based poll
+   */
+  async voteOnPostPoll(req, res) {
+    try {
+      const { postId } = req.params;
+      const userId = req.user._id;
+      const { optionIndex } = req.body;
+
+      console.log('Voting on post poll:', { postId, userId, optionIndex });
+
+      if (optionIndex === undefined || optionIndex === null) {
+        return res.status(400).json({
+          success: false,
+          message: 'Option index is required'
+        });
+      }
+
+      const result = await postService.voteOnPostPoll(postId, userId, optionIndex);
+      sendSuccessResponse(res, result, 'Vote cast successfully');
+    } catch (error) {
+      console.error('Post poll voting error:', error);
+      ErrorHandler.handleAsync(error, req, res);
+    }
+  }
+
+  /**
+   * Get post poll results
+   */
+  async getPostPollResults(req, res) {
+    try {
+      const { postId } = req.params;
+      const userId = req.user._id;
+
+      const results = await postService.getPostPollResults(postId, userId);
+      sendSuccessResponse(res, { results }, 'Poll results retrieved successfully');
+    } catch (error) {
+      console.error('Get post poll results error:', error);
+      ErrorHandler.handleAsync(error, req, res);
+    }
+  }
+
+  /**
+   * Stake on a post-based prediction
+   */
+  async stakeOnPostPrediction(req, res) {
+    try {
+      const { postId } = req.params;
+      const userId = req.user._id;
+      const { stake, agree } = req.body;
+
+      console.log('Staking on post prediction:', { postId, userId, stake, agree });
+
+      if (stake === undefined || stake === null || stake <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Valid stake amount is required'
+        });
+      }
+
+      if (agree === undefined || agree === null) {
+        return res.status(400).json({
+          success: false,
+          message: 'Agree/disagree position is required'
+        });
+      }
+
+      const result = await postService.stakeOnPostPrediction(postId, userId, stake, agree);
+      sendSuccessResponse(res, result, 'Stake submitted successfully');
+    } catch (error) {
+      console.error('Post prediction staking error:', error);
+      ErrorHandler.handleAsync(error, req, res);
+    }
+  }
+
+  /**
+   * Get post prediction results
+   */
+  async getPostPredictionResults(req, res) {
+    try {
+      const { postId } = req.params;
+      const userId = req.user._id;
+
+      const results = await postService.getPostPredictionResults(postId, userId);
+      sendSuccessResponse(res, { results }, 'Prediction results retrieved successfully');
+    } catch (error) {
+      console.error('Get post prediction results error:', error);
+      ErrorHandler.handleAsync(error, req, res);
+    }
   }
 
   /**
@@ -76,6 +212,22 @@ class PostController {
     const { reactionType } = req.body;
 
     const result = await postService.reactToPost(id, userId, reactionType);
+    
+    // Send notification if reaction was added (not removed) and not reacting to own post
+    if (result.action === 'added' && result.post && result.post.userId.toString() !== userId.toString()) {
+      try {
+        const templates = notificationService.createNotificationTemplates();
+        const notification = templates.postLiked(
+          { _id: userId, username: req.user.username || req.user.name, avatar: req.user.avatar },
+          { _id: id, content: result.post.content || 'your post' }
+        );
+        await notificationService.sendNotification(result.post.userId.toString(), notification);
+      } catch (notifError) {
+        console.error('[ERROR] Failed to send reaction notification:', notifError);
+        // Don't fail the request if notification fails
+      }
+    }
+    
     sendSuccessResponse(res, result, result.message);
   }
 
@@ -84,12 +236,13 @@ class PostController {
    */
   async getPostReactions(req, res) {
     const { id } = req.params;
+    const userId = req.user?._id; // Get user ID if authenticated
     const options = {
       page: parseInt(req.query.page) || 1,
       limit: parseInt(req.query.limit) || 20,
     };
 
-    const result = await postService.getPostReactions(id, options);
+    const result = await postService.getPostReactions(id, userId, options);
     sendSuccessResponse(res, result, 'Post reactions retrieved successfully');
   }
 
@@ -156,4 +309,8 @@ module.exports = {
   getTrendingPosts: ErrorHandler.handleAsync(postController.getTrendingPosts.bind(postController)),
   getUserPosts: ErrorHandler.handleAsync(postController.getUserPosts.bind(postController)),
   getSearchPosts: ErrorHandler.handleAsync(postController.searchPosts.bind(postController)),
+  voteOnPostPoll: ErrorHandler.handleAsync(postController.voteOnPostPoll.bind(postController)),
+  getPostPollResults: ErrorHandler.handleAsync(postController.getPostPollResults.bind(postController)),
+  stakeOnPostPrediction: ErrorHandler.handleAsync(postController.stakeOnPostPrediction.bind(postController)),
+  getPostPredictionResults: ErrorHandler.handleAsync(postController.getPostPredictionResults.bind(postController)),
 };

@@ -10,14 +10,12 @@ const hashtagSchema = new mongoose.Schema(
       lowercase: true,
       minlength: 2,
       maxlength: 50,
-      index: true,
     },
     // Hashtag statistics
     postCount: {
       type: Number,
       default: 0,
       min: 0,
-      index: true,
     },
     commentCount: {
       type: Number,
@@ -33,12 +31,10 @@ const hashtagSchema = new mongoose.Schema(
     trendingScore: {
       type: Number,
       default: 0,
-      index: true,
     },
     trendingRank: {
       type: Number,
       default: 0,
-      index: true,
     },
     // Time-based metrics
     dailyUsage: [{
@@ -75,28 +71,23 @@ const hashtagSchema = new mongoose.Schema(
     firstUsedAt: {
       type: Date,
       default: Date.now,
-      index: true,
     },
     lastUsedAt: {
       type: Date,
       default: Date.now,
-      index: true,
     },
     // Hashtag status
     isActive: {
       type: Boolean,
       default: true,
-      index: true,
     },
     isBanned: {
       type: Boolean,
       default: false,
-      index: true,
     },
     isVerified: {
       type: Boolean,
       default: false,
-      index: true,
     },
     // Hashtag description (for verified hashtags)
     description: {

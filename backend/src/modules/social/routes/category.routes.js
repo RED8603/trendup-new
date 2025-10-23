@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/category.controller');
-const authMiddleware = require('../../auth/middleware/auth.middleware');
+const { authenticate } = require('../../auth/middleware/auth.middleware');
 
 // Public routes (no authentication required)
 router.get('/', categoryController.getAllCategories);
@@ -15,7 +15,7 @@ router.get('/slug/:slug', categoryController.getCategoryBySlug);
 router.get('/:categoryId/subcategories', categoryController.getSubcategories);
 
 // Protected routes (authentication required)
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Category CRUD operations
 router.post('/', categoryController.createCategory);

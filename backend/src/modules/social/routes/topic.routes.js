@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const topicController = require('../controllers/topic.controller');
-const authMiddleware = require('../../auth/middleware/auth.middleware');
+const { authenticate } = require('../../auth/middleware/auth.middleware');
 
 // Public routes (no authentication required)
 router.get('/', topicController.getAllTopics);
@@ -17,7 +17,7 @@ router.get('/:topicId/subtopics', topicController.getSubtopics);
 router.get('/:topicId/posts', topicController.getTopicPosts);
 
 // Protected routes (authentication required)
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Topic CRUD operations
 router.post('/', topicController.createTopic);

@@ -14,7 +14,7 @@ const {
   loginValidator,
   refreshTokenValidator,
 } = require('../validators/auth.validators');
-const authMiddleware = require('../middleware/auth.middleware');
+const { authenticate } = require('../middleware/auth.middleware');
 const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
@@ -74,7 +74,7 @@ router.post(
 
 router.get(
   '/me',
-  authMiddleware,
+  authenticate,
   getCurrentUser
 );
 

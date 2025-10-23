@@ -24,7 +24,8 @@ import { useEffect, useState } from "react";
 import { useMediaQuery } from "@mui/material";
 import Header from "./Header";
 import Navbar from "./Navbar";
-import { ChatIcon, ChevronLeftIcon, HomeIcon, LiveIcon, MenuIcon, VoteIcon , StreamIcon, ExploreIcon, FollowingIcon, ForYouIcon, AccountBoxIcon} from "@/assets/icons";
+import { ChatIcon, ChevronLeftIcon, HomeIcon, LiveIcon, MenuIcon, VoteIcon , StreamIcon, ExploreIcon, FollowingIcon, ForYouIcon, AccountBoxIcon, TimelineIcon} from "@/assets/icons";
+import SearchIcon from "@mui/icons-material/Search";
 import { motion } from "framer-motion";
 import Logo from "../common/Logo/Logo";
 import AnimatedSearchInput from "../common/SearchInput/SearchInput";
@@ -118,57 +119,63 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== "open" 
 const array = [
     {
         name: "Home",
-        link1: "/home/*",
+        link1: "/home",
         Icon: HomeIcon,
         id: 1,
+    },
+    {
+        name: "For You",
+        link1: "/social/foryou",
+        Icon: ForYouIcon,
+        id: 2,
+    },
+    {
+        name: "Following",
+        link1: "/social/following",
+        Icon: FollowingIcon,
+        id: 3,
+    },
+    {
+        name: "Trending",
+        link1: "/social/trending",
+        Icon: TimelineIcon,
+        id: 4,
+    },
+    {
+        name: "Discover",
+        link1: "/social/discover",
+        Icon: ExploreIcon,
+        id: 5,
+    },
+    {
+        name: "Find People",
+        link1: "/users/search",
+        Icon: SearchIcon,
+        id: 6,
     },
     {
         name: "Vote",
         link1: "/vote",
         Icon: VoteIcon,
-        id: 2,
+        id: 7,
     },
     {
         name: "Chats",
         link1: "/chat",
         Icon: ChatIcon,
-        id: 3,
+        id: 8,
     },
     {
         name: "Live Forum",
         link1: "/live",
         Icon: LiveIcon,
-        id: 4,
+        id: 9,
     },
     {
-        name: "Stream",
-        link1: "/home/stream",
-        Icon: StreamIcon,
-        id: 5,
-    },
-    {
-        name: "Explore",
-        link1: "/home/explore",
-        Icon: ExploreIcon,
-        id: 6,
-    },
-    {
-        name: "Following",
-        link1: "/home/following",
-        Icon: FollowingIcon,
-        id: 7,
-    },
-    {
-        name: "For You",
-        link1: "/home/foryou",
-        Icon: ForYouIcon,
-        id: 8,
-    },
-     {
         name: "Profile",
         link1: "/user/profile",
         Icon: AccountBoxIcon,
-        id:9,
+        id: 10,
     },
 ];
 
@@ -315,7 +322,6 @@ const Sidebar = ({ children }) => {
     const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
     const [open, setOpen] = useState(true);
 
-    console.log(isMdUp, "isMdUp");
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -325,7 +331,7 @@ const Sidebar = ({ children }) => {
         setOpen(false);
     };
     const handleSearch = (term) => {
-        console.log("Search:", term);
+        // Handle search functionality
     };
     return (
         <Box sx={{ display: isMdUp && user ? "flex" : "block" }}>

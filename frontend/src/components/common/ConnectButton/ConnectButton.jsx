@@ -10,7 +10,6 @@ const ConnectButton = () => {
     const handleConnect = () => {
         // Prevent multiple simultaneous connection attempts
         if (isConnecting.current) {
-            console.log('Connection already in progress');
             return;
         }
 
@@ -23,7 +22,6 @@ const ConnectButton = () => {
                 isConnecting.current = false;
             }, 1000);
         } catch (error) {
-            console.error('Wallet connection error:', error);
             isConnecting.current = false;
         }
     };

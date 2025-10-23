@@ -24,7 +24,6 @@ const emailVerificationSchema = new mongoose.Schema(
     expiresAt: {
       type: Date,
       required: true,
-      index: { expires: 0 }, // TTL index - MongoDB will auto-delete expired documents
     },
   },
   {
@@ -33,8 +32,8 @@ const emailVerificationSchema = new mongoose.Schema(
 );
 
 // Indexes
-emailVerificationSchema.index({ email: 1 });
-emailVerificationSchema.index({ expiresAt: 1 });
+// email index is automatically created by unique: true
+emailVerificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index
 
 // Instance method to check if code is expired
 emailVerificationSchema.methods.isExpired = function () {

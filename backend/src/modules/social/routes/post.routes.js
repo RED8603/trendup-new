@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../../auth/middleware/auth.middleware');
+const { authenticate } = require('../../auth/middleware/auth.middleware');
+const { multipleUpload } = require('../../../core/middleware/upload.middleware');
 const {
   createPostValidation,
   createPollValidation,
@@ -23,13 +24,17 @@ const {
   getTrendingPosts,
   getUserPosts,
   getSearchPosts,
+  voteOnPostPoll,
+  getPostPollResults,
+  stakeOnPostPrediction,
+  getPostPredictionResults,
 } = require('../controllers/post.controller');
 
 // Apply auth middleware to all routes
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Post CRUD routes
-router.post('/', createPostValidation, createPost);
+router.post('/', multipleUpload('media', 5), createPostValidation, createPost);
 router.get('/', getPostsValidation, getPosts);
 router.get('/trending', getTrendingPosts);
 router.get('/search', getSearchPosts);
@@ -41,5 +46,13 @@ router.delete('/:id', deletePostValidation, deletePost);
 // Post interaction routes
 router.post('/:id/react', reactToPostValidation, reactToPost);
 router.get('/:id/reactions', getPostReactionsValidation, getPostReactions);
+
+// Post-based poll routes
+router.post('/:postId/poll/vote', voteOnPostPoll);
+router.get('/:postId/poll/results', getPostPollResults);
+
+// Post-based prediction routes
+router.post('/:postId/prediction/stake', stakeOnPostPrediction);
+router.get('/:postId/prediction/results', getPostPredictionResults);
 
 module.exports = router;

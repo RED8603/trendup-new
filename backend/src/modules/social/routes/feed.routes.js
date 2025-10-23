@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const feedController = require('../controllers/feed.controller');
-const authMiddleware = require('../../auth/middleware/auth.middleware');
+const { authenticate } = require('../../auth/middleware/auth.middleware');
 
 // All feed routes require authentication
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Main feed endpoints
 router.get('/', feedController.getUserFeed);

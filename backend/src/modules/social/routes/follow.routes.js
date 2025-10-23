@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const followController = require('../controllers/follow.controller');
-const authMiddleware = require('../../auth/middleware/auth.middleware');
+const { authenticate } = require('../../auth/middleware/auth.middleware');
 
 // Public routes (no authentication required)
 router.get('/trending', followController.getTrendingUsers);
@@ -13,7 +13,7 @@ router.get('/users/:userId/follower-stats', followController.getFollowerStats);
 router.get('/users/:userId/following-stats', followController.getFollowingStats);
 
 // Protected routes (authentication required)
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Follow/unfollow actions
 router.post('/users/:userId/follow', followController.followUser);

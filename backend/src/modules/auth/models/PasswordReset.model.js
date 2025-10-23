@@ -7,13 +7,11 @@ const passwordResetSchema = new mongoose.Schema(
       required: true,
       lowercase: true,
       trim: true,
-      index: true,
     },
     token: {
       type: String,
       required: true,
       unique: true,
-      index: true,
     },
     used: {
       type: Boolean,
@@ -22,7 +20,6 @@ const passwordResetSchema = new mongoose.Schema(
     expiresAt: {
       type: Date,
       required: true,
-      index: true,
     },
   },
   {
@@ -30,7 +27,9 @@ const passwordResetSchema = new mongoose.Schema(
   }
 );
 
-// Compound index for faster queries
+// Indexes for faster queries
+passwordResetSchema.index({ email: 1 });
+passwordResetSchema.index({ expiresAt: 1 });
 passwordResetSchema.index({ email: 1, used: 1 });
 passwordResetSchema.index({ token: 1, used: 1 });
 

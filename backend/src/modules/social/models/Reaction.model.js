@@ -6,7 +6,6 @@ const reactionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'User ID is required'],
-      index: true,
     },
     postId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -14,7 +13,6 @@ const reactionSchema = new mongoose.Schema(
       required: function() {
         return !this.commentId;
       },
-      index: true,
     },
     commentId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -22,7 +20,6 @@ const reactionSchema = new mongoose.Schema(
       required: function() {
         return !this.postId;
       },
-      index: true,
     },
     reactionType: {
       type: String,

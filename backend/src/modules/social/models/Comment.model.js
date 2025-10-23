@@ -6,19 +6,16 @@ const commentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'User ID is required'],
-      index: true,
     },
     postId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Post',
       required: [true, 'Post ID is required'],
-      index: true,
     },
     parentCommentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Comment',
       default: null,
-      index: true,
     },
     content: {
       type: String,
@@ -49,7 +46,6 @@ const commentSchema = new mongoose.Schema(
       type: String,
       enum: ['approved', 'flagged', 'removed'],
       default: 'approved',
-      index: true,
     },
     // Soft delete
     isDeleted: {

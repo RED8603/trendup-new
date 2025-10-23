@@ -4,7 +4,7 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 const config = {
   // Server Configuration
   server: {
-    port: process.env.PORT || 5000,
+    port: process.env.PORT || 3001,
     host: process.env.HOST || 'localhost',
     env: process.env.NODE_ENV || 'development'
   },
@@ -26,7 +26,27 @@ const config = {
     password: process.env.REDIS_PASSWORD || null,
     retryDelayOnFailover: 100,
     enableReadyCheck: false,
-    maxRetriesPerRequest: null
+    maxRetriesPerRequest: null,
+    // Enhanced Redis configuration
+    keyPrefix: 'trendup:',
+    ttl: {
+      posts: 3600,        // 1 hour
+      users: 1800,        // 30 minutes
+      feeds: 300,         // 5 minutes
+      trending: 900,      // 15 minutes
+      karma: 600,         // 10 minutes
+      sessions: 86400,    // 24 hours
+      temporary: 60       // 1 minute
+    },
+    // Connection pool settings
+    maxConnections: 10,
+    minConnections: 2,
+    // Queue settings
+    queueSettings: {
+      defaultTTL: 3600,   // 1 hour
+      maxRetries: 3,
+      retryDelay: 5000    // 5 seconds
+    }
   },
 
   // JWT Configuration
@@ -87,14 +107,15 @@ const config = {
       port: parseInt(process.env.SMTP_PORT) || 587,
       secure: process.env.SMTP_SECURE === 'true' || parseInt(process.env.SMTP_PORT) === 465,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
+        user:  process.env.GOOGLE_EMAIL || process.env.SMTP_USER,
+        pass: process.env.GOOGLE_PASSWORD || process.env.SMTP_PASS
       }
     },
     from: {
       email: process.env.FROM_EMAIL || 'noreply@trendupcoin.com',
       name: process.env.FROM_NAME || 'TrendUpCoin'
-    }
+    },
+ 
   },
 
   // Rate Limiting

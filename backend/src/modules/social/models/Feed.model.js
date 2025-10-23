@@ -6,13 +6,11 @@ const feedSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true,
     },
     feedType: {
       type: String,
       enum: ['following', 'trending', 'category', 'topic', 'hashtag', 'personalized', 'discover'],
       required: true,
-      index: true,
     },
     // Feed configuration
     categoryId: {
@@ -56,18 +54,15 @@ const feedSchema = new mongoose.Schema(
     lastUpdated: {
       type: Date,
       default: Date.now,
-      index: true,
     },
     nextUpdate: {
       type: Date,
       default: Date.now,
-      index: true,
     },
     // Feed settings
     isActive: {
       type: Boolean,
       default: true,
-      index: true,
     },
     maxPosts: {
       type: Number,

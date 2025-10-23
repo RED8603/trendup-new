@@ -8,6 +8,10 @@ const hashtagRoutes = require('./routes/hashtag.routes');
 const topicRoutes = require('./routes/topic.routes');
 const feedRoutes = require('./routes/feed.routes');
 const mediaRoutes = require('./routes/media.routes');
+const pollRoutes = require('./routes/poll.routes');
+const predictionRoutes = require('./routes/prediction.routes');
+const moderationRoutes = require('./routes/moderation.routes');
+const notificationRoutes = require('./routes/notification.routes');
 
 module.exports = {
   postRoutes,
@@ -19,5 +23,9 @@ module.exports = {
   hashtagRoutes,
   topicRoutes,
   feedRoutes,
-  mediaRoutes
+  mediaRoutes,
+  pollRoutes,
+  predictionRoutes,
+  moderationRoutes,
+  notificationRoutes
 };

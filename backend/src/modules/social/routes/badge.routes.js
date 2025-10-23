@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const badgeController = require('../controllers/badge.controller');
-const authMiddleware = require('../../auth/middleware/auth.middleware');
+const { authenticate } = require('../../auth/middleware/auth.middleware');
 
 // Public routes (no authentication required)
 router.get('/', badgeController.getAllBadges);
@@ -13,7 +13,7 @@ router.get('/users/:userId/available', badgeController.getAvailableBadgesForUser
 router.get('/users/:userId/progress', badgeController.getUserBadgeProgress);
 
 // Protected routes (authentication required)
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Current user routes
 router.get('/me/available', badgeController.getMyAvailableBadges);

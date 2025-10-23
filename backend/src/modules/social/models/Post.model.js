@@ -6,7 +6,6 @@ const postSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'User ID is required'],
-      index: true,
     },
     content: {
       type: String,
@@ -32,20 +31,23 @@ const postSchema = new mongoose.Schema(
     category: {
       type: String,
       enum: [
+        'general',
+        'technology',
+        'business',
+        'entertainment',
+        'sports',
+        'science',
         'crypto_news',
         'defi',
         'nfts',
         'trading_signals',
         'market_analysis',
         'memes',
-        'technology',
         'tutorials',
         'ama',
         'events',
-        'general',
       ],
       default: 'general',
-      index: true,
     },
     hashtags: [{
       type: String,
@@ -57,7 +59,6 @@ const postSchema = new mongoose.Schema(
       type: String,
       enum: ['pending', 'approved', 'flagged', 'removed'],
       default: 'approved', // Auto-approve for now, pending AI moderation later
-      index: true,
     },
     visibility: {
       type: String,
@@ -88,7 +89,6 @@ const postSchema = new mongoose.Schema(
     engagementScore: {
       type: Number,
       default: 0,
-      index: true,
     },
     // Poll-specific fields
     pollOptions: [{

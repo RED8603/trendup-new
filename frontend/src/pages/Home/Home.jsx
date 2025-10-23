@@ -1,5 +1,6 @@
 import CreatePost from "@/components/CreatePost/CreatePost";
 import Posts from "@/components/Post/Posts";
+import ForYouFeed from "@/components/Feed/ForYouFeed";
 import { Box, Container, Grid2, Typography, useMediaQuery } from "@mui/material";
 import React, { useState } from "react";
 import CryptoNewsList from "./CryptoNewsList/CryptoNewsList";
@@ -22,7 +23,6 @@ const DesktopScreen = () => (
             </Grid2>
 
             <Grid2 size={{ xs: 12, md: 6 }} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <CreatePost />
                 <TrendingTabs />
             </Grid2>
 
@@ -54,8 +54,6 @@ const MobileScreen = ({ handleChange, tabId }) => {
                     <CryptoNewsList />
                 </TabPanel>
                 <TabPanel value={2} sx={{ px: { md: 2, xs: 0 }, py: 2 }}>
-                    {" "}
-                    <CreatePost />
                     <TrendingTabs />
                 </TabPanel>
                 <TabPanel value={3} sx={{ px: { md: 2, xs: 0 }, py: 2 }}>

@@ -5,20 +5,26 @@ const lightTheme = createTheme({
     palette: {
         mode: "light",
         primary: {
-            main: "#16b48e", //
-            dark: "#f9f9f9",
-            light: "#f9f9f9",
+            main: "#16b48e", // Main brand color (teal)
+            dark: "#0f8a6b", // Darker teal for hover states
+            light: "#4dd4b8", // Lighter teal for backgrounds
         },
         secondary: {
-            main: "#616161", //
+            main: "#616161", // Grey for secondary elements
+            dark: "#424242", // Darker grey
+            light: "#9e9e9e", // Lighter grey
         },
         background: {
-            default: "#f4f6f8", // Light grey
-            paper: "#616161", // White
+            default: "#f4f6f8", // Light grey background
+            paper: "#ffffff", // White for cards/containers
         },
         text: {
-            primary: "#16b48e", // Black
-            secondary: "#030303", // Grey
+            primary: "#212121", // Dark text for readability
+            secondary: "#616161", // Grey text for secondary content
+        },
+        action: {
+            hover: "#f5f5f5", // Light grey for hover states
+            disabled: "#bdbdbd", // Disabled state color
         },
     },
     typography: {
@@ -69,20 +75,26 @@ const darkTheme = createTheme({
     palette: {
         mode: "dark",
         primary: {
-            main: "#16b48e", // Light blue
-            dark: "#0b0f19",
-            light: "#171b25",
+            main: "#16b48e", // Main brand color (teal)
+            dark: "#0f8a6b", // Darker teal for hover states
+            light: "#4dd4b8", // Lighter teal for backgrounds
         },
         secondary: {
-            main: "#616161", // Light pink
+            main: "#616161", // Grey for secondary elements
+            dark: "#424242", // Darker grey
+            light: "#9e9e9e", // Lighter grey
         },
         background: {
-            default: "#030303", // Dark grey
-            paper: "#616161", // Slightly lighter dark grey
+            default: "#030303", // Dark background
+            paper: "#0b0f19", // Darker for cards/containers
         },
         text: {
-            primary: "#16b48e", // White
-            secondary: "#fff", // Light grey
+            primary: "#ffffff", // White text for readability
+            secondary: "#bdbdbd", // Light grey text for secondary content
+        },
+        action: {
+            hover: "#171b25", // Dark grey for hover states
+            disabled: "#424242", // Disabled state color
         },
     },
     typography: {

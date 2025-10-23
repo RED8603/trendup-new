@@ -242,6 +242,171 @@ export const initialConversations = [
 ];
 
 
+// ==================== SOCIAL CATEGORIES ====================
+
+// Default categories for posts (matches backend post enums exactly)
+export const DEFAULT_CATEGORIES = [
+    {
+        _id: 'general',
+        name: 'General',
+        description: 'General discussions and topics',
+        color: '#3B82F6',
+        isDefault: true,
+        tags: ['general', 'discussion', 'chat'],
+        keywords: ['general', 'discussion', 'chat', 'talk']
+    },
+    {
+        _id: 'technology',
+        name: 'Technology',
+        description: 'Technology news, discussions, and innovations',
+        color: '#10B981',
+        tags: ['tech', 'technology', 'innovation', 'software'],
+        keywords: ['technology', 'tech', 'software', 'hardware', 'innovation', 'ai', 'programming']
+    },
+    {
+        _id: 'business',
+        name: 'Business',
+        description: 'Business news, entrepreneurship, and finance',
+        color: '#F59E0B',
+        tags: ['business', 'finance', 'entrepreneurship', 'startup'],
+        keywords: ['business', 'finance', 'entrepreneurship', 'startup', 'investment', 'economy']
+    },
+    {
+        _id: 'entertainment',
+        name: 'Entertainment',
+        description: 'Movies, music, games, and entertainment',
+        color: '#EF4444',
+        tags: ['entertainment', 'movies', 'music', 'games'],
+        keywords: ['entertainment', 'movies', 'music', 'games', 'tv', 'celebrities', 'fun']
+    },
+    {
+        _id: 'sports',
+        name: 'Sports',
+        description: 'Sports news, discussions, and updates',
+        color: '#8B5CF6',
+        tags: ['sports', 'fitness', 'athletics', 'competition'],
+        keywords: ['sports', 'fitness', 'athletics', 'football', 'basketball', 'soccer', 'olympics']
+    },
+    {
+        _id: 'science',
+        name: 'Science',
+        description: 'Scientific discoveries, research, and education',
+        color: '#06B6D4',
+        tags: ['science', 'research', 'education', 'discovery'],
+        keywords: ['science', 'research', 'education', 'discovery', 'physics', 'chemistry', 'biology']
+    },
+    {
+        _id: 'crypto_news',
+        name: 'Crypto News',
+        description: 'Latest cryptocurrency news and updates',
+        color: '#F97316',
+        tags: ['crypto', 'news', 'bitcoin', 'ethereum'],
+        keywords: ['crypto', 'news', 'bitcoin', 'ethereum', 'blockchain', 'cryptocurrency', 'altcoin']
+    },
+    {
+        _id: 'defi',
+        name: 'DeFi',
+        description: 'Decentralized Finance discussions and protocols',
+        color: '#8B5CF6',
+        tags: ['defi', 'yield', 'farming', 'liquidity'],
+        keywords: ['defi', 'yield', 'farming', 'liquidity', 'protocols', 'tokens', 'staking']
+    },
+    {
+        _id: 'nfts',
+        name: 'NFTs',
+        description: 'Non-Fungible Tokens and digital collectibles',
+        color: '#EC4899',
+        tags: ['nft', 'collectibles', 'art', 'digital'],
+        keywords: ['nft', 'collectibles', 'art', 'digital', 'marketplace', 'opensea', 'minting']
+    },
+    {
+        _id: 'trading_signals',
+        name: 'Trading Signals',
+        description: 'Trading signals, analysis, and market insights',
+        color: '#10B981',
+        tags: ['trading', 'signals', 'analysis', 'market'],
+        keywords: ['trading', 'signals', 'analysis', 'market', 'technical', 'fundamental', 'charts']
+    },
+    {
+        _id: 'market_analysis',
+        name: 'Market Analysis',
+        description: 'In-depth market analysis and research',
+        color: '#3B82F6',
+        tags: ['market', 'analysis', 'research', 'trends'],
+        keywords: ['market', 'analysis', 'research', 'trends', 'forecast', 'prediction', 'insights']
+    },
+    {
+        _id: 'memes',
+        name: 'Memes',
+        description: 'Crypto memes and humorous content',
+        color: '#F59E0B',
+        tags: ['memes', 'funny', 'humor', 'crypto'],
+        keywords: ['memes', 'funny', 'humor', 'crypto', 'doge', 'shiba', 'comedy']
+    },
+    {
+        _id: 'tutorials',
+        name: 'Tutorials',
+        description: 'Educational tutorials and guides',
+        color: '#06B6D4',
+        tags: ['tutorials', 'education', 'guides', 'learning'],
+        keywords: ['tutorials', 'education', 'guides', 'learning', 'how-to', 'step-by-step', 'beginner']
+    },
+    {
+        _id: 'ama',
+        name: 'AMA',
+        description: 'Ask Me Anything sessions and Q&A',
+        color: '#EF4444',
+        tags: ['ama', 'q&a', 'questions', 'answers'],
+        keywords: ['ama', 'q&a', 'questions', 'answers', 'interview', 'discussion', 'community']
+    },
+    {
+        _id: 'events',
+        name: 'Events',
+        description: 'Crypto events, conferences, and meetups',
+        color: '#8B5CF6',
+        tags: ['events', 'conferences', 'meetups', 'networking'],
+        keywords: ['events', 'conferences', 'meetups', 'networking', 'summit', 'expo', 'gathering']
+    }
+];
+
+// Category colors for consistent theming
+export const CATEGORY_COLORS = {
+    general: '#3B82F6',
+    technology: '#10B981',
+    business: '#F59E0B',
+    entertainment: '#EF4444',
+    sports: '#8B5CF6',
+    science: '#06B6D4',
+    crypto_news: '#F97316',
+    defi: '#8B5CF6',
+    nfts: '#EC4899',
+    trading_signals: '#10B981',
+    market_analysis: '#3B82F6',
+    memes: '#F59E0B',
+    tutorials: '#06B6D4',
+    ama: '#EF4444',
+    events: '#8B5CF6'
+};
+
+// Category icons (Material-UI icon names)
+export const CATEGORY_ICONS = {
+    general: 'ChatBubbleOutline',
+    technology: 'Computer',
+    business: 'Business',
+    entertainment: 'Movie',
+    sports: 'Sports',
+    science: 'Science',
+    crypto_news: 'Newspaper', // Uses existing NewspaperIcon
+    defi: 'AccountBalance',
+    nfts: 'Image', // Uses existing ImageIcon
+    trading_signals: 'TrendingUp',
+    market_analysis: 'Analytics',
+    memes: 'Mood',
+    tutorials: 'School',
+    ama: 'QuestionAnswer',
+    events: 'Event'
+};
+
 export const dummyPost =  [
     {
         id: 1,

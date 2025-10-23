@@ -130,9 +130,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Indexes
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
-userSchema.index({ walletAddress: 1 });
+// Indexes are automatically created by unique: true, so we only need non-unique indexes
 userSchema.index({ createdAt: -1 });
 
 // Virtual for auth relationship

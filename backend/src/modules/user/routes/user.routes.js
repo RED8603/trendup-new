@@ -13,7 +13,7 @@ const {
   usernameParamValidator,
   searchQueryValidator,
 } = require('../validators/user.validators');
-const authMiddleware = require('../../auth/middleware/auth.middleware');
+const { authenticate } = require('../../auth/middleware/auth.middleware');
 const { uploadAvatar, uploadCover } = require('../middleware/upload.middleware');
 const rateLimit = require('express-rate-limit');
 
@@ -54,13 +54,13 @@ router.get(
 // Protected routes (require authentication)
 router.get(
   '/me',
-  authMiddleware,
+  authenticate,
   getMyProfile
 );
 
 router.patch(
   '/profile',
-  authMiddleware,
+  authenticate,
   updateLimiter,
   updateProfileValidator,
   updateProfile
@@ -68,7 +68,7 @@ router.patch(
 
 router.post(
   '/avatar',
-  authMiddleware,
+  authenticate,
   uploadLimiter,
   uploadAvatar,
   updateAvatar
@@ -76,7 +76,7 @@ router.post(
 
 router.post(
   '/cover',
-  authMiddleware,
+  authenticate,
   uploadLimiter,
   uploadCover,
   updateCoverImage
@@ -84,7 +84,7 @@ router.post(
 
 router.delete(
   '/account',
-  authMiddleware,
+  authenticate,
   deleteAccount
 );
 

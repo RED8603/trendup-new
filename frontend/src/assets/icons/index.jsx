@@ -43,4 +43,65 @@ import ForYouIcon from "@mui/icons-material/Stars";
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 export { StreamIcon, ExploreIcon, FollowingIcon, ForYouIcon,AccountBoxIcon };
 
+// Social Media Icons
+export { default as ShareIcon } from "@mui/icons-material/Share";
+export { default as BookmarkBorderIcon } from "@mui/icons-material/BookmarkBorder";
+export { default as BookmarkIcon } from "@mui/icons-material/Bookmark";
+export { default as FlagIcon } from "@mui/icons-material/Flag";
+export { default as DeleteIcon } from "@mui/icons-material/Delete";
+
+// Reaction Icons
+export { default as EmojiEmotionsIcon } from "@mui/icons-material/EmojiEmotions";
+export { default as SentimentVerySatisfiedIcon } from "@mui/icons-material/SentimentVerySatisfied";
+export { default as SentimentSatisfiedIcon } from "@mui/icons-material/SentimentSatisfied";
+export { default as SentimentNeutralIcon } from "@mui/icons-material/SentimentNeutral";
+export { default as SentimentDissatisfiedIcon } from "@mui/icons-material/SentimentDissatisfied";
+export { default as SentimentVeryDissatisfiedIcon } from "@mui/icons-material/SentimentVeryDissatisfied";
+export { default as EmojiEventsIcon } from "@mui/icons-material/EmojiEvents";
+export { default as CelebrationIcon } from "@mui/icons-material/Celebration";
+export { default as ThumbDownIcon } from "@mui/icons-material/ThumbDown";
+export { default as ThumbDownOffAltIcon } from "@mui/icons-material/ThumbDownOffAlt";
+export { default as PsychologyIcon } from "@mui/icons-material/Psychology";
+export { default as DiamondIcon } from "@mui/icons-material/Diamond";
+export { default as RocketLaunchIcon } from "@mui/icons-material/RocketLaunch";
+export { default as TrendingUpIcon } from "@mui/icons-material/TrendingUp";
+export { default as TrendingDownIcon } from "@mui/icons-material/TrendingDown";
+export { default as LocalFireDepartmentIcon } from "@mui/icons-material/Whatshot";
+export { default as WbSunnyIcon } from "@mui/icons-material/WbSunny";
+export { default as NightlightIcon } from "@mui/icons-material/NightsStay";
+export { default as SkullIcon } from "@mui/icons-material/PersonOff";
+export { default as FitnessCenterIcon } from "@mui/icons-material/FitnessCenter";
+export { default as PanToolIcon } from "@mui/icons-material/PanTool";
+export { default as PanToolAltIcon } from "@mui/icons-material/PanToolAlt";
+export { default as ImageIcon } from "@mui/icons-material/Image";
+export { default as PredictionIcon } from "@mui/icons-material/TrendingFlat";
+export { default as EmojiIcon } from "@mui/icons-material/SentimentSatisfied";
+export { default as HashtagIcon } from "@mui/icons-material/Tag";
+export { default as CategoryIcon } from "@mui/icons-material/Category";
+export { default as CloseIcon } from "@mui/icons-material/Close";
+export { default as PlayArrowIcon } from "@mui/icons-material/PlayArrow";
+export { default as PauseIcon } from "@mui/icons-material/Pause";
+export { default as AudioIcon } from "@mui/icons-material/AudioFile";
+
+// Connection Status Icons
+export { default as WifiIcon } from "@mui/icons-material/Wifi";
+export { default as WifiOffIcon } from "@mui/icons-material/WifiOff";
+export { default as RefreshIcon } from "@mui/icons-material/Refresh";
+export { default as ErrorIcon } from "@mui/icons-material/Error";
+export { default as CheckCircleIcon } from "@mui/icons-material/CheckCircle";
+
+// Category-specific icons (avoiding duplicates with existing exports)
+export { default as ChatBubbleOutlineIcon } from "@mui/icons-material/ChatBubbleOutline";
+export { default as ComputerIcon } from "@mui/icons-material/Computer";
+export { default as BusinessIcon } from "@mui/icons-material/Business";
+export { default as MovieIcon } from "@mui/icons-material/Movie";
+export { default as SportsIcon } from "@mui/icons-material/Sports";
+export { default as ScienceIcon } from "@mui/icons-material/Science";
+export { default as AccountBalanceIcon } from "@mui/icons-material/AccountBalance";
+export { default as AnalyticsIcon } from "@mui/icons-material/Analytics";
+export { default as MoodIcon } from "@mui/icons-material/Mood";
+export { default as SchoolIcon } from "@mui/icons-material/School";
+export { default as QuestionAnswerIcon } from "@mui/icons-material/QuestionAnswer";
+export { default as EventIcon } from "@mui/icons-material/Event";
+
 export { GoogleSvg } from "@/assets/svg/index";

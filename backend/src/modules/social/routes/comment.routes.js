@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const commentController = require('../controllers/comment.controller');
 const commentValidators = require('../validators/comment.validators');
-const authMiddleware = require('../../auth/middleware/auth.middleware');
+const { authenticate } = require('../../auth/middleware/auth.middleware');
 
 // Public routes (no authentication required)
 router.get('/trending', commentValidators.getTrendingCommentsValidator, commentController.getTrendingComments);
@@ -16,7 +16,7 @@ router.get('/:commentId/thread', commentValidators.getCommentThreadValidator, co
 router.get('/:commentId/replies', commentValidators.getCommentRepliesValidator, commentController.getCommentReplies);
 
 // Protected routes (authentication required)
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Comment CRUD operations
 router.post('/posts/:postId', commentValidators.createCommentValidator, commentController.createComment);
@@ -25,6 +25,8 @@ router.delete('/:commentId', commentValidators.deleteCommentValidator, commentCo
 
 // Comment interactions
 router.post('/:commentId/flag', commentValidators.flagCommentValidator, commentController.flagComment);
+router.post('/:commentId/react', commentController.reactToComment);
+router.get('/:commentId/reactions', commentController.getCommentReactions);
 
 // Current user routes
 router.get('/me/comments', commentValidators.getUserCommentsValidator, commentController.getMyComments);

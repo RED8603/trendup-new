@@ -546,6 +546,116 @@ class CommentService {
       throw error;
     }
   }
+
+  // React to a comment
+  async reactToComment(commentId, userId, reactionType) {
+    try {
+      // Check if comment exists
+      const comment = await Comment.findOne({
+        _id: commentId,
+        isDeleted: false,
+        status: 'approved',
+      });
+
+      if (!comment) {
+        throw new Error('Comment not found');
+      }
+
+      // Check if user already reacted with this type
+      const existingReaction = await Reaction.findOne({
+        userId,
+        commentId,
+        reactionType,
+      });
+
+      if (existingReaction) {
+        // Remove existing reaction (toggle off)
+        await Reaction.findByIdAndDelete(existingReaction._id);
+        
+        logger.info(`[INFO] Reaction removed: ${reactionType} on comment ${commentId} by user ${userId}`);
+        
+        return { 
+          message: 'Reaction removed',
+          action: 'removed',
+          reaction: null,
+        };
+      }
+
+      // Create new reaction
+      const reaction = new Reaction({
+        userId,
+        commentId,
+        reactionType,
+      });
+
+      await reaction.save();
+
+      // Populate user data
+      await reaction.populate('userId', 'name username avatar karmaScore karmaLevel');
+
+      logger.info(`[INFO] Reaction added: ${reactionType} on comment ${commentId} by user ${userId}`);
+
+      return {
+        message: 'Reaction added',
+        action: 'added',
+        reaction,
+      };
+    } catch (error) {
+      logger.error(`[ERROR] Failed to react to comment:`, error);
+      throw error;
+    }
+  }
+
+  // Get comment reactions
+  async getCommentReactions(commentId, userId, options = {}) {
+    try {
+      const { page = 1, limit = 20 } = options;
+      const skip = (page - 1) * limit;
+
+      // Check if comment exists
+      const comment = await Comment.findOne({
+        _id: commentId,
+        isDeleted: false,
+      });
+
+      if (!comment) {
+        throw new Error('Comment not found');
+      }
+
+      // Get reaction counts
+      const reactionCounts = await Reaction.getCommentReactionCounts(commentId);
+
+      // Get individual reactions with user data
+      const reactions = await Reaction.find({ commentId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('userId', 'name username avatar karmaScore karmaLevel');
+
+      const total = await Reaction.countDocuments({ commentId });
+
+      // Get user's reactions if userId is provided
+      let userReactions = [];
+      if (userId) {
+        userReactions = await Reaction.find({ commentId, userId }).select('reactionType');
+      }
+
+      return {
+        reactionCounts,
+        reactions,
+        userReactions: userReactions.map(r => r.reactionType),
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      };
+    } catch (error) {
+      logger.error(`[ERROR] Failed to get comment reactions:`, error);
+      throw error;
+    }
+  }
 }
 
 module.exports = new CommentService();

@@ -30,5 +30,7 @@ const authMiddleware = ErrorHandler.handleAsync(async (req, res, next) => {
   next();
 });
 
-module.exports = authMiddleware;
+module.exports = {
+  authenticate: authMiddleware
+};
 

@@ -115,7 +115,6 @@ const mediaSchema = new mongoose.Schema(
       type: String,
       enum: ['pending', 'processing', 'completed', 'failed'],
       default: 'pending',
-      index: true,
     },
     processingProgress: {
       type: Number,
@@ -132,39 +131,33 @@ const mediaSchema = new mongoose.Schema(
       type: String,
       enum: ['image', 'video', 'gif', 'audio', 'document'],
       required: true,
-      index: true,
     },
     category: {
       type: String,
       enum: ['profile', 'post', 'comment', 'banner', 'avatar', 'attachment'],
       default: 'post',
-      index: true,
     },
     // Content association
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true,
     },
     postId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Post',
       default: null,
-      index: true,
     },
     commentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Comment',
       default: null,
-      index: true,
     },
     // Content moderation
     moderationStatus: {
       type: String,
       enum: ['pending', 'approved', 'flagged', 'rejected'],
       default: 'pending',
-      index: true,
     },
     moderationScore: {
       type: Number,
@@ -200,12 +193,10 @@ const mediaSchema = new mongoose.Schema(
     isPublic: {
       type: Boolean,
       default: true,
-      index: true,
     },
     isDeleted: {
       type: Boolean,
       default: false,
-      index: true,
     },
     deletedAt: {
       type: Date,
@@ -215,7 +206,6 @@ const mediaSchema = new mongoose.Schema(
     expiresAt: {
       type: Date,
       default: null,
-      index: true,
     },
     // Tags and metadata
     tags: [{

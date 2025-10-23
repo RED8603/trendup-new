@@ -1,4 +1,5 @@
 const followService = require('../services/follow.service');
+const notificationService = require('../../../core/services/notification.service');
 const { logger } = require('../../../core/utils/logger');
 const { ResponseHandler } = require('../../../core/utils/response');
 
@@ -7,10 +8,27 @@ class FollowController {
   async followUser(req, res, next) {
     try {
       const { userId } = req.params;
-      const currentUserId = req.user.userId;
+      const currentUserId = req.user._id;
       const { source = 'MANUAL' } = req.body;
 
       const follow = await followService.followUser(currentUserId, userId, source);
+
+      // Send follow notification
+      if (follow && userId !== currentUserId.toString()) {
+        try {
+          const templates = notificationService.createNotificationTemplates();
+          const notification = templates.userFollowed({
+            _id: currentUserId,
+            username: req.user.username || req.user.name,
+            avatar: req.user.avatar
+          });
+          await notificationService.sendNotification(userId, notification);
+          logger.info(`[INFO] Follow notification sent to user ${userId}`);
+        } catch (notifError) {
+          logger.error('[ERROR] Failed to send follow notification:', notifError);
+          // Don't fail the request if notification fails
+        }
+      }
 
       return ResponseHandler.success(res, {
         follow,
@@ -26,7 +44,7 @@ class FollowController {
   async unfollowUser(req, res, next) {
     try {
       const { userId } = req.params;
-      const currentUserId = req.user.userId;
+      const currentUserId = req.user._id;
 
       const result = await followService.unfollowUser(currentUserId, userId);
 
@@ -44,7 +62,7 @@ class FollowController {
   async isFollowing(req, res, next) {
     try {
       const { userId } = req.params;
-      const currentUserId = req.user.userId;
+      const currentUserId = req.user._id;
 
       const isFollowing = await followService.isFollowing(currentUserId, userId);
 
@@ -116,7 +134,7 @@ class FollowController {
   async getMutualFollows(req, res, next) {
     try {
       const { userId } = req.params;
-      const currentUserId = req.user.userId;
+      const currentUserId = req.user._id;
 
       const mutualFollows = await followService.getMutualFollows(currentUserId, userId);
 
@@ -133,7 +151,7 @@ class FollowController {
   // Get follow suggestions
   async getFollowSuggestions(req, res, next) {
     try {
-      const currentUserId = req.user.userId;
+      const currentUserId = req.user._id;
       const { limit = 10 } = req.query;
 
       const suggestions = await followService.getFollowSuggestions(
@@ -209,7 +227,7 @@ class FollowController {
   async muteUser(req, res, next) {
     try {
       const { userId } = req.params;
-      const currentUserId = req.user.userId;
+      const currentUserId = req.user._id;
 
       const follow = await followService.muteUser(currentUserId, userId);
 
@@ -227,7 +245,7 @@ class FollowController {
   async unmuteUser(req, res, next) {
     try {
       const { userId } = req.params;
-      const currentUserId = req.user.userId;
+      const currentUserId = req.user._id;
 
       const follow = await followService.unmuteUser(currentUserId, userId);
 
@@ -245,7 +263,7 @@ class FollowController {
   async blockUser(req, res, next) {
     try {
       const { userId } = req.params;
-      const currentUserId = req.user.userId;
+      const currentUserId = req.user._id;
 
       const follow = await followService.blockUser(currentUserId, userId);
 
@@ -263,7 +281,7 @@ class FollowController {
   async unblockUser(req, res, next) {
     try {
       const { userId } = req.params;
-      const currentUserId = req.user.userId;
+      const currentUserId = req.user._id;
 
       const follow = await followService.unblockUser(currentUserId, userId);
 
@@ -281,6 +299,7 @@ class FollowController {
   async searchUsers(req, res, next) {
     try {
       const { q, limit = 20, offset = 0 } = req.query;
+      const currentUserId = req.user?._id; // Get current user ID if authenticated
 
       if (!q || q.trim().length < 2) {
         return res.status(400).json({
@@ -291,6 +310,7 @@ class FollowController {
 
       const users = await followService.searchUsers(
         q.trim(),
+        currentUserId, // Pass current user ID
         parseInt(limit),
         parseInt(offset)
       );
@@ -315,7 +335,7 @@ class FollowController {
   async getUserProfile(req, res, next) {
     try {
       const { userId } = req.params;
-      const currentUserId = req.user?.userId;
+      const currentUserId = req.user?._id;
 
       const profile = await followService.getUserProfileWithFollowStatus(
         userId,
@@ -335,7 +355,7 @@ class FollowController {
   // Get follow feed
   async getFollowFeed(req, res, next) {
     try {
-      const currentUserId = req.user.userId;
+      const currentUserId = req.user._id;
       const { limit = 50, offset = 0 } = req.query;
 
       const posts = await followService.getFollowFeed(
@@ -362,7 +382,7 @@ class FollowController {
   // Get current user's follow statistics
   async getMyFollowStats(req, res, next) {
     try {
-      const currentUserId = req.user.userId;
+      const currentUserId = req.user._id;
 
       const followerStats = await followService.getFollowerStats(currentUserId);
       const followingStats = await followService.getFollowingStats(currentUserId);

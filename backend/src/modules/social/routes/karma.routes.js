@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const karmaController = require('../controllers/karma.controller');
-const authMiddleware = require('../../auth/middleware/auth.middleware');
+const { authenticate } = require('../../auth/middleware/auth.middleware');
 
 // Public routes (no authentication required)
 router.get('/leaderboard', karmaController.getLeaderboard);
@@ -15,7 +15,7 @@ router.get('/users/:userId/can-use-reaction', karmaController.canUseReaction);
 router.get('/users/:userId/reaction-weight', karmaController.getUserReactionWeight);
 
 // Protected routes (authentication required)
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Current user routes
 router.get('/me', karmaController.getMyKarma);

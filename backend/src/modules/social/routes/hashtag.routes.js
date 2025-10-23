@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const hashtagController = require('../controllers/hashtag.controller');
-const authMiddleware = require('../../auth/middleware/auth.middleware');
+const { authenticate } = require('../../auth/middleware/auth.middleware');
 
 // Public routes (no authentication required)
 router.get('/', hashtagController.getAllHashtags);
@@ -16,7 +16,7 @@ router.get('/:hashtagId/usage-history', hashtagController.getHashtagUsageHistory
 router.get('/name/:name/posts', hashtagController.getHashtagPosts);
 
 // Protected routes (authentication required)
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Hashtag interactions
 router.post('/extract', hashtagController.extractHashtags);

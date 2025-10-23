@@ -1,97 +1,112 @@
-import BoxConatner from "@/components/common/BoxContainer/BoxConatner";
-import ButtonMain from "@/components/common/ButtonMain";
-import { Typography, LinearProgress, Box, Stack, useTheme, Container } from "@mui/material";
+import React, { useState } from 'react';
+import { Box, Typography, LinearProgress, Stack, Button, useTheme } from '@mui/material';
+import { useVoteOnPollMutation, useGetPollResultsQuery } from '@/api/slices/socialApi';
+import { useToast } from '@/hooks/useToast';
+import { useSelector } from 'react-redux';
+import { formatDistanceToNow } from 'date-fns';
 
-export default function Poll() {
-    const theme = useTheme();
-    return (
-        <Container maxWidth="md">
-            <BoxConatner>
-                <Box p={2}>
-                    <Stack spacing={2}>
-                        {/* Title */}
-                        <Typography variant="h3" color={theme.palette.text.secondary}>
-                            Freeze All Sales for 30 Days
-                        </Typography>
+const Poll = ({ pollData, postId }) => {
+  const theme = useTheme();
+  const { showToast } = useToast();
+  const { user: currentUser } = useSelector((state) => state.user);
+  const [selectedOption, setSelectedOption] = useState(null);
+  
+  const [voteOnPoll, { isLoading: isVoting }] = useVoteOnPollMutation();
+  const { data: pollResults } = useGetPollResultsQuery(pollData._id);
 
-                        {/* Subtitle */}
-                        <Typography
-                            variant="body1"
-                            color={theme.palette.text.primary}
-                            sx={{
-                                fontSize: "1rem",
-                                fontWeight: 700,
-                                mb: 1,
-                            }}
-                        >
-                            Requires 40% of holders to vote Yes
-                        </Typography>
+  const handleVote = async (optionIndex) => {
+    try {
+      await voteOnPoll({ postId: pollData._id, optionIndex }).unwrap();
+      showToast('Vote submitted successfully!', 'success');
+      setSelectedOption(optionIndex);
+    } catch (error) {
+      showToast(error.data?.message || 'Failed to submit vote', 'error');
+    }
+  };
 
-                        {/* Progress Section */}
-                        <Box>
-                            <Typography
-                                variant="h1"
-                                color={theme.palette.text.primary}
-                                sx={{
-                                    fontWeight: "bold",
-                                    mb: 1,
-                                }}
-                            >
-                                20%
-                            </Typography>
-                            <LinearProgress
-                                variant="determinate"
-                                value={20}
-                                sx={{
-                                    height: 15,
-                                    borderRadius: 4,
-                                    backgroundColor: theme.palette.background.paper,
-                                    "& .MuiLinearProgress-bar": {
-                                        backgroundColor: theme.palette.text.primary,
-                                        borderRadius: 4,
-                                    },
-                                }}
-                            />
-                        </Box>
+  // Calculate total votes and check if user has voted
+  const totalVotes = pollData.pollOptions?.reduce((sum, option) => sum + (option.votes || 0), 0) || 0;
+  const hasVoted = pollData.pollOptions?.some(option => 
+    option.voters?.some(voter => voter.toString() === currentUser?._id)
+  );
 
-                        {/* Countdown */}
-                        <Box>
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: "#a0a0a0",
-                                    mb: 0.5,
-                                }}
-                            >
-                                Voting ends in
-                            </Typography>
-                            <Typography
-                                variant="h6"
-                                sx={{
-                                    color: "white",
-                                    fontWeight: "bold",
-                                }}
-                            >
-                                6 days, 14 h
-                            </Typography>
-                        </Box>
+  // Check if poll has expired
+  const isExpired = pollData.pollSettings?.expiresAt && 
+    new Date(pollData.pollSettings.expiresAt) < new Date();
 
-                        {/* Voting Buttons */}
-                        <Stack direction="row" spacing={2}>
-                            <ButtonMain fullWidth>YES</ButtonMain>
-                            <ButtonMain
-                                variant="contained"
-                                fullWidth
-                                sx={{
-                                    backgroundColor: "#ff4444",
-                                }}
-                            >
-                                NO
-                            </ButtonMain>
-                        </Stack>
-                    </Stack>
-                </Box>
-            </BoxConatner>
-        </Container>
-    );
-}
+  return (
+    <Box sx={{ 
+      mt: 2, 
+      p: 2, 
+      border: 1, 
+      borderColor: 'divider', 
+      borderRadius: 2,
+      background: theme.palette.background.paper,
+    }}>
+      <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+        {pollData.content || 'Poll Question'}
+      </Typography>
+      
+      {pollData.pollOptions?.map((option, index) => {
+        const percentage = totalVotes > 0 ? ((option.votes || 0) / totalVotes) * 100 : 0;
+        const isSelected = selectedOption === index || 
+          option.voters?.some(voter => voter.toString() === currentUser?._id);
+        
+        return (
+          <Box key={index} sx={{ mb: 2 }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: isSelected ? 600 : 400 }}>
+                {option.text}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {option.votes || 0} votes ({percentage.toFixed(1)}%)
+              </Typography>
+            </Stack>
+            <LinearProgress 
+              variant="determinate" 
+              value={percentage} 
+              sx={{ 
+                height: 8, 
+                borderRadius: 4,
+                backgroundColor: theme.palette.grey[300],
+                '& .MuiLinearProgress-bar': {
+                  backgroundColor: isSelected ? theme.palette.primary.main : theme.palette.secondary.main,
+                },
+              }}
+            />
+            {!hasVoted && !isExpired && (
+              <Button 
+                size="small" 
+                onClick={() => handleVote(index)}
+                disabled={isVoting}
+                sx={{ mt: 1 }}
+                variant={isSelected ? "contained" : "outlined"}
+              >
+                {isVoting ? 'Voting...' : 'Vote'}
+              </Button>
+            )}
+          </Box>
+        );
+      })}
+      
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2 }}>
+        <Typography variant="caption" color="text.secondary">
+          Total votes: {totalVotes}
+        </Typography>
+        {pollData.pollSettings?.expiresAt && (
+          <Typography variant="caption" color="text.secondary">
+            {isExpired ? 'Voting ended' : `Ends ${formatDistanceToNow(new Date(pollData.pollSettings.expiresAt))}`}
+          </Typography>
+        )}
+      </Stack>
+      
+      {hasVoted && (
+        <Typography variant="caption" color="primary" sx={{ mt: 1, display: 'block' }}>
+          ✓ You have voted on this poll
+        </Typography>
+      )}
+    </Box>
+  );
+};
+
+export default Poll;

@@ -41,9 +41,32 @@ const sendCreatedResponse = (res, data, message) =>
 const sendPaginatedResponse = (res, data, pagination, message) => 
   ResponseHandler.paginated(res, data, pagination, message);
 
+const sendErrorResponse = (res, message = 'Error', statusCode = 500, error = null) => {
+  const response = {
+    success: false,
+    message,
+    error: {
+      code: 'INTERNAL_ERROR',
+      timestamp: new Date().toISOString(),
+      ...error
+    }
+  };
+
+  logger.error({
+    statusCode,
+    message,
+    error,
+    url: res.req?.originalUrl,
+    method: res.req?.method
+  });
+
+  return res.status(statusCode).json(response);
+};
+
 module.exports = {
   ResponseHandler,
   sendSuccessResponse,
   sendCreatedResponse,
-  sendPaginatedResponse
+  sendPaginatedResponse,
+  sendErrorResponse
 };

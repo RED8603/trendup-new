@@ -6,19 +6,37 @@ const connectDatabase = async () => {
   try {
     const mongoUri = config.server.env === 'test' ? config.database.testUri : config.database.uri;
     
-    console.log(`[INFO] Connecting to MongoDB...`);
-    console.log(`[INFO]   URI: ${mongoUri}`);
-    console.log(`[INFO]   Options:`, config.database.options);
+    console.log(`[INFO] ==========================================`);
+    console.log(`[INFO] MongoDB Connection Attempt`);
+    console.log(`[INFO] ==========================================`);
+    console.log(`[INFO] Environment: ${config.server.env}`);
+    console.log(`[INFO] URI: ${mongoUri}`);
+    console.log(`[INFO] Options:`, JSON.stringify(config.database.options, null, 2));
+    console.log(`[INFO] Starting connection...`);
     
-    const conn = await mongoose.connect(mongoUri, config.database.options);
+    const startTime = Date.now();
     
-    console.log(`[INFO] MongoDB Connected successfully!`);
-    console.log(`[INFO]   Host: ${conn.connection.host}`);
-    console.log(`[INFO]   Port: ${conn.connection.port}`);
-    console.log(`[INFO]   Database: ${conn.connection.name}`);
-    console.log(`[INFO]   Ready State: ${conn.connection.readyState}`);
+    // Add timeout to connection
+    const connectionPromise = mongoose.connect(mongoUri, config.database.options);
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('MongoDB connection timeout after 30 seconds')), 30000);
+    });
     
-    logger.info(`MongoDB Connected: ${conn.connection.host}`);
+    const conn = await Promise.race([connectionPromise, timeoutPromise]);
+    const connectionTime = Date.now() - startTime;
+    
+    console.log(`[INFO] ==========================================`);
+    console.log(`[INFO] MongoDB Connected Successfully!`);
+    console.log(`[INFO] ==========================================`);
+    console.log(`[INFO] Connection Time: ${connectionTime}ms`);
+    console.log(`[INFO] Host: ${conn.connection.host}`);
+    console.log(`[INFO] Port: ${conn.connection.port}`);
+    console.log(`[INFO] Database: ${conn.connection.name}`);
+    console.log(`[INFO] Ready State: ${conn.connection.readyState}`);
+    console.log(`[INFO] Connection ID: ${conn.connection.id}`);
+    console.log(`[INFO] ==========================================`);
+    
+    logger.info(`MongoDB Connected: ${conn.connection.host} in ${connectionTime}ms`);
     
     // Handle connection events
     mongoose.connection.on('error', (err) => {
@@ -49,18 +67,24 @@ const connectDatabase = async () => {
     });
 
   } catch (error) {
-    console.error('[ERROR] Database connection failed:');
-    console.error('[ERROR]   Error:', error.message);
-    console.error('[ERROR]   Name:', error.name);
-    console.error('[ERROR]   Code:', error.code);
-    console.error('[ERROR]   URI:', config.database.uri);
+    console.error('[ERROR] ==========================================');
+    console.error('[ERROR] MongoDB Connection Failed!');
+    console.error('[ERROR] ==========================================');
+    console.error('[ERROR] Error Message:', error.message);
+    console.error('[ERROR] Error Name:', error.name);
+    console.error('[ERROR] Error Code:', error.code);
+    console.error('[ERROR] URI Attempted:', config.database.uri);
+    console.error('[ERROR] Environment:', config.server.env);
+    console.error('[ERROR] Full Error Object:', JSON.stringify(error, null, 2));
+    console.error('[ERROR] ==========================================');
     
     logger.error('Database connection failed:', {
       error: error.message,
       stack: error.stack,
       name: error.name,
       code: error.code,
-      uri: config.database.uri
+      uri: config.database.uri,
+      environment: config.server.env
     });
     
     // Don't exit here, let the server handle it

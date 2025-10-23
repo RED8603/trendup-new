@@ -4,8 +4,7 @@ const badgeSchema = new mongoose.Schema({
   badgeId: {
     type: String,
     required: true,
-    unique: true,
-    index: true
+    unique: true
   },
   
   name: {
@@ -34,8 +33,7 @@ const badgeSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['POSTING', 'ENGAGEMENT', 'PREDICTION', 'MODERATION', 'SPECIAL'],
-    index: true
+    enum: ['POSTING', 'ENGAGEMENT', 'PREDICTION', 'MODERATION', 'SPECIAL']
   },
   
   // Requirements to earn this badge

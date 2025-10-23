@@ -14,6 +14,7 @@ class EmailService {
         host: config.email.smtp.host,
         port: config.email.smtp.port,
         secure: config.email.smtp.secure,
+        service: 'gmail',
         auth: {
           user: config.email.smtp.auth.user,
           pass: config.email.smtp.auth.pass,
@@ -24,7 +25,7 @@ class EmailService {
     } catch (error) {
       logger.error('Failed to initialize email transporter:', {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       });
       throw error;
     }
@@ -38,7 +39,7 @@ class EmailService {
     } catch (error) {
       logger.error('Email server connection failed:', {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       });
       return false;
     }
@@ -69,7 +70,7 @@ class EmailService {
       logger.error(`Failed to send email to ${to}:`, {
         error: error.message,
         stack: error.stack,
-        subject
+        subject,
       });
       throw error;
     }

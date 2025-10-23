@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const mediaController = require('../controllers/media.controller');
-const authMiddleware = require('../../auth/middleware/auth.middleware');
-const uploadMiddleware = require('../../../core/middleware/upload.middleware');
+const { authenticate } = require('../../auth/middleware/auth.middleware');
+const { singleUpload, multipleUpload } = require('../../../core/middleware/upload.middleware');
 
 // All media routes require authentication
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Upload endpoints
-router.post('/upload', uploadMiddleware.single('file'), mediaController.uploadMedia);
-router.post('/upload-multiple', uploadMiddleware.array('files', 10), mediaController.uploadMultipleMedia);
+router.post('/upload', singleUpload('file'), mediaController.uploadMedia);
+router.post('/upload-multiple', multipleUpload('files', 10), mediaController.uploadMultipleMedia);
 
 // Statistics and admin endpoints (must come before parameterized routes)
 router.get('/stats', mediaController.getMediaStats);

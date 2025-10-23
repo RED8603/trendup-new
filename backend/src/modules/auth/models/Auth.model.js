@@ -33,7 +33,7 @@ const authSchema = new mongoose.Schema(
 );
 
 // Indexes
-authSchema.index({ userId: 1 });
+// userId index is automatically created by unique: true
 
 // Virtual for checking if account is locked
 authSchema.virtual('isLocked').get(function () {

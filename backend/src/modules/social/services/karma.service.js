@@ -20,6 +20,8 @@ class KarmaService {
       REACTION_GIVEN: 0.5,
       
       // Prediction-related karma
+      PREDICTION_CREATED: 10,
+      PREDICTION_PARTICIPATED: 2,
       PREDICTION_CORRECT: 25,
       PREDICTION_INCORRECT: -5,
       
@@ -255,7 +257,7 @@ class KarmaService {
     }
   }
 
-  // Handle prediction karma
+  // Handle prediction karma (standalone predictions)
   async handlePredictionResult(userId, predictionId, wasCorrect) {
     try {
       const amount = wasCorrect ? this.karmaRates.PREDICTION_CORRECT : this.karmaRates.PREDICTION_INCORRECT;
@@ -279,6 +281,34 @@ class KarmaService {
       return karma;
     } catch (error) {
       logger.error(`[ERROR] Failed to handle prediction karma for user ${userId}:`, error);
+      throw error;
+    }
+  }
+
+  // Handle post-based prediction result karma
+  async handlePostPredictionResult(userId, postId, wasCorrect) {
+    try {
+      const amount = wasCorrect ? this.karmaRates.PREDICTION_CORRECT : this.karmaRates.PREDICTION_INCORRECT;
+      const description = wasCorrect ? 'Post prediction was correct' : 'Post prediction was incorrect';
+      
+      const karma = await this.addKarma(
+        userId,
+        amount,
+        'POST_PREDICTION',
+        postId,
+        description
+      );
+      
+      // Update stats
+      karma.stats.predictionsMade += 1;
+      if (wasCorrect) {
+        karma.stats.predictionsCorrect += 1;
+      }
+      await karma.save();
+      
+      return karma;
+    } catch (error) {
+      logger.error(`[ERROR] Failed to handle post prediction karma for user ${userId}:`, error);
       throw error;
     }
   }

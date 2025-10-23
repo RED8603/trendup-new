@@ -9,6 +9,12 @@ const Hashtag = require('./Hashtag.model');
 const Topic = require('./Topic.model');
 const Feed = require('./Feed.model');
 const Media = require('./Media.model');
+const Poll = require('./Poll.model');
+const Prediction = require('./Prediction.model');
+const Vote = require('./Vote.model');
+const Flag = require('./Flag.model');
+const Report = require('./Report.model');
+const ModerationAction = require('./ModerationAction.model');
 
 module.exports = {
   Post,
@@ -21,5 +27,11 @@ module.exports = {
   Hashtag,
   Topic,
   Feed,
-  Media
+  Media,
+  Poll,
+  Prediction,
+  Vote,
+  Flag,
+  Report,
+  ModerationAction
 };

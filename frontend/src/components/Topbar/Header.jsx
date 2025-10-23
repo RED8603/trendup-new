@@ -28,11 +28,14 @@ import HomeIcon from "@mui/icons-material/Home";
 import ChatIcon from "@mui/icons-material/Chat";
 import LiveIcon from "@mui/icons-material/LiveTv";
 import VoteIcon from "@mui/icons-material/HowToVote";
+import SearchIcon from "@mui/icons-material/Search";
+import { ForYouIcon, FollowingIcon, TimelineIcon, ExploreIcon } from "@/assets/icons";
 import { mockNotifications } from "@/constants";
 import { useSelector } from "react-redux";
 import { ThemeToggle } from "../common/ToggelTheme/ToggelTheme";
 import NotificationBell from "../common/Notifictions/Notifications";
 import LogoutButton from "../common/LogoutButton/LogoutButton";
+import ConnectionStatus from "../common/ConnectionStatus";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast.jsx";
@@ -40,7 +43,12 @@ import { getImageUrl } from "@/config/env";
 
 // Drawer route configuration
 const drawerLinks = [
-    { name: "Home", path: "/", Icon: HomeIcon },
+    { name: "Home", path: "/home", Icon: HomeIcon },
+    { name: "For You", path: "/social/foryou", Icon: ForYouIcon },
+    { name: "Following", path: "/social/following", Icon: FollowingIcon },
+    { name: "Trending", path: "/social/trending", Icon: TimelineIcon },
+    { name: "Discover", path: "/social/discover", Icon: ExploreIcon },
+    { name: "Find People", path: "/users/search", Icon: SearchIcon },
     { name: "Vote", path: "/vote", Icon: VoteIcon },
     { name: "Chats", path: "/chat", Icon: ChatIcon },
     { name: "Go Live", path: "/live", Icon: LiveIcon },
@@ -192,6 +200,9 @@ export default function HeaderDrawer() {
             >
                 {/* <AnimatedSearchInput onSearch={handleSearch} /> */}
                 <ThemeToggle />
+                
+                {/* Real-time connection status */}
+                <ConnectionStatus showInHeader={true} />
 
                 {user && (
                     <>

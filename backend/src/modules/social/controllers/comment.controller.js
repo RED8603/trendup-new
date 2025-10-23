@@ -1,4 +1,5 @@
 const commentService = require('../services/comment.service');
+const notificationService = require('../../../core/services/notification.service');
 const { logger } = require('../../../core/utils/logger');
 const { ResponseHandler } = require('../../../core/utils/response');
 
@@ -8,7 +9,7 @@ class CommentController {
     try {
       const { postId } = req.params;
       const { content, parentCommentId } = req.body;
-      const userId = req.user.userId;
+      const userId = req.user._id;
 
       const comment = await commentService.createComment(
         userId,
@@ -16,6 +17,51 @@ class CommentController {
         content,
         parentCommentId
       );
+
+      // Send notification to post author or parent comment author
+      if (comment && comment.postId) {
+        try {
+          const templates = notificationService.createNotificationTemplates();
+          const commenterInfo = {
+            _id: userId,
+            username: req.user.username || req.user.name,
+            avatar: req.user.avatar
+          };
+
+          if (parentCommentId && comment.parentCommentId) {
+            // Reply to comment - notify parent comment author
+            if (comment.parentCommentId.userId && comment.parentCommentId.userId.toString() !== userId.toString()) {
+              const notification = {
+                type: notificationService.notificationTypes.COMMENT_REPLIED,
+                title: 'New Reply',
+                message: `${commenterInfo.username} replied to your comment`,
+                data: {
+                  commenterId: userId,
+                  commenterUsername: commenterInfo.username,
+                  commenterAvatar: commenterInfo.avatar,
+                  postId: comment.postId._id || postId,
+                  commentId: comment._id,
+                  parentCommentId: parentCommentId,
+                  commentContent: content.substring(0, 100)
+                },
+                priority: notificationService.priorityLevels.MEDIUM
+              };
+              await notificationService.sendNotification(comment.parentCommentId.userId.toString(), notification);
+            }
+          } else if (comment.postId.userId && comment.postId.userId.toString() !== userId.toString()) {
+            // Comment on post - notify post author
+            const notification = templates.postCommented(
+              commenterInfo,
+              { _id: comment.postId._id || postId, content: comment.postId.content || '' },
+              { _id: comment._id, content: content }
+            );
+            await notificationService.sendNotification(comment.postId.userId.toString(), notification);
+          }
+        } catch (notifError) {
+          logger.error('[ERROR] Failed to send comment notification:', notifError);
+          // Don't fail the request if notification fails
+        }
+      }
 
       return ResponseHandler.success(res, {
         comment,
@@ -82,7 +128,7 @@ class CommentController {
     try {
       const { commentId } = req.params;
       const { content } = req.body;
-      const userId = req.user.userId;
+      const userId = req.user._id;
 
       const comment = await commentService.updateComment(commentId, userId, content);
 
@@ -100,7 +146,7 @@ class CommentController {
   async deleteComment(req, res, next) {
     try {
       const { commentId } = req.params;
-      const userId = req.user.userId;
+      const userId = req.user._id;
       const isModerator = req.user.role === 'moderator' || req.user.role === 'admin';
 
       const result = await commentService.deleteComment(commentId, userId, isModerator);
@@ -176,7 +222,7 @@ class CommentController {
   // Get current user's comments
   async getMyComments(req, res, next) {
     try {
-      const userId = req.user.userId;
+      const userId = req.user._id;
       const {
         page = 1,
         limit = 20,
@@ -207,7 +253,7 @@ class CommentController {
     try {
       const { commentId } = req.params;
       const { reason } = req.body;
-      const userId = req.user.userId;
+      const userId = req.user._id;
 
       const result = await commentService.flagComment(commentId, userId, reason);
 
@@ -349,6 +395,70 @@ class CommentController {
       });
     } catch (error) {
       logger.error(`[ERROR] Failed to get recent comments:`, error);
+      next(error);
+    }
+  }
+
+  // React to a comment
+  async reactToComment(req, res, next) {
+    try {
+      const { commentId } = req.params;
+      const userId = req.user._id;
+      const { reactionType } = req.body;
+
+      const result = await commentService.reactToComment(commentId, userId, reactionType);
+
+      // Send notification if reaction was added (not removed) and not reacting to own comment
+      if (result.action === 'added' && result.comment && result.comment.userId && result.comment.userId.toString() !== userId.toString()) {
+        try {
+          const notification = {
+            type: notificationService.notificationTypes.COMMENT_LIKED,
+            title: 'Comment Reaction',
+            message: `${req.user.username || req.user.name} reacted to your comment`,
+            data: {
+              userId: userId,
+              username: req.user.username || req.user.name,
+              avatar: req.user.avatar,
+              commentId: commentId,
+              reactionType: reactionType
+            },
+            priority: notificationService.priorityLevels.LOW
+          };
+          await notificationService.sendNotification(result.comment.userId.toString(), notification);
+        } catch (notifError) {
+          logger.error('[ERROR] Failed to send comment reaction notification:', notifError);
+          // Don't fail the request if notification fails
+        }
+      }
+
+      return ResponseHandler.success(res, {
+        ...result,
+        message: result.message
+      });
+    } catch (error) {
+      logger.error(`[ERROR] Failed to react to comment:`, error);
+      next(error);
+    }
+  }
+
+  // Get comment reactions
+  async getCommentReactions(req, res, next) {
+    try {
+      const { commentId } = req.params;
+      const userId = req.user?._id;
+      const options = {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 20,
+      };
+
+      const result = await commentService.getCommentReactions(commentId, userId, options);
+
+      return ResponseHandler.success(res, {
+        ...result,
+        message: 'Comment reactions retrieved successfully'
+      });
+    } catch (error) {
+      logger.error(`[ERROR] Failed to get comment reactions:`, error);
       next(error);
     }
   }

@@ -53,7 +53,7 @@ app.use('/api/v1/users', userRoutes);
 const { votingRoutes } = require('./modules/voting');
 app.use('/api/v1/voting', votingRoutes);
 
-const { postRoutes, karmaRoutes, badgeRoutes, followRoutes, commentRoutes, categoryRoutes, hashtagRoutes, topicRoutes, feedRoutes, mediaRoutes } = require('./modules/social');
+const { postRoutes, karmaRoutes, badgeRoutes, followRoutes, commentRoutes, categoryRoutes, hashtagRoutes, topicRoutes, feedRoutes, mediaRoutes, pollRoutes, predictionRoutes, moderationRoutes, notificationRoutes } = require('./modules/social');
 app.use('/api/v1/social/posts', postRoutes);
 app.use('/api/v1/social/karma', karmaRoutes);
 app.use('/api/v1/social/badges', badgeRoutes);
@@ -64,6 +64,18 @@ app.use('/api/v1/social/hashtags', hashtagRoutes);
 app.use('/api/v1/social/topics', topicRoutes);
 app.use('/api/v1/social/feed', feedRoutes);
 app.use('/api/v1/social/media', mediaRoutes);
+app.use('/api/v1/social/polls', pollRoutes);
+app.use('/api/v1/social/predictions', predictionRoutes);
+app.use('/api/v1/social/moderation', moderationRoutes);
+app.use('/api/v1/social/notifications', notificationRoutes);
+
+// Redis infrastructure routes
+const redisRoutes = require('./core/routes/redis.routes');
+app.use('/api/v1/redis', redisRoutes);
+
+// Real-time routes (simple version for Phase 10)
+const realtimeRoutes = require('./core/routes/realtime.routes.simple');
+app.use('/api/v1/realtime', realtimeRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

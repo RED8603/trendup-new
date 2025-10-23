@@ -9,7 +9,6 @@ const categorySchema = new mongoose.Schema(
       trim: true,
       minlength: 2,
       maxlength: 50,
-      index: true,
     },
     slug: {
       type: String,
@@ -17,7 +16,6 @@ const categorySchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true,
     },
     description: {
       type: String,
@@ -50,12 +48,10 @@ const categorySchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
-      index: true,
     },
     isDefault: {
       type: Boolean,
       default: false,
-      index: true,
     },
     isPublic: {
       type: Boolean,
@@ -115,7 +111,6 @@ const categorySchema = new mongoose.Schema(
     lastActivityAt: {
       type: Date,
       default: Date.now,
-      index: true,
     },
   },
   {

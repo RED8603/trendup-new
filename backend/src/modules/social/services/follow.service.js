@@ -303,11 +303,11 @@ class FollowService {
   }
 
   // Search users
-  async searchUsers(query, limit = 20, offset = 0) {
+  async searchUsers(query, currentUserId = null, limit = 20, offset = 0) {
     try {
       const searchRegex = new RegExp(query, 'i');
       
-      const users = await User.find({
+      const searchConditions = {
         $and: [
           { isEmailVerified: true },
           {
@@ -318,11 +318,32 @@ class FollowService {
             ]
           }
         ]
-      })
-        .select('name username avatar bio')
+      };
+
+      // Exclude current user from search results
+      if (currentUserId) {
+        searchConditions.$and.push({ _id: { $ne: new mongoose.Types.ObjectId(currentUserId) } });
+      }
+      
+      const users = await User.find(searchConditions)
+        .select('name username avatar bio isEmailVerified')
         .limit(limit)
         .skip(offset)
         .lean();
+
+      // Add follow status for each user if currentUserId is provided
+      if (currentUserId) {
+        const usersWithFollowStatus = await Promise.all(
+          users.map(async (user) => {
+            const isFollowing = await this.isFollowing(currentUserId, user._id.toString());
+            return {
+              ...user,
+              isFollowing
+            };
+          })
+        );
+        return usersWithFollowStatus;
+      }
 
       return users;
     } catch (error) {

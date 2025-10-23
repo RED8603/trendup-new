@@ -59,5 +59,5 @@ export const baseApi = createApi({
     reducerPath: "api",
     baseQuery: baseQueryWithReauth,
     endpoints: () => ({}),
-    tagTypes: ["Auth", "Users", "Posts", "Comments"],
+    tagTypes: ["Auth", "Users", "Posts", "Comments", "Reactions", "Feed", "Following", "Followers", "Karma", "Badges", "Polls", "Predictions", "Categories", "Hashtags", "Trending", "Discover", "FollowSuggestions", "KarmaLeaderboard", "KarmaStats", "Notifications", "NotificationCount", "UserProfile", "UserSearch", "FollowerStats", "FollowingStats"],
 });
