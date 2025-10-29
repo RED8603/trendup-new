@@ -117,10 +117,9 @@ class KarmaService {
       
       logger.info(`[DEBUG] Before karma addition: totalKarma=${oldTotal}, level=${oldLevel}`);
       
-      await karma.addKarma(amount, source, sourceId, description);
+      // Call addKarma and await the result - this returns the updated karma object
+      const updatedKarma = await karma.addKarma(amount, source, sourceId, description);
       
-      // Refresh karma object to get updated values
-      const updatedKarma = await this.getUserKarma(userId);
       const newTotal = updatedKarma.totalKarma;
       const newLevel = updatedKarma.currentLevel;
       
@@ -469,6 +468,55 @@ class KarmaService {
       return await Karma.getKarmaStats();
     } catch (error) {
       logger.error(`[ERROR] Failed to get karma statistics:`, error);
+      throw error;
+    }
+  }
+
+  // Get user-specific karma statistics
+  async getUserKarmaStats(userId) {
+    try {
+      logger.info(`[DEBUG] Getting user karma stats for: ${userId}`);
+      
+      const karma = await this.getUserKarma(userId);
+      
+      // Count different types of activities from karma history
+      const stats = {
+        postsCreated: 0,
+        commentsCreated: 0,
+        reactionsGiven: 0,
+        reactionsReceived: 0,
+        predictionsCreated: 0,
+        pollsCreated: 0
+      };
+      
+      karma.karmaHistory.forEach(entry => {
+        switch (entry.source) {
+          case 'POST':
+            stats.postsCreated++;
+            break;
+          case 'COMMENT':
+            stats.commentsCreated++;
+            break;
+          case 'REACTION':
+            if (entry.action === 'EARNED') {
+              stats.reactionsReceived++;
+            } else {
+              stats.reactionsGiven++;
+            }
+            break;
+          case 'PREDICTION':
+            stats.predictionsCreated++;
+            break;
+          case 'POLL':
+            stats.pollsCreated++;
+            break;
+        }
+      });
+      
+      logger.info(`[DEBUG] User karma stats:`, stats);
+      return stats;
+    } catch (error) {
+      logger.error(`[ERROR] Failed to get user karma stats for ${userId}:`, error);
       throw error;
     }
   }

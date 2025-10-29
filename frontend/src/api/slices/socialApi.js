@@ -425,6 +425,12 @@ export const socialApi = baseApi.injectEndpoints({
       providesTags: ['MyKarma'],
     }),
 
+    // Get current user karma stats
+    getMyKarmaStats: builder.query({
+      query: () => `/social/karma/me/stats`,
+      providesTags: ['MyKarmaStats'],
+    }),
+
     // Get current user badges
     getMyBadges: builder.query({
       query: () => `/social/karma/me/badges`,
@@ -713,6 +719,7 @@ export const {
   useCanUseReactionQuery,
   useGetUserReactionWeightQuery,
   useGetMyKarmaQuery,
+  useGetMyKarmaStatsQuery,
   useGetMyBadgesQuery,
   useGetMyUnlockedReactionsQuery,
   useGetMyKarmaHistoryQuery,

@@ -14,6 +14,7 @@ import {
 import { motion } from 'framer-motion';
 import { 
   useGetMyKarmaQuery,
+  useGetMyKarmaStatsQuery,
   useGetMyBadgesQuery,
   useGetMyKarmaHistoryQuery,
   useGetKarmaLeaderboardQuery,
@@ -37,6 +38,11 @@ const KarmaDashboard = () => {
     data: karmaData, 
     isLoading: isLoadingKarma 
   } = useGetMyKarmaQuery();
+
+  const { 
+    data: karmaStatsData, 
+    isLoading: isLoadingKarmaStats 
+  } = useGetMyKarmaStatsQuery();
 
   const { 
     data: badgesData, 
@@ -70,12 +76,13 @@ const KarmaDashboard = () => {
   ];
 
   const karma = karmaData?.data?.karma;
+  const karmaStats = karmaStatsData?.data?.stats || {};
   const badges = badgesData?.data?.badges || [];
   const history = historyData?.data?.history || [];
   const leaderboard = leaderboardData?.data?.leaderboard || [];
-  const stats = statsData?.data || {};
+  const globalStats = statsData?.data || {};
 
-  const isLoading = isLoadingKarma || isLoadingBadges || isLoadingHistory || isLoadingLeaderboard || isLoadingStats;
+  const isLoading = isLoadingKarma || isLoadingKarmaStats || isLoadingBadges || isLoadingHistory || isLoadingLeaderboard || isLoadingStats;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -137,7 +144,7 @@ const KarmaDashboard = () => {
                     <Grid item xs={6} sm={3}>
                       <Box sx={{ textAlign: 'center' }}>
                         <Typography variant="h6" fontWeight="bold" color="primary">
-                          {karma.stats?.postsCreated || 0}
+                          {karmaStats.postsCreated || 0}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           Posts Created
@@ -147,7 +154,7 @@ const KarmaDashboard = () => {
                     <Grid item xs={6} sm={3}>
                       <Box sx={{ textAlign: 'center' }}>
                         <Typography variant="h6" fontWeight="bold" color="primary">
-                          {karma.stats?.commentsCreated || 0}
+                          {karmaStats.commentsCreated || 0}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           Comments Made
@@ -157,7 +164,7 @@ const KarmaDashboard = () => {
                     <Grid item xs={6} sm={3}>
                       <Box sx={{ textAlign: 'center' }}>
                         <Typography variant="h6" fontWeight="bold" color="primary">
-                          {karma.stats?.reactionsGiven || 0}
+                          {karmaStats.reactionsGiven || 0}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           Reactions Given
@@ -243,7 +250,7 @@ const KarmaDashboard = () => {
                         <Grid item xs={6} sm={3}>
                           <Box sx={{ textAlign: 'center' }}>
                             <Typography variant="h4" fontWeight="bold" color="primary">
-                              {stats.totalUsers?.toLocaleString() || 0}
+                              {globalStats.totalUsers?.toLocaleString() || 0}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                               Total Users
@@ -253,7 +260,7 @@ const KarmaDashboard = () => {
                         <Grid item xs={6} sm={3}>
                           <Box sx={{ textAlign: 'center' }}>
                             <Typography variant="h4" fontWeight="bold" color="primary">
-                              {stats.totalKarma?.toLocaleString() || 0}
+                              {globalStats.totalKarma?.toLocaleString() || 0}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                               Total Karma
@@ -263,7 +270,7 @@ const KarmaDashboard = () => {
                         <Grid item xs={6} sm={3}>
                           <Box sx={{ textAlign: 'center' }}>
                             <Typography variant="h4" fontWeight="bold" color="primary">
-                              {stats.totalBadges?.toLocaleString() || 0}
+                              {globalStats.totalBadges?.toLocaleString() || 0}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                               Total Badges
@@ -273,7 +280,7 @@ const KarmaDashboard = () => {
                         <Grid item xs={6} sm={3}>
                           <Box sx={{ textAlign: 'center' }}>
                             <Typography variant="h4" fontWeight="bold" color="primary">
-                              {stats.averageKarma?.toLocaleString() || 0}
+                              {globalStats.averageKarma?.toLocaleString() || 0}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                               Avg Karma

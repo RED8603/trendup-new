@@ -2,7 +2,9 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { removeUser } from "@/store/slices/userSlices";
 import { env } from "@/config/env";
 
-const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
+
+// const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
+const baseUrl = import.meta.env.VITE_API_URL || "https://api.trenduplive.com/api/v1";
 
 const baseQueryWithAuth = fetchBaseQuery({
     baseUrl: baseUrl,
@@ -66,7 +68,7 @@ export const baseApi = createApi({
         "UserProfile", "UserSearch", "FollowerStats", "FollowingStats",
         // Karma system tags
         "UsersByLevel", "UserKarmaHistory", "UserReactions", "ReactionPermission", "UserReactionWeight",
-        "MyKarma", "MyBadges", "MyReactions", "MyKarmaHistory",
+        "MyKarma", "MyKarmaStats", "MyBadges", "MyReactions", "MyKarmaHistory",
         // Badge system tags
         "BadgeStats", "BadgesByCategory", "BadgesByRarity", "Badge", "AvailableBadges", 
         "UserBadgeProgress", "MyAvailableBadges", "MyBadgeProgress"

@@ -86,6 +86,22 @@ class KarmaController {
     }
   }
 
+  // Get current user karma statistics
+  async getMyKarmaStats(req, res, next) {
+    try {
+      const userId = req.user._id;
+      const stats = await karmaService.getUserKarmaStats(userId);
+      
+      return ResponseHandler.success(res, {
+        stats,
+        message: 'Your karma statistics retrieved successfully'
+      });
+    } catch (error) {
+      logger.error(`[ERROR] Failed to get current user karma statistics:`, error);
+      next(error);
+    }
+  }
+
   // Get user karma history
   async getUserKarmaHistory(req, res, next) {
     try {
@@ -186,7 +202,7 @@ class KarmaController {
   // Get current user karma (for authenticated user)
   async getMyKarma(req, res, next) {
     try {
-      const userId = req.user.userId;
+      const userId = req.user._id;
       const karma = await karmaService.getUserKarma(userId);
       
       return ResponseHandler.success(res, {
@@ -202,7 +218,7 @@ class KarmaController {
   // Get current user badges
   async getMyBadges(req, res, next) {
     try {
-      const userId = req.user.userId;
+      const userId = req.user._id;
       const badges = await karmaService.getUserBadges(userId);
       
       return ResponseHandler.success(res, {
@@ -218,7 +234,7 @@ class KarmaController {
   // Get current user unlocked reactions
   async getMyUnlockedReactions(req, res, next) {
     try {
-      const userId = req.user.userId;
+      const userId = req.user._id;
       const reactions = await karmaService.getUserUnlockedReactions(userId);
       
       return ResponseHandler.success(res, {
@@ -234,7 +250,7 @@ class KarmaController {
   // Get current user karma history
   async getMyKarmaHistory(req, res, next) {
     try {
-      const userId = req.user.userId;
+      const userId = req.user._id;
       const { limit = 50, offset = 0 } = req.query;
       
       const history = await karmaService.getUserKarmaHistory(

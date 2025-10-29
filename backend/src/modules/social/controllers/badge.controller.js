@@ -130,7 +130,7 @@ class BadgeController {
   // Get current user badge progress
   async getMyBadgeProgress(req, res, next) {
     try {
-      const userId = req.user.userId;
+      const userId = req.user._id;
       const progress = await badgeService.getUserBadgeProgress(userId);
       
       return ResponseHandler.success(res, {
@@ -146,7 +146,7 @@ class BadgeController {
   // Get current user available badges
   async getMyAvailableBadges(req, res, next) {
     try {
-      const userId = req.user.userId;
+      const userId = req.user._id;
       const badges = await badgeService.getAvailableBadgesForUser(userId);
       
       return ResponseHandler.success(res, {

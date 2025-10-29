@@ -31,6 +31,7 @@ router.use(authenticate);
 
 // Current user routes
 router.get('/me', karmaController.getMyKarma);
+router.get('/me/stats', karmaController.getMyKarmaStats);
 router.get('/me/badges', karmaController.getMyBadges);
 router.get('/me/reactions', karmaController.getMyUnlockedReactions);
 router.get('/me/history', karmaController.getMyKarmaHistory);
