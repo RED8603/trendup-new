@@ -2,14 +2,38 @@ import { Box, Typography, CircularProgress, Alert } from "@mui/material";
 import React from "react";
 import Post from "./Post";
 import { useGetPostsQuery } from "@/api/slices/socialApi";
+import { useGuestAwareApi } from "@/hooks/useGuestAwareApi";
 
 const Posts = ({ postData, useApiData = false, queryParams = {} }) => {
+    const { isGuest, getMockData } = useGuestAwareApi();
+    
     // Use API data if requested, otherwise use passed postData
     const { data, error, isLoading } = useGetPostsQuery(queryParams, {
-        skip: !useApiData
+        skip: !useApiData || isGuest // Skip API call for guests
     });
 
     if (useApiData) {
+        // For guests, use mock data
+        if (isGuest) {
+            const mockPosts = getMockData('posts') || [];
+            if (mockPosts.length === 0) {
+                return (
+                    <Box textAlign="center" py={4}>
+                        <Typography variant="h6" color="text.secondary">
+                            No posts available
+                        </Typography>
+                    </Box>
+                );
+            }
+            return (
+                <Box mt={3}>
+                    {mockPosts.map((post) => (
+                        <Post key={post._id} data={post} />
+                    ))}
+                </Box>
+            );
+        }
+        
         if (isLoading) {
             return (
                 <Box display="flex" justifyContent="center" alignItems="center" py={4}>

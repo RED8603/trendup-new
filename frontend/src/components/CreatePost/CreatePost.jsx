@@ -7,6 +7,8 @@ import BoxConatner from "@components/common/BoxContainer/BoxConatner";
 import CreatePostModal from "./CreatePostModal";
 import { useGenrelContext } from "@/context/GenrelContext";
 import LiveTvIcon from "@mui/icons-material/LiveTv";
+import { useGuestAwareApi } from "@/hooks/useGuestAwareApi";
+import GuestRestrictionModal from "../common/GuestRestrictionModal";
 
 const MotionButton = motion(Button);
 
@@ -15,6 +17,9 @@ const CreatePost = () => {
     const navigate = useNavigate();
     const { isDarkMode } = useGenrelContext();
     const [modalOpen, setModalOpen] = useState(false);
+    const [restrictionModalOpen, setRestrictionModalOpen] = useState(false);
+    const [restrictionInfo, setRestrictionInfo] = useState(null);
+    const { getRestrictionInfo } = useGuestAwareApi();
 
     // Color palettes
     const darkColors = { c1: "#e12e24", c2: "#a61d66" };
@@ -25,10 +30,22 @@ const CreatePost = () => {
     const reverseGradient = `linear-gradient(45deg, ${c2}, ${c1})`;
 
     const handleCreatePost = () => {
+        const restriction = getRestrictionInfo('create posts', 'post creation', '/register');
+        if (restriction.restricted) {
+            setRestrictionInfo(restriction);
+            setRestrictionModalOpen(true);
+            return;
+        }
         setModalOpen(true);
     };
 
     const handleGoLive = () => {
+        const restriction = getRestrictionInfo('go live', 'live streaming', '/register');
+        if (restriction.restricted) {
+            setRestrictionInfo(restriction);
+            setRestrictionModalOpen(true);
+            return;
+        }
         navigate('/live');
     };
 
@@ -134,6 +151,13 @@ const CreatePost = () => {
             <CreatePostModal 
                 open={modalOpen} 
                 onClose={() => setModalOpen(false)} 
+            />
+            <GuestRestrictionModal
+                open={restrictionModalOpen}
+                onClose={() => setRestrictionModalOpen(false)}
+                action={restrictionInfo?.action}
+                feature={restrictionInfo?.feature}
+                route={restrictionInfo?.route || '/register'}
             />
         </>
     );

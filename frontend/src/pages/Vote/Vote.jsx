@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { TabContext, TabPanel } from "@mui/lab";
-import { Box, Container, Grid } from "@mui/material";
+import { Box, Container, Grid, Alert } from "@mui/material";
 import CreateDemocraticVote from "./DemocraticVoting/DemocraticVoting";
 import DemocraticVotesList from "./DemocraticVoting/DemocraticVotesList";
 import VoteOnProposal from "./DemocraticVoting/VoteOnProposal";
@@ -13,15 +13,23 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import HowToVoteOutlinedIcon from "@mui/icons-material/HowToVoteOutlined";
 import MockModeIndicator from "@/components/common/MockModeIndicator";
 import TokenInfoWidget from "@/components/common/TokenInfoWidget";
+import { useGuestAwareApi } from "@/hooks/useGuestAwareApi";
 
 const Vote = () => {
     const [tabId, setTabId] = useState("1");
+    const { isGuest } = useGuestAwareApi();
 
     const handleChange = (event, newValue) => {
         setTabId(newValue);
     };
 
     return (
+        <>
+            {isGuest && (
+                <Alert severity="info" sx={{ m: 2 }}>
+                    You're viewing sample votes. Sign up to create and participate in real votes!
+                </Alert>
+            )}
             <Container maxWidth="xl">
                 <MockModeIndicator />
                 
@@ -92,7 +100,7 @@ const Vote = () => {
                     </Grid>
                 </Grid>
             </Container>
-      
+        </>
     );
 };
 

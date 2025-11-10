@@ -74,7 +74,7 @@ const ConnectionStatus = ({
           color: theme.palette.success.main,
           icon: <CheckCircleIcon />,
           text: 'Connected',
-          tooltip: 'Real-time updates active'
+          tooltip: 'Chat is connected and live'
         };
       case 'connecting':
         return {
@@ -95,7 +95,7 @@ const ConnectionStatus = ({
           color: theme.palette.text.secondary,
           icon: <WifiOffIcon />,
           text: 'Disconnected',
-          tooltip: 'Real-time updates unavailable'
+          tooltip: 'Chat is offline. Messages may be delayed'
         };
     }
   };

@@ -36,7 +36,8 @@ const { connectDatabase } = require('./config/database');
 const { connectRedis } = require('./config/redis');
 const { logger } = require('./core/utils/logger');
 const config = require('./config');
-// const socketService = require('./core/services/socket.service');
+const socketService = require('./core/services/socket.service');
+const chatSocketService = require('./modules/chat/services/chat.socket.service');
 
 async function startServer() {
   try {
@@ -131,8 +132,22 @@ async function startServer() {
       console.log(`[INFO]   URL: http://${config.server.host}:${config.server.port}`);
       console.log(`[INFO]   Health: http://${config.server.host}:${config.server.port}/health`);
       
-      // Initialize Socket.io (temporarily disabled)
-      console.log('[INFO] Socket.io initialization temporarily disabled for debugging');
+      // Initialize Socket.io
+      console.log('[INFO] Initializing Socket.io...');
+      try {
+        const io = await socketService.initialize(server);
+        
+        // Initialize chat socket handlers
+        chatSocketService.initialize(io);
+        
+        console.log('[INFO] Socket.io initialized successfully');
+        console.log(`[INFO]   Socket.io: ws://${config.server.host}:${config.server.port}`);
+      } catch (socketError) {
+        console.error('[ERROR] Socket.io initialization failed:', socketError.message);
+        logger.error('Socket.io initialization failed:', socketError);
+        // Don't fail server startup if socket fails
+      }
+      
       console.log(`[INFO]   API: http://${config.server.host}:${config.server.port}/api/v1`);
       logger.info(`Server running on http://${config.server.host}:${config.server.port} in ${config.server.env} mode`);
     });

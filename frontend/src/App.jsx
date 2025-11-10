@@ -5,6 +5,8 @@ import Toastify from '@/components/common/Toastify';
 import KarmaGainToast from '@/components/common/KarmaGainToast';
 import { SocketProvider } from '@/context/SocketContext';
 import { ConfigProvider } from '@/context/GenrelContext';
+import { GuestModeProvider } from '@/context/GuestModeContext';
+import GuestModeBanner from '@/components/common/GuestModeBanner';
 import { useSelector } from 'react-redux';
 
 // Toast notification wrapper
@@ -15,21 +17,24 @@ function ToastNotification() {
 
 // Karma notifications wrapper
 function KarmaNotifications() {
-    const { user } = useSelector((state) => state.user);
-    return user ? <KarmaGainToast userId={user._id} /> : null;
+    const { user, isAuthenticated } = useSelector((state) => state.user);
+    return (isAuthenticated && user) ? <KarmaGainToast userId={user._id} /> : null;
 }
 
 function App() {
     return (
         <ConfigProvider>
             <ToastProvider>
-                <SocketProvider>
-                    <AppWrapper>
-                        <AuthContainer />
-                        <ToastNotification />
-                        <KarmaNotifications />
-                    </AppWrapper>
-                </SocketProvider>
+                <GuestModeProvider>
+                    <SocketProvider>
+                        <AppWrapper>
+                            <GuestModeBanner />
+                            <AuthContainer />
+                            <ToastNotification />
+                            <KarmaNotifications />
+                        </AppWrapper>
+                    </SocketProvider>
+                </GuestModeProvider>
             </ToastProvider>
         </ConfigProvider>
     );

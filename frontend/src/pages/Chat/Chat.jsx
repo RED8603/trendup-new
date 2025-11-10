@@ -1,20 +1,38 @@
-import { useState, useCallback } from "react";
-import { Box, Drawer, styled, useMediaQuery, useTheme, alpha } from "@mui/material";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { Box, Drawer, styled, useMediaQuery, useTheme, alpha, Alert, Typography, CircularProgress } from "@mui/material";
+import { AnimatePresence } from "framer-motion";
 import UserList from "./UserList";
 import ChatDetail from "./ChatDetail";
 import WelcomeScreen from "./WelcomeScreen";
-import { initialConversations, users } from "@/constants";
+import NewConversationDialog from "./components/NewConversationDialog";
+import NewGroupDialog from "./components/NewGroupDialog";
+import ArchivedConversationsDialog from "./components/ArchivedConversationsDialog";
 import { motion } from "framer-motion";
+import useChat from "@/hooks/useChat";
+import useChatSocket from "@/hooks/useChatSocket";
+import { useSocket } from "@/context/SocketContext";
+import Loading from "@/components/common/loading";
+import { 
+  useCreateDirectConversationMutation, 
+  useCreateGroupConversationMutation,
+  useGetConversationQuery
+} from "@/api/slices/chatApi";
+import { useToast } from "@/hooks/useToast";
+import { useSelector } from "react-redux";
 
-const DRAWER_WIDTH = 320;
+const DRAWER_WIDTH = 280;
 
 // Styled components with Web3/Social Media aesthetics
-const ChatContainer = styled(Box)({
+const ChatContainer = styled(Box)(({ theme }) => ({
     display: "flex",
-    height: "100%",
+    height: "100vh",
+    minHeight: "100vh",
+    width: "100%",
     background: "transparent",
     position: "relative",
     overflow: "hidden",
+    margin: { md: `-${theme.spacing(3)}` },
+    padding: 0,
     "&:before": {
         content: '""',
         position: "absolute",
@@ -25,7 +43,25 @@ const ChatContainer = styled(Box)({
         background: "radial-gradient(circle at 20% 30%, rgba(100, 80, 255, 0.15) 0%, transparent 40%)",
         zIndex: -1,
     },
-});
+}));
+
+const DividerGlow = styled(Box)(({ theme }) => ({
+    position: "absolute",
+    left: DRAWER_WIDTH,
+    top: 0,
+    bottom: 0,
+    width: "1px",
+    background: `linear-gradient(to bottom, 
+        transparent 0%, 
+        ${alpha(theme.palette.primary.main, 0.2)} 50%, 
+        transparent 100%
+    )`,
+    pointerEvents: "none",
+    transition: theme.transitions.create("opacity", {
+        duration: theme.transitions.duration.shorter,
+    }),
+    zIndex: 1,
+}));
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
     width: DRAWER_WIDTH,
@@ -33,40 +69,41 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
     "& .MuiDrawer-paper": {
         width: DRAWER_WIDTH,
         boxSizing: "border-box",
-        background: alpha(theme.palette.background.paper, 0.85),
-        borderRight: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-        borderRadius: "0 24px 24px 0",
-        backdropFilter: "blur(16px)",
-        boxShadow: `0 0 32px ${alpha(theme.palette.primary.main, 0.1)}`,
+        background: alpha(theme.palette.background.paper, 0.9),
+        borderRight: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+        borderRadius: 0,
+        backdropFilter: "blur(20px)",
+        boxShadow: `inset -1px 0 0 ${alpha(theme.palette.divider, 0.1)}`,
         overflow: "hidden",
-        transition: theme.transitions.create(["width", "box-shadow"], {
+        transition: theme.transitions.create(["width", "box-shadow", "border"], {
             easing: theme.transitions.easing.easeInOut,
-            duration: theme.transitions.duration.standard,
+            duration: theme.transitions.duration.shorter,
         }),
         "&:hover": {
-            boxShadow: `0 0 48px ${alpha(theme.palette.primary.main, 0.2)}`,
+            borderRight: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
         },
     },
 }));
 
 const MainChatArea = styled(motion.div)(({ theme }) => ({
-    flexGrow: 1,
+    flex: 1,
     display: "flex",
     flexDirection: "column",
-    width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-    height: "84vh",
-    borderRadius: { md: "24px" },
-    background: alpha(theme.palette.background.paper, 0.85),
-    backdropFilter: "blur(16px)",
-    boxShadow: `0 0 32px ${alpha(theme.palette.primary.main, 0.1)}`,
+    minWidth: 0,
+    height: "100vh",
+    borderRadius: { md: "0" },
+    background: alpha(theme.palette.background.paper, 0.9),
+    backdropFilter: "blur(20px)",
+    boxShadow: `0 0 24px ${alpha(theme.palette.primary.main, 0.08)}`,
     overflow: "hidden",
-    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+    borderLeft: "none",
     transition: theme.transitions.create(["background", "box-shadow"], {
         easing: theme.transitions.easing.easeInOut,
-        duration: theme.transitions.duration.standard,
+        duration: theme.transitions.duration.shorter,
     }),
     "&:hover": {
-        boxShadow: `0 0 48px ${alpha(theme.palette.primary.main, 0.2)}`,
+        boxShadow: `0 0 32px ${alpha(theme.palette.primary.main, 0.12)}`,
     },
     "&::-webkit-scrollbar": {
         width: "6px",
@@ -96,162 +133,254 @@ const MainChatArea = styled(motion.div)(({ theme }) => ({
 export default function Chat() {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+    const { showToast } = useToast();
+    const { isConnected } = useSocket();
+    const { user } = useSelector((state) => state.user);
 
-    const [conversations, setConversations] = useState(initialConversations);
-    const [activeUserId, setActiveUserId] = useState(null);
-    const [newMessage, setNewMessage] = useState("");
-    const [selectedFiles, setSelectedFiles] = useState([]);
+    // Use chat hook for API integration
+    const {
+        conversations,
+        messages,
+        currentChat,
+        input,
+        conversationsLoading,
+        messagesLoading,
+        sendingMessage,
+        selectConversation,
+        handleSendMessage,
+        handleAddReaction,
+        handleEditMessage,
+        handleDeleteMessage,
+        handlePinMessage,
+        handleArchiveConversation,
+        handleMuteConversation,
+        archivedConversations,
+        pinnedMessages,
+        setInputText,
+        addFile,
+        removeFile,
+        setReplyTo,
+        cancelReply,
+    } = useChat();
+
+    // Use chat socket for typing indicators
+    const { typingUsers, startTyping, stopTyping, isReady: socketReady } = useChatSocket(currentChat);
+
+    const [createDirectConversation] = useCreateDirectConversationMutation();
+    const [createGroupConversation] = useCreateGroupConversationMutation();
     const [emojiAnchor, setEmojiAnchor] = useState(null);
     const [reactionAnchor, setReactionAnchor] = useState(null);
     const [uploadProgress, setUploadProgress] = useState(null);
-    const [replyTo, setReplyTo] = useState(null);
-    const [_blobUrls, setBlobUrls] = useState([]);
     const [drawerOpen, setDrawerOpen] = useState(!isMobile);
     const [searchQuery, setSearchQuery] = useState("");
+    const [newChatDialogOpen, setNewChatDialogOpen] = useState(false);
+    const [newGroupDialogOpen, setNewGroupDialogOpen] = useState(false);
+    const [archivedDialogOpen, setArchivedDialogOpen] = useState(false);
+    // Store actual File objects separately (not in Redux)
+    const fileObjectsRef = useRef(new Map());
+    // Track chat switching state
+    const [switchingChat, setSwitchingChat] = useState(false);
+    const previousChatRef = useRef(currentChat);
 
-    const currentConversation = activeUserId ? conversations.find((conv) => conv.userId === activeUserId) : null;
-    const currentUser = activeUserId ? users.find((user) => user.id === activeUserId) : null;
-    const messages = currentConversation?.messages || [];
+    // Fetch full conversation details with populated participants
+    const { data: conversationData, isLoading: conversationLoading } = useGetConversationQuery(currentChat, {
+      skip: !currentChat
+    });
 
+    // Get current conversation details - prefer fetched data with participants, fallback to list item
+    const currentConversation = conversationData?.data || (currentChat 
+        ? conversations.find((conv) => conv._id === currentChat) 
+        : null);
+
+    // Handle user/conversation selection
     const handleUserSelect = useCallback(
-        (userId) => {
-            setActiveUserId(userId);
-            setReplyTo(null);
-            setNewMessage("");
-            setSelectedFiles([]);
-            setConversations((prev) =>
-                prev.map((conv) => (conv.userId === userId ? { ...conv, unreadCount: 0 } : conv))
-            );
+        async (conversationId) => {
+            if (conversationId !== currentChat) {
+                setSwitchingChat(true);
+            }
+            selectConversation(conversationId);
             if (isMobile) setDrawerOpen(false);
         },
-        [isMobile]
+        [selectConversation, currentChat, isMobile]
     );
 
-    const handleSendMessage = useCallback(async () => {
-        if (!newMessage.trim() && selectedFiles.length === 0) return;
-
-        const newBlobUrls = [];
-        const attachments = selectedFiles.map((file) => {
-            const url = URL.createObjectURL(file);
-            newBlobUrls.push(url);
-            return {
-                name: file.name,
-                url,
-                type: file.type.startsWith("image/") ? "image" : "file",
-                size: file.size,
-            };
-        });
-
-        setBlobUrls((prev) => [...prev, ...newBlobUrls]);
-
-        if (selectedFiles.length > 0) {
-            setUploadProgress(0);
-            for (let i = 0; i <= 100; i += 10) {
-                await new Promise((resolve) => setTimeout(resolve, 50));
-                setUploadProgress(i);
+    // Handle creating new conversation with user
+    const handleStartConversation = useCallback(
+        async (userId) => {
+            try {
+                const result = await createDirectConversation({ otherUserId: userId }).unwrap();
+                selectConversation(result.data._id);
+                if (isMobile) setDrawerOpen(false);
+            } catch (error) {
+                console.error('Failed to create conversation:', error);
+                showToast(error?.data?.message || 'Failed to start conversation', 'error');
             }
-            setUploadProgress(null);
+        },
+        [createDirectConversation, selectConversation, isMobile, showToast]
+    );
+
+    // Handle new chat dialog
+    const handleNewChat = useCallback(() => {
+        setNewChatDialogOpen(true);
+    }, []);
+
+    // Handle new group dialog
+    const handleNewGroup = useCallback(() => {
+        setNewGroupDialogOpen(true);
+    }, []);
+
+    // Handle user selection from new chat dialog
+    const handleSelectUserForChat = useCallback(async (user) => {
+        try {
+            const result = await createDirectConversation({ otherUserId: user._id }).unwrap();
+            selectConversation(result.data._id);
+            if (isMobile) setDrawerOpen(false);
+            showToast('Conversation started', 'success');
+        } catch (error) {
+            console.error('Failed to create conversation:', error);
+            showToast(error?.data?.message || 'Failed to start conversation', 'error');
         }
+    }, [createDirectConversation, selectConversation, isMobile, showToast]);
 
-        const message = {
-            id: Date.now().toString(),
-            user: {
-                name: "You",
-                avatar: "/abstract-geometric-shapes.png",
-                color: theme.palette.primary.main,
-            },
-            content: newMessage,
-            timestamp: new Date(),
-            reactions: [],
-            attachments: attachments.length > 0 ? attachments : undefined,
-            replyTo,
-        };
+    // Handle group creation
+    const handleCreateGroup = useCallback(async (groupData) => {
+        try {
+            const result = await createGroupConversation({
+                name: groupData.name,
+                participantIds: groupData.participantIds,
+            }).unwrap();
+            selectConversation(result.data?._id || result.data?.conversation?._id);
+            if (isMobile) setDrawerOpen(false);
+            showToast('Group created successfully', 'success');
+        } catch (error) {
+            console.error('Failed to create group:', error);
+            showToast(error?.data?.message || error?.message || 'Failed to create group', 'error');
+        }
+    }, [createGroupConversation, selectConversation, isMobile, showToast]);
 
-        setConversations((prev) =>
-            prev.map((conv) =>
-                conv.userId === activeUserId ? { ...conv, messages: [...conv.messages, message] } : conv
-            )
-        );
+    // Enhanced send message with typing indicator
+    const handleSendMessageWithTyping = useCallback(async () => {
+        stopTyping(); // Stop typing when sending
+        
+        // Map file metadata IDs to actual File objects
+        const fileObjects = input.files.map(fileMetadata => {
+            // Try to get from ref first
+            if (fileMetadata.id && fileObjectsRef.current.has(fileMetadata.id)) {
+                return fileObjectsRef.current.get(fileMetadata.id);
+            }
+            // Fallback: if it's already a File object, use it
+            return fileMetadata instanceof File ? fileMetadata : null;
+        }).filter(Boolean);
+        
+        await handleSendMessage(fileObjects.length > 0 ? fileObjects : null);
+        
+        // Clear file objects from ref after sending
+        input.files.forEach(fileMetadata => {
+            if (fileMetadata?.id) {
+                fileObjectsRef.current.delete(fileMetadata.id);
+            }
+        });
+    }, [handleSendMessage, stopTyping, input.files]);
 
-        setNewMessage("");
-        setSelectedFiles([]);
-        setReplyTo(null);
-    }, [newMessage, selectedFiles, replyTo, activeUserId, theme.palette.primary.main]);
+    // Handle sending voice note
+    const handleSendVoiceNote = useCallback(async (audioFile) => {
+        if (!audioFile || !currentChat) return;
+        
+        stopTyping();
+        await handleSendMessage([audioFile], 'audio');
+    }, [handleSendMessage, stopTyping, currentChat]);
 
     const handleFileSelect = useCallback((event) => {
         const files = Array.from(event.target.files || []);
-        setSelectedFiles((prev) => [...prev, ...files]);
-    }, []);
+        // Store File objects in ref for later use
+        files.forEach((file) => {
+            const metadata = {
+                id: `${Date.now()}-${Math.random()}`,
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                lastModified: file.lastModified,
+            };
+            fileObjectsRef.current.set(metadata.id, file);
+            addFile(metadata);
+        });
+    }, [addFile]);
 
-    const removeFile = useCallback((index) => {
-        setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
-    }, []);
-
-    const addReaction = useCallback(
-        (messageId, emoji) => {
-            setConversations((prev) =>
-                prev.map((conv) =>
-                    conv.userId === activeUserId
-                        ? {
-                              ...conv,
-                              messages: conv.messages.map((msg) => {
-                                  if (msg.id === messageId) {
-                                      const existingReaction = msg.reactions.find((r) => r.emoji === emoji);
-                                      if (existingReaction) {
-                                          if (existingReaction.users.includes("You")) {
-                                              return {
-                                                  ...msg,
-                                                  reactions: msg.reactions
-                                                      .map((r) =>
-                                                          r.emoji === emoji
-                                                              ? {
-                                                                    ...r,
-                                                                    count: r.count - 1,
-                                                                    users: r.users.filter((u) => u !== "You"),
-                                                                }
-                                                              : r
-                                                      )
-                                                      .filter((r) => r.count > 0),
-                                              };
-                                          } else {
-                                              return {
-                                                  ...msg,
-                                                  reactions: msg.reactions.map((r) =>
-                                                      r.emoji === emoji
-                                                          ? { ...r, count: r.count + 1, users: [...r.users, "You"] }
-                                                          : r
-                                                  ),
-                                              };
-                                          }
-                                      } else {
-                                          return {
-                                              ...msg,
-                                              reactions: [...msg.reactions, { emoji, count: 1, users: ["You"] }],
-                                          };
-                                      }
-                                  }
-                                  return msg;
-                              }),
-                          }
-                        : conv
-                )
-            );
-        },
-        [activeUserId]
-    );
+    const handleRemoveFile = useCallback((index) => {
+        const fileMetadata = input.files[index];
+        if (fileMetadata?.id) {
+            fileObjectsRef.current.delete(fileMetadata.id);
+        }
+        removeFile(index);
+    }, [removeFile, input.files]);
 
     const handleKeyDown = useCallback(
         (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSendMessage();
+                handleSendMessageWithTyping();
+            } else {
+                startTyping();
             }
         },
-        [handleSendMessage]
+        [handleSendMessageWithTyping, startTyping]
     );
+
+    // Handle typing indicator on text change
+    useEffect(() => {
+        if (input.text) {
+            startTyping();
+        } else {
+            stopTyping();
+        }
+    }, [input.text, startTyping, stopTyping, currentChat]);
+
+    // Track when chat is switching
+    useEffect(() => {
+        if (currentChat && previousChatRef.current !== currentChat) {
+            setSwitchingChat(true);
+            previousChatRef.current = currentChat;
+        }
+    }, [currentChat]);
+
+    // Reset switching state when messages are loaded
+    useEffect(() => {
+        if (!messagesLoading && !conversationLoading && switchingChat) {
+            // Small delay for smooth transition
+            const timer = setTimeout(() => {
+                setSwitchingChat(false);
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [messagesLoading, conversationLoading, switchingChat]);
+
 
     return (
         <ChatContainer>
+            <DividerGlow />
+            {/* Connection status indicator */}
+            {!isConnected && user && (
+                <Alert 
+                    severity="warning" 
+                    sx={{ 
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 1000,
+                        borderRadius: 0,
+                        '& .MuiAlert-message': {
+                            width: '100%',
+                            textAlign: 'center'
+                        }
+                    }}
+                >
+                    <Typography variant="body2">
+                        Reconnecting... Messages may be delayed
+                    </Typography>
+                </Alert>
+            )}
+            
             {/* Sidebar with modern Web3 styling */}
             <StyledDrawer
                 variant={isMobile ? "temporary" : "permanent"}
@@ -261,14 +390,20 @@ export default function Chat() {
                     keepMounted: true, // Better open performance on mobile
                 }}
             >
-                <UserList
-                    users={users}
-                    conversations={conversations}
-                    activeUserId={activeUserId}
-                    searchQuery={searchQuery}
-                    onSearchChange={setSearchQuery}
-                    onUserSelect={handleUserSelect}
-                />
+                {conversationsLoading ? (
+                    <Loading isLoading={true} />
+                ) : (
+                    <UserList
+                        conversations={conversations}
+                        activeConversationId={currentChat}
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        onConversationSelect={handleUserSelect}
+                        onStartConversation={handleStartConversation}
+                        onNewChat={handleNewChat}
+                        onNewGroup={handleNewGroup}
+                    />
+                )}
             </StyledDrawer>
 
             {/* Main Chat Area with animated Web3 elements */}
@@ -280,41 +415,127 @@ export default function Chat() {
                     ease: [0.25, 0.1, 0.25, 1],
                 }}
                 sx={{
-                    borderRadius: "24px",
-                    ml: { md: `${DRAWER_WIDTH}px` },
+                    borderRadius: { md: "0" },
                     transform: { md: "translateX(0)" },
                 }}
             >
-                {!activeUserId ? (
-                    <WelcomeScreen isMobile={isMobile} onOpenDrawer={() => setDrawerOpen(true)} />
-                ) : (
-                    <ChatDetail
-                        currentUser={currentUser}
-                        messages={messages}
-                        newMessage={newMessage}
-                        selectedFiles={selectedFiles}
-                        emojiAnchor={emojiAnchor}
-                        reactionAnchor={reactionAnchor}
-                        uploadProgress={uploadProgress}
-                        replyTo={replyTo}
-                        isMobile={isMobile}
-                        onOpenDrawer={() => setDrawerOpen(true)}
-                        onMessageChange={setNewMessage}
-                        onFileSelect={handleFileSelect}
-                        onRemoveFile={removeFile}
-                        onSendMessage={handleSendMessage}
-                        onKeyDown={handleKeyDown}
-                        onEmojiClick={(e) => setEmojiAnchor(e.currentTarget)}
-                        onEmojiClose={() => setEmojiAnchor(null)}
-                        onEmojiSelect={(emoji) => setNewMessage((prev) => prev + emoji)}
-                        onReactionClick={(e, messageId) => setReactionAnchor({ element: e.currentTarget, messageId })}
-                        onReactionClose={() => setReactionAnchor(null)}
-                        onAddReaction={addReaction}
-                        onReply={setReplyTo}
-                        onCancelReply={() => setReplyTo(null)}
-                    />
-                )}
+                <AnimatePresence mode="wait">
+                    {!currentChat ? (
+                        <motion.div
+                            key="welcome"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            style={{ height: '100%' }}
+                        >
+                            <WelcomeScreen isMobile={isMobile} onOpenDrawer={() => setDrawerOpen(true)} />
+                        </motion.div>
+                    ) : (messagesLoading || switchingChat || conversationLoading) ? (
+                        <motion.div
+                            key="loading"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            style={{ 
+                                height: '100%', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center' 
+                            }}
+                        >
+                            <Box sx={{ 
+                                display: 'flex', 
+                                flexDirection: 'column', 
+                                alignItems: 'center', 
+                                gap: 2 
+                            }}>
+                                <CircularProgress size={48} />
+                                <Typography variant="body1" color="text.secondary">
+                                    Loading conversation...
+                                </Typography>
+                            </Box>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key={currentChat}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.2 }}
+                            style={{ height: '100%' }}
+                        >
+                            <ChatDetail
+                                conversation={currentConversation}
+                                messages={messages}
+                                newMessage={input.text}
+                                selectedFiles={input.files}
+                                emojiAnchor={emojiAnchor}
+                                reactionAnchor={reactionAnchor}
+                                uploadProgress={uploadProgress}
+                                replyTo={input.replyTo}
+                                typingUsers={typingUsers}
+                                isMobile={isMobile}
+                                isConnected={isConnected}
+                                sendingMessage={sendingMessage}
+                                onOpenDrawer={() => setDrawerOpen(true)}
+                                onMessageChange={setInputText}
+                                onFileSelect={handleFileSelect}
+                                onRemoveFile={handleRemoveFile}
+                                onSendMessage={handleSendMessageWithTyping}
+                                onSendVoiceNote={handleSendVoiceNote}
+                                onKeyDown={handleKeyDown}
+                                onEmojiClick={(e) => setEmojiAnchor(e.currentTarget)}
+                                onEmojiClose={() => setEmojiAnchor(null)}
+                                onEmojiSelect={(emoji) => setInputText(input.text + emoji)}
+                                onReactionClick={(e, messageId) => setReactionAnchor({ element: e.currentTarget, messageId })}
+                                onReactionClose={() => setReactionAnchor(null)}
+                                onAddReaction={handleAddReaction}
+                                onEditMessage={handleEditMessage}
+                                onDeleteMessage={handleDeleteMessage}
+                                onPinMessage={handlePinMessage}
+                                pinnedMessages={pinnedMessages}
+                                onArchiveConversation={handleArchiveConversation}
+                                onMuteConversation={handleMuteConversation}
+                                onViewArchived={() => setArchivedDialogOpen(true)}
+                                onSearchMessages={(query) => {
+                                    // TODO: Implement search results display
+                                }}
+                                onReply={setReplyTo}
+                                onCancelReply={cancelReply}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </MainChatArea>
+
+            {/* Archived Conversations Dialog */}
+            <ArchivedConversationsDialog
+                open={archivedDialogOpen}
+                onClose={() => setArchivedDialogOpen(false)}
+                archivedConversations={archivedConversations}
+                onConversationSelect={(conversationId) => {
+                    selectConversation(conversationId);
+                    setArchivedDialogOpen(false);
+                    if (isMobile) setDrawerOpen(false);
+                }}
+                onUnarchive={(conversationId) => {
+                    handleArchiveConversation(conversationId, false);
+                }}
+            />
+
+            {/* New Conversation Dialog */}
+            <NewConversationDialog
+                open={newChatDialogOpen}
+                onClose={() => setNewChatDialogOpen(false)}
+                onSelectUser={handleSelectUserForChat}
+            />
+
+            {/* New Group Dialog */}
+            <NewGroupDialog
+                open={newGroupDialogOpen}
+                onClose={() => setNewGroupDialogOpen(false)}
+                onCreateGroup={handleCreateGroup}
+            />
         </ChatContainer>
     );
 }

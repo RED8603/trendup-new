@@ -5,19 +5,32 @@ import { useSocket } from '@/context/SocketContext';
  * Hook to subscribe to specific socket events
  * @param {string} eventName - The event name to listen for
  * @param {function} callback - The callback function to execute when event is received
- * @param {array} dependencies - Dependencies array for the callback
+ * @param {array|boolean} dependenciesOrEnabled - Dependencies array for the callback OR enabled flag
+ * @param {boolean} enabled - Whether the listener should be active (default: true)
  */
-export const useSocketEvent = (eventName, callback, dependencies = []) => {
+export const useSocketEvent = (eventName, callback, dependenciesOrEnabled = [], enabled = true) => {
   const { socket, isConnected } = useSocket();
   const callbackRef = useRef(callback);
+  
+  // Determine if dependencies array or enabled flag was passed
+  const isDependenciesArray = Array.isArray(dependenciesOrEnabled);
+  const dependencies = isDependenciesArray ? dependenciesOrEnabled : [];
+  const isEnabled = isDependenciesArray ? enabled : dependenciesOrEnabled !== false;
 
   // Update callback ref when dependencies change
   useEffect(() => {
     callbackRef.current = callback;
-  }, dependencies);
+  }, dependencies.length > 0 ? dependencies : [callback]);
 
   useEffect(() => {
-    if (!socket || !isConnected) return;
+    // Don't register if disabled
+    if (!isEnabled) {
+      return;
+    }
+
+    if (!socket || !isConnected) {
+      return;
+    }
 
     const eventHandler = (data) => {
       callbackRef.current(data);
@@ -28,7 +41,7 @@ export const useSocketEvent = (eventName, callback, dependencies = []) => {
     return () => {
       socket.off(eventName, eventHandler);
     };
-  }, [socket, isConnected, eventName]);
+  }, [socket, isConnected, eventName, isEnabled]);
 };
 
 /**

@@ -27,6 +27,12 @@ const fileFilter = (req, file, cb) => {
       'audio/wav',
       'audio/ogg',
       'audio/m4a',
+      'audio/webm',
+      'audio/webm;codecs=opus',
+      'audio/ogg;codecs=opus',
+      'audio/mpeg',
+      'audio/mp4',
+      'audio/aac',
       // Documents
       'application/pdf',
       'text/plain',
@@ -34,8 +40,14 @@ const fileFilter = (req, file, cb) => {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ];
 
-    // Check if file type is allowed
-    if (allowedMimeTypes.includes(file.mimetype)) {
+    // Check if file type is allowed (handle codec parameters like ;codecs=opus)
+    const baseMimeType = file.mimetype.split(';')[0].trim();
+    const isAllowed = allowedMimeTypes.some(allowed => {
+      const allowedBase = allowed.split(';')[0].trim();
+      return allowed === file.mimetype || allowedBase === baseMimeType || file.mimetype.startsWith(allowedBase + ';');
+    });
+    
+    if (isAllowed) {
       cb(null, true);
     } else {
       cb(new Error(`File type ${file.mimetype} is not allowed`), false);
@@ -51,7 +63,7 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB max file size
+    fileSize: 10 * 1024 * 1024, // 10MB max file size (matches attachment service)
     files: 10, // Max 10 files per request
   }
 });
@@ -62,7 +74,7 @@ const handleUploadError = (error, req, res, next) => {
     if (error.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
         success: false,
-        message: 'File size too large. Maximum size is 100MB.'
+        message: 'File size too large. Maximum size is 10MB.'
       });
     }
     if (error.code === 'LIMIT_FILE_COUNT') {

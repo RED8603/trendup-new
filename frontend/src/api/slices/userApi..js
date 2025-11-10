@@ -53,10 +53,7 @@ export const userApi = baseApi.injectEndpoints({
       invalidatesTags: ['User'],
     }),
 
-    // Search users
-    searchUsers: builder.query({
-      query: ({ q, limit = 10 }) => `/users/search?q=${encodeURIComponent(q)}&limit=${limit}`,
-    }),
+    // Note: searchUsers is defined in socialApi to avoid duplication
   }),
 });
 
@@ -67,5 +64,5 @@ export const {
   useUploadAvatarMutation,
   useUploadCoverMutation,
   useDeleteAccountMutation,
-  useSearchUsersQuery,
+  // useSearchUsersQuery is exported from socialApi
 } = userApi;

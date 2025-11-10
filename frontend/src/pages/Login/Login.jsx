@@ -4,14 +4,16 @@ import InputFeild from "@/components/common/InputFeild/InputFeild";
 import Loading from "@/components/common/loading";
 import Logo from "@/components/common/Logo/Logo";
 import MainButton from "@/components/common/MainButton/MainButton";
-import { Box, Checkbox, Container, IconButton, InputAdornment, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Checkbox, Container, IconButton, InputAdornment, Stack, Typography, useTheme, alpha } from "@mui/material";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useRequestWalletNonceMutation } from "@/api/slices/authApi";
 import { useSignMessage } from "wagmi";
 import { useToast } from "@/hooks/useToast";
+import { useDispatch } from "react-redux";
+import { setGuestMode } from "@/store/slices/userSlices";
 
 const Login = () => {
     const { open } = useAppKit();
@@ -19,6 +21,8 @@ const Login = () => {
     const theme = useTheme();
     const { login, loginWithWallet, loading } = useAuth();
     const { showToast } = useToast();
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState({ email: "", error: "" });
     const [password, setPassword] = useState({ password: "", error: "" });
@@ -139,6 +143,19 @@ const Login = () => {
         setLoginWithEmail(false);
     };
 
+    const handleGuestLogin = (e) => {
+        e?.preventDefault?.(); // Prevent any default behavior
+        e?.stopPropagation?.(); // Stop event propagation
+        
+        dispatch(setGuestMode());
+        showToast("Browsing as guest. Sign up to unlock all features!", "info");
+        
+        // Navigate directly after a small delay to ensure state is updated
+        setTimeout(() => {
+            navigate('/home', { replace: true });
+        }, 100);
+    };
+
     if (loading) return <Loading isLoading={true} />;
 
     return (
@@ -158,21 +175,23 @@ const Login = () => {
                         position: "relative",
                     })}
                 >
-                    <Box
-                        sx={{
-                            position: "absolute",
-                            top: 0,
-                            left: "10px",
-                        }}
-                    >
-                        <IconButton
-                            sx={{ display: "flex", alignItems: "center", gap: "5px" }}
-                            onClick={handleSkip}
+                    {loginWithEmail && (
+                        <Box
+                            sx={{
+                                position: "absolute",
+                                top: 0,
+                                left: "10px",
+                            }}
                         >
-                            <ReplyIcon color={theme.palette.text.primary} />{" "}
-                            <Typography color="textPrimary">Back</Typography>
-                        </IconButton>
-                    </Box>
+                            <IconButton
+                                sx={{ display: "flex", alignItems: "center", gap: "5px" }}
+                                onClick={handleSkip}
+                            >
+                                <ReplyIcon color={theme.palette.text.primary} />{" "}
+                                <Typography color="textPrimary">Back</Typography>
+                            </IconButton>
+                        </Box>
+                    )}
                     <Box sx={{ display: "flex", justifyContent: "center" }}>
                         <Logo />
                     </Box>
@@ -299,6 +318,33 @@ const Login = () => {
                             >
                                 Login with Email
                             </MainButton>
+                            
+                            {/* NEW: Guest Mode Button */}
+                            <Box sx={{ width: "230px", mt: 1, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.2)}` }}>
+                                <MainButton
+                                    type="button"
+                                    sx={{ 
+                                        width: "100%",
+                                        backgroundColor: "transparent",
+                                        border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+                                        color: theme.palette.text.secondary,
+                                        '&:hover': {
+                                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                            borderColor: theme.palette.primary.main,
+                                        }
+                                    }}
+                                    onClick={handleGuestLogin}
+                                >
+                                    Continue as Guest
+                                </MainButton>
+                                <Typography 
+                                    variant="caption" 
+                                    color="text.secondary" 
+                                    sx={{ mt: 1, textAlign: 'center', display: 'block' }}
+                                >
+                                    Try the app before signing up
+                                </Typography>
+                            </Box>
                         </Stack>
                     )}
                 </Box>

@@ -77,6 +77,11 @@ app.use('/api/v1/redis', redisRoutes);
 const realtimeRoutes = require('./core/routes/realtime.routes.simple');
 app.use('/api/v1/realtime', realtimeRoutes);
 
+// Chat routes
+const { conversationRoutes, messageRoutes } = require('./modules/chat');
+app.use('/api/v1/chat/conversations', conversationRoutes);
+app.use('/api/v1/chat', messageRoutes);
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({

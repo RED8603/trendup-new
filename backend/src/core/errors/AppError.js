@@ -30,9 +30,21 @@ class AuthorizationError extends AppError {
   }
 }
 
+class BadRequestError extends AppError {
+  constructor(message = 'Bad request') {
+    super(message, 400, 'BAD_REQUEST');
+  }
+}
+
 class NotFoundError extends AppError {
   constructor(resource = 'Resource') {
     super(`${resource} not found`, 404, 'NOT_FOUND');
+  }
+}
+
+class ForbiddenError extends AppError {
+  constructor(message = 'Access forbidden') {
+    super(message, 403, 'FORBIDDEN');
   }
 }
 
@@ -59,7 +71,9 @@ module.exports = {
   ValidationError,
   AuthenticationError,
   AuthorizationError,
+  BadRequestError,
   NotFoundError,
+  ForbiddenError,
   ConflictError,
   RateLimitError,
   BlockchainError

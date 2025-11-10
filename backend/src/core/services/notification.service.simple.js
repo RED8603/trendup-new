@@ -40,7 +40,13 @@ class NotificationService {
       
       // System notifications
       SYSTEM_ANNOUNCEMENT: 'system_announcement',
-      MAINTENANCE_NOTICE: 'maintenance_notice'
+      MAINTENANCE_NOTICE: 'maintenance_notice',
+      
+      // Chat notifications
+      CONVERSATION_CREATED: 'conversation_created',
+      MESSAGE_RECEIVED: 'message_received',
+      GROUP_MEMBER_ADDED: 'group_member_added',
+      GROUP_MEMBER_REMOVED: 'group_member_removed'
     };
 
     this.priorityLevels = {

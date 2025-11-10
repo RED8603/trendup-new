@@ -15,7 +15,9 @@ import {
     List,
     Drawer as MuiDrawer,
 } from "@mui/material";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import GuestRestrictionModal from "../common/GuestRestrictionModal";
+import { useGuestAwareApi } from "@/hooks/useGuestAwareApi";
 
 import { useGenrelContext } from "@/context/GenrelContext";
 import { ThemeToggle } from "../common/ToggelTheme/ToggelTheme";
@@ -192,6 +194,10 @@ const MotionTypography = motion(Typography);
 const CustomDrawer = ({ handleDrawerClose, open }) => {
     const [selectedIndex, setSelectedIndex] = useState(array[0].id);
     const location = useLocation();
+    const navigate = useNavigate();
+    const { getRestrictionInfo } = useGuestAwareApi();
+    const [restrictionModalOpen, setRestrictionModalOpen] = useState(false);
+    const [restrictionInfo, setRestrictionInfo] = useState(null);
 
     const theme = useTheme();
     const { isDarkMode } = useGenrelContext();
@@ -209,6 +215,32 @@ const CustomDrawer = ({ handleDrawerClose, open }) => {
             setSelectedIndex(matchedRoute.id);
         }
     }, [location.pathname]);
+
+    const handleNavigation = (e, link1, name) => {
+        e.preventDefault();
+        
+        // Check if it's a restricted route for guests
+        const restrictedRoutes = {
+            '/chat': { action: 'access chat', feature: 'chat', route: '/register' },
+            '/live': { action: 'go live', feature: 'live streaming', route: '/register' },
+        };
+
+        if (restrictedRoutes[link1]) {
+            const restriction = getRestrictionInfo(
+                restrictedRoutes[link1].action,
+                restrictedRoutes[link1].feature,
+                restrictedRoutes[link1].route
+            );
+            if (restriction.restricted) {
+                setRestrictionInfo(restriction);
+                setRestrictionModalOpen(true);
+                return;
+            }
+        }
+        
+        setSelectedIndex(array.find(item => item.link1 === link1)?.id || selectedIndex);
+        navigate(link1);
+    };
 
     return (
         <Drawer
@@ -234,9 +266,8 @@ const CustomDrawer = ({ handleDrawerClose, open }) => {
                 <List>
                     {array.map(({ name, link1, Icon: ImageIcon, id }, index) => (
                         <ListItem key={index} disablePadding sx={{ display: "block" }}>
-                            <Link to={link1} style={{ textDecoration: "none", color: "inherit" }}>
-                                <MotionListItemButton
-                                    onClick={() => setSelectedIndex(id)}
+                            <MotionListItemButton
+                                onClick={(e) => handleNavigation(e, link1, name)}
                                     whileHover={{
                                         scale: 1.05,
                                         transition: { type: "spring", stiffness: 300 },
@@ -303,7 +334,6 @@ const CustomDrawer = ({ handleDrawerClose, open }) => {
                                         </MotionTypography>
                                     )}
                                 </MotionListItemButton>
-                            </Link>
                         </ListItem>
                     ))}
                 </List>
@@ -317,6 +347,13 @@ const CustomDrawer = ({ handleDrawerClose, open }) => {
                     />
                 </Box>
             </Stack>
+            <GuestRestrictionModal
+                open={restrictionModalOpen}
+                onClose={() => setRestrictionModalOpen(false)}
+                action={restrictionInfo?.action}
+                feature={restrictionInfo?.feature}
+                route={restrictionInfo?.route || '/register'}
+            />
         </Drawer>
     );
 };

@@ -3,12 +3,12 @@ import { removeUser } from "@/store/slices/userSlices";
 import { env } from "@/config/env";
 
 
-// const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
-const baseUrl = import.meta.env.VITE_API_URL || "https://api.trenduplive.com/api/v1";
+const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1"; // loacl
+// const baseUrl = import.meta.env.VITE_API_URL || "https://api.trenduplive.com/api/v1"; // production
 
 const baseQueryWithAuth = fetchBaseQuery({
     baseUrl: baseUrl,
-    prepareHeaders: (headers) => {
+    prepareHeaders: (headers, { extra, endpoint }) => {
         const accessToken = localStorage.getItem("accessToken");
         if (accessToken) {
             headers.set("Authorization", `Bearer ${accessToken}`);
@@ -21,6 +21,13 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     let result = await baseQueryWithAuth(args, api, extraOptions);
 
     if (result.error && result.error.status === 401) {
+        // Check if user is in guest mode - don't redirect if so
+        const guestMode = localStorage.getItem('guestMode');
+        if (guestMode === 'true') {
+            // User is in guest mode, don't redirect to login
+            return result;
+        }
+
         const refreshToken = localStorage.getItem("refreshToken");
         
         if (refreshToken) {
@@ -71,6 +78,8 @@ export const baseApi = createApi({
         "MyKarma", "MyKarmaStats", "MyBadges", "MyReactions", "MyKarmaHistory",
         // Badge system tags
         "BadgeStats", "BadgesByCategory", "BadgesByRarity", "Badge", "AvailableBadges", 
-        "UserBadgeProgress", "MyAvailableBadges", "MyBadgeProgress"
+        "UserBadgeProgress", "MyAvailableBadges", "MyBadgeProgress",
+        // Chat system tags
+        "Conversations", "Messages"
     ],
 });

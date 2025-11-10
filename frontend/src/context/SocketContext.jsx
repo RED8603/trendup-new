@@ -3,7 +3,20 @@ import { io } from 'socket.io-client';
 import { useSelector } from 'react-redux';
 import { useToast } from '@/hooks/useToast';
 
-const SocketContext = createContext();
+// Provide default context value to prevent errors if used outside provider
+const defaultContextValue = {
+  socket: null,
+  isConnected: false,
+  connectionStatus: 'disconnected',
+  reconnectAttempts: 0,
+  lastError: null,
+  reconnect: () => {},
+  joinRoom: () => {},
+  leaveRoom: () => {},
+  emitEvent: () => {}
+};
+
+const SocketContext = createContext(defaultContextValue);
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
@@ -16,47 +29,54 @@ export const SocketProvider = ({ children }) => {
   const { showToast } = useToast();
 
   // Socket configuration
-  const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:3001';
+  const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
   const MAX_RECONNECT_ATTEMPTS = 5;
   const RECONNECT_DELAY = 1000; // Start with 1 second
 
   // Initialize socket connection
   const initializeSocket = useCallback(() => {
-    if (!user?.token) {
-      console.log('[SocketContext] No user token available, skipping socket initialization');
+    const accessToken = localStorage.getItem('accessToken');
+    const userToken = user?.token || accessToken;
+    
+    if (!userToken) {
       return;
     }
 
-    console.log('[SocketContext] Initializing socket connection...');
     setConnectionStatus('connecting');
     setLastError(null);
-
+    
     const newSocket = io(SOCKET_URL, {
       auth: {
-        token: user.token,
-        userId: user._id
+        token: accessToken || user?.token,
+        userId: user?._id
       },
       transports: ['websocket', 'polling'],
       timeout: 20000,
-      forceNew: true
+      forceNew: true,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
     });
 
     // Connection event handlers
     newSocket.on('connect', () => {
-      console.log('[SocketContext] Connected to server:', newSocket.id);
       setIsConnected(true);
       setConnectionStatus('connected');
       setReconnectAttempts(0);
       setLastError(null);
       
-      // Join user-specific room
-      newSocket.emit('join_user_room', { userId: user._id });
+      // Authenticate with chat socket
+      const token = accessToken || user?.token;
+      newSocket.emit('authenticate', { token });
       
-      showToast('Connected to real-time updates', 'success');
+      newSocket.on('error', (error) => {
+        console.error('[SocketContext] Socket error:', error);
+      });
+      
+      showToast('Chat is live! You\'ll receive messages instantly', 'success');
     });
 
     newSocket.on('disconnect', (reason) => {
-      console.log('[SocketContext] Disconnected from server:', reason);
       setIsConnected(false);
       setConnectionStatus('disconnected');
       
@@ -77,20 +97,18 @@ export const SocketProvider = ({ children }) => {
         setReconnectAttempts(prev => prev + 1);
         showToast(`Connection failed (${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS}), retrying...`, 'error');
       } else {
-        showToast('Failed to connect to real-time updates', 'error');
+        showToast('Unable to connect to chat. Please check your connection', 'error');
       }
     });
 
-    newSocket.on('reconnect', (attemptNumber) => {
-      console.log('[SocketContext] Reconnected after', attemptNumber, 'attempts');
+    newSocket.on('reconnect', () => {
       setConnectionStatus('connected');
       setReconnectAttempts(0);
       setLastError(null);
-      showToast('Reconnected to real-time updates', 'success');
+      showToast('Chat reconnected! You\'re back online', 'success');
     });
 
-    newSocket.on('reconnect_attempt', (attemptNumber) => {
-      console.log('[SocketContext] Reconnection attempt:', attemptNumber);
+    newSocket.on('reconnect_attempt', () => {
       setConnectionStatus('connecting');
     });
 
@@ -104,55 +122,10 @@ export const SocketProvider = ({ children }) => {
       console.error('[SocketContext] Reconnection failed after maximum attempts');
       setConnectionStatus('error');
       setLastError('Failed to reconnect after maximum attempts');
-      showToast('Failed to reconnect to real-time updates', 'error');
+      showToast('Connection lost. Please refresh the page', 'error');
     });
 
-    // Real-time event handlers
-    newSocket.on('post:created', (data) => {
-      console.log('[SocketContext] Post created:', data);
-      // This will be handled by components using useSocketEvent
-    });
-
-    newSocket.on('post:updated', (data) => {
-      console.log('[SocketContext] Post updated:', data);
-    });
-
-    newSocket.on('post:deleted', (data) => {
-      console.log('[SocketContext] Post deleted:', data);
-    });
-
-    newSocket.on('reaction:added', (data) => {
-      console.log('[SocketContext] Reaction added:', data);
-    });
-
-    newSocket.on('reaction:removed', (data) => {
-      console.log('[SocketContext] Reaction removed:', data);
-    });
-
-    newSocket.on('comment:created', (data) => {
-      console.log('[SocketContext] Comment created:', data);
-    });
-
-    newSocket.on('karma:earned', (data) => {
-      console.log('[SocketContext] Karma earned:', data);
-    });
-
-    newSocket.on('user:followed', (data) => {
-      console.log('[SocketContext] User followed:', data);
-    });
-
-    newSocket.on('poll:voted', (data) => {
-      console.log('[SocketContext] Poll voted:', data);
-    });
-
-    newSocket.on('prediction:staked', (data) => {
-      console.log('[SocketContext] Prediction staked:', data);
-    });
-
-    newSocket.on('notification:received', (data) => {
-      console.log('[SocketContext] Notification received:', data);
-      // Don't show toast here - let useNotifications handle it
-    });
+    // Real-time event handlers are handled by individual hooks/components
 
     setSocket(newSocket);
   }, [user, showToast, reconnectAttempts]);
@@ -172,12 +145,15 @@ export const SocketProvider = ({ children }) => {
 
   // Initialize socket when user is available
   useEffect(() => {
-    if (user?.token && !socket) {
+    const accessToken = localStorage.getItem('accessToken');
+    const hasToken = accessToken || user?.token;
+    
+    if (hasToken && !socket) {
       initializeSocket();
-    } else if (!user?.token && socket) {
+    } else if (!hasToken && socket) {
       disconnectSocket();
     }
-  }, [user?.token, socket, initializeSocket, disconnectSocket]);
+  }, [user, socket, initializeSocket, disconnectSocket]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -202,7 +178,6 @@ export const SocketProvider = ({ children }) => {
   const joinRoom = useCallback((roomName) => {
     if (socket && isConnected) {
       socket.emit('join_room', { roomName });
-      console.log('[SocketContext] Joined room:', roomName);
     }
   }, [socket, isConnected]);
 
@@ -210,7 +185,6 @@ export const SocketProvider = ({ children }) => {
   const leaveRoom = useCallback((roomName) => {
     if (socket && isConnected) {
       socket.emit('leave_room', { roomName });
-      console.log('[SocketContext] Left room:', roomName);
     }
   }, [socket, isConnected]);
 
@@ -218,9 +192,6 @@ export const SocketProvider = ({ children }) => {
   const emitEvent = useCallback((eventName, data) => {
     if (socket && isConnected) {
       socket.emit(eventName, data);
-      console.log('[SocketContext] Emitted event:', eventName, data);
-    } else {
-      console.warn('[SocketContext] Cannot emit event, socket not connected');
     }
   }, [socket, isConnected]);
 
@@ -245,9 +216,8 @@ export const SocketProvider = ({ children }) => {
 
 export const useSocket = () => {
   const context = useContext(SocketContext);
-  if (!context) {
-    throw new Error('useSocket must be used within a SocketProvider');
-  }
+  // Context will always have a value (either from provider or default)
+  // No need to throw error - just return the context
   return context;
 };
 

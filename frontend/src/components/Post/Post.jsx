@@ -56,6 +56,8 @@ import { useSelector } from "react-redux";
 import { useToast } from "@/hooks/useToast";
 import { usePostRoom, useRealtimeUpdates, useTypingIndicator } from "@/hooks/useSocket";
 import { formatDistanceToNow } from "date-fns";
+import { useGuestAwareApi } from "@/hooks/useGuestAwareApi";
+import GuestRestrictionModal from "../common/GuestRestrictionModal";
 
 const MotionIconButton = motion(IconButton);
 const bounceEffect = {
@@ -95,6 +97,9 @@ const Post = ({ data }) => {
     const theme = useTheme();
     const { user: currentUser } = useSelector((state) => state.user);
     const { showToast } = useToast();
+    const { isGuest, getRestrictionInfo } = useGuestAwareApi();
+    const [restrictionModalOpen, setRestrictionModalOpen] = useState(false);
+    const [restrictionInfo, setRestrictionInfo] = useState(null);
     
     
     // Safety check for data
@@ -166,6 +171,13 @@ const Post = ({ data }) => {
 
     // Handle reactions
     const handleReaction = useCallback(async (reactionType) => {
+        const restriction = getRestrictionInfo('react to posts', 'post reactions', '/register');
+        if (restriction.restricted) {
+            setRestrictionInfo(restriction);
+            setRestrictionModalOpen(true);
+            return;
+        }
+        
         try {
             await reactToPost({ postId: data._id, reactionType }).unwrap();
             setUserReactions(prev => ({
@@ -175,7 +187,7 @@ const Post = ({ data }) => {
         } catch (error) {
             showToast('Failed to react to post', 'error');
         }
-    }, [reactToPost, data._id, showToast]);
+    }, [reactToPost, data._id, showToast, getRestrictionInfo]);
 
     // Handle reaction picker
     const handleReactionPickerOpen = (event) => {
@@ -190,6 +202,13 @@ const Post = ({ data }) => {
 
     // Handle follow/unfollow
     const handleFollow = async () => {
+        const restriction = getRestrictionInfo('follow users', 'following users', '/register');
+        if (restriction.restricted) {
+            setRestrictionInfo(restriction);
+            setRestrictionModalOpen(true);
+            return;
+        }
+        
         try {
             if (isFollowing) {
                 await unfollowUser(data.author._id).unwrap();
@@ -208,6 +227,12 @@ const Post = ({ data }) => {
     // Handle comment submission
     const handleCommentSubmit = useCallback(async (content, parentCommentId = null) => {
         if (!content || !content.trim()) return;
+        const restriction = getRestrictionInfo('comment on posts', 'commenting', '/register');
+        if (restriction.restricted) {
+            setRestrictionInfo(restriction);
+            setRestrictionModalOpen(true);
+            return;
+        }
         
         try {
             await createComment({ 
@@ -223,17 +248,24 @@ const Post = ({ data }) => {
             console.error('Comment submission error:', error);
             showToast(parentCommentId ? 'Failed to add reply' : 'Failed to add comment', 'error');
         }
-    }, [createComment, data._id, showToast, refetchComments]);
+    }, [createComment, data._id, showToast, refetchComments, getRestrictionInfo]);
 
 
     // Handle comment reaction
     const handleCommentReaction = useCallback(async (commentId, reactionType) => {
+        const restriction = getRestrictionInfo('react to comments', 'comment reactions', '/register');
+        if (restriction.restricted) {
+            setRestrictionInfo(restriction);
+            setRestrictionModalOpen(true);
+            return;
+        }
+        
         try {
             await reactToComment({ commentId, reactionType }).unwrap();
         } catch (error) {
             showToast('Failed to react to comment', 'error');
         }
-    }, [reactToComment, showToast]);
+    }, [reactToComment, showToast, getRestrictionInfo]);
 
     // Handle delete post
     const handleDeletePost = async () => {
@@ -686,6 +718,15 @@ const Post = ({ data }) => {
                     console.log(`Shared to ${platform}:`, data);
                     // Track sharing for karma rewards
                 }}
+            />
+
+            {/* Guest Restriction Modal */}
+            <GuestRestrictionModal
+                open={restrictionModalOpen}
+                onClose={() => setRestrictionModalOpen(false)}
+                action={restrictionInfo?.action}
+                feature={restrictionInfo?.feature}
+                route={restrictionInfo?.route || '/register'}
             />
         </BoxConatner>
     );

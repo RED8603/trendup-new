@@ -1,10 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { v4 as uuidv4 } from "uuid";
 
+/**
+ * Chat Slice
+ * Manages UI state for chat (input, current selection, etc.)
+ * Actual data (conversations, messages) is managed by RTK Query (chatApi)
+ */
 const initialState = {
-  currentChat: null,
-  conversations: [],
-  messages: {},
+  currentChat: null, // Current conversation ID
   input: {
     text: "",
     files: [],
@@ -15,6 +17,7 @@ const initialState = {
     emojiPicker: null,
     reactionPicker: null,
     isRecording: false,
+    typingUsers: [], // Users currently typing in current chat
   }
 };
 
@@ -24,12 +27,32 @@ const chatSlice = createSlice({
   reducers: {
     setCurrentChat: (state, action) => {
       state.currentChat = action.payload;
+      // Clear input when switching chats
+      state.input.text = "";
+      state.input.files = [];
+      state.input.replyTo = null;
     },
     setInputText: (state, action) => {
       state.input.text = action.payload;
     },
     addFile: (state, action) => {
-      state.input.files = [...state.input.files, ...action.payload];
+      const files = Array.isArray(action.payload) ? action.payload : [action.payload];
+      // Convert File objects to serializable metadata
+      const fileMetadata = files.map((file, index) => {
+        // If it's already metadata, use it; otherwise extract from File object
+        if (file && typeof file === 'object' && !(file instanceof File)) {
+          return file; // Already metadata
+        }
+        // Extract serializable metadata from File object
+        return {
+          id: `${Date.now()}-${index}-${Math.random()}`,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          lastModified: file.lastModified,
+        };
+      });
+      state.input.files = [...state.input.files, ...fileMetadata];
     },
     removeFile: (state, action) => {
       state.input.files = state.input.files.filter((_, i) => i !== action.payload);
@@ -40,49 +63,23 @@ const chatSlice = createSlice({
     cancelReply: (state) => {
       state.input.replyTo = null;
     },
-    sendMessage: (state) => {
-      if (!state.input.text && state.input.files.length === 0) return;
-      
-      const chatId = state.currentChat;
-      const newMessage = {
-        id: uuidv4(),
-        content: state.input.text,
-        sender: "currentUser",
-        timestamp: new Date().toISOString(),
-        replyTo: state.input.replyTo,
-        attachments: state.input.files.map(file => ({
-          id: uuidv4(),
-          type: file.type.startsWith("image/") ? "image" : "file",
-          name: file.name,
-          size: file.size,
-          url: URL.createObjectURL(file)
-        })),
-        reactions: []
-      };
-
-      if (!state.messages[chatId]) {
-        state.messages[chatId] = [];
-      }
-      state.messages[chatId].push(newMessage);
+    setTypingUsers: (state, action) => {
+      state.ui.typingUsers = action.payload;
+    },
+    setEmojiPicker: (state, action) => {
+      state.ui.emojiPicker = action.payload;
+    },
+    setReactionPicker: (state, action) => {
+      state.ui.reactionPicker = action.payload;
+    },
+    setIsRecording: (state, action) => {
+      state.ui.isRecording = action.payload;
+    },
+    clearInput: (state) => {
       state.input.text = "";
       state.input.files = [];
       state.input.replyTo = null;
     },
-    addReaction: (state, action) => {
-      const { chatId, messageId, emoji } = action.payload;
-      const messages = state.messages[chatId];
-      const message = messages.find(m => m.id === messageId);
-      
-      if (!message) return;
-      
-      const existingReaction = message.reactions.find(r => r.emoji === emoji);
-      if (existingReaction) {
-        existingReaction.count += 1;
-      } else {
-        message.reactions.push({ emoji, count: 1 });
-      }
-    },
-    // ... other reducers
   }
 });
 
@@ -92,9 +89,12 @@ export const {
   addFile, 
   removeFile, 
   setReplyTo, 
-  cancelReply, 
-  sendMessage,
-  addReaction
+  cancelReply,
+  setTypingUsers,
+  setEmojiPicker,
+  setReactionPicker,
+  setIsRecording,
+  clearInput,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
