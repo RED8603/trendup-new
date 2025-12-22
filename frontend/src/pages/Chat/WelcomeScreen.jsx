@@ -3,7 +3,7 @@ import { Menu as MenuIcon, Chat, Search, PhoneIphone, Bolt, Groups, AutoAwesome 
 import { motion, AnimatePresence } from "framer-motion";
 import { useGenrelContext } from "@/context/GenrelContext";
 import { lightLogo } from "@/assets";
-
+//first page
 // Styled components with modern Web3 aesthetics
 const WelcomeContainer = styled(Box)(({ theme }) => ({
     flex: 1,
