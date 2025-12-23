@@ -133,17 +133,102 @@ const config = {
 
   // CORS
   cors: {
-    origin: true,
-    credentials: true
+    origin: (() => {
+      // Parse CORS_ORIGIN environment variable
+      const corsOrigin = process.env.CORS_ORIGIN;
+      const isProduction = process.env.NODE_ENV === 'production';
+      
+      // If no CORS_ORIGIN is set
+      if (!corsOrigin) {
+        // In development (or when NODE_ENV is not explicitly 'production'), allow all origins
+        if (!isProduction) {
+          return true; // Allow all origins in development
+        }
+        // Only in explicit production mode, require CORS_ORIGIN
+        throw new Error(
+          'CORS_ORIGIN environment variable is required in production. ' +
+          'Set it to a comma-separated list of allowed origins.'
+        );
+      }
+      
+      // Parse comma-separated origins
+      const origins = corsOrigin.split(',').map(origin => origin.trim()).filter(Boolean);
+      
+      // In development, allow whitelist + localhost
+      if (!isProduction) {
+        return (origin, callback) => {
+          // Allow if origin is in whitelist or is localhost
+          if (!origin || origins.includes(origin) || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            callback(null, true);
+          } else {
+            callback(new Error('Not allowed by CORS'));
+          }
+        };
+      }
+      
+      // In production, strict whitelist only
+      return (origin, callback) => {
+        if (!origin || origins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      };
+    })(),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['X-Total-Count', 'X-Page', 'X-Per-Page']
   },
 
   // Socket.io
   socket: {
-    cors: {
-      origin: true,
-      methods: ['GET', 'POST'],
-      credentials: true
-    }
+    cors: (() => {
+      const socketCorsOrigin = process.env.SOCKET_CORS_ORIGIN || process.env.CORS_ORIGIN;
+      const isProduction = process.env.NODE_ENV === 'production';
+      
+      // Only require in explicit production mode
+      if (!socketCorsOrigin && isProduction) {
+        throw new Error(
+          'SOCKET_CORS_ORIGIN or CORS_ORIGIN environment variable is required in production.'
+        );
+      }
+      
+      // If no origin set, allow all in development
+      if (!socketCorsOrigin) {
+        return {
+          origin: true,
+          methods: ['GET', 'POST'],
+          credentials: true
+        };
+      }
+      
+      // Parse origins
+      const origins = socketCorsOrigin.split(',').map(origin => origin.trim()).filter(Boolean);
+      
+      return {
+        origin: (origin, callback) => {
+          // In development, allow whitelist + localhost
+          if (!isProduction) {
+            if (!origin || origins.includes(origin) || 
+                origin.includes('localhost') || origin.includes('127.0.0.1')) {
+              callback(null, true);
+            } else {
+              callback(new Error('Not allowed by Socket.io CORS'));
+            }
+          } else {
+            // In production, strict whitelist only
+            if (!origin || origins.includes(origin)) {
+              callback(null, true);
+            } else {
+              callback(new Error('Not allowed by Socket.io CORS'));
+            }
+          }
+        },
+        methods: ['GET', 'POST'],
+        credentials: true
+      };
+    })()
   }
 };
 

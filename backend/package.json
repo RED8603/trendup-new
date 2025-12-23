@@ -11,7 +11,7 @@
     "test:coverage": "jest --coverage",
     "test:integration": "jest --testPathPattern=integration",
     "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix",
+    "lint:fix": "eslint src/ --fix", 
     "format": "prettier --write src/",
     "seed": "node scripts/seed.js",
     "migrate": "node scripts/migrate.js",

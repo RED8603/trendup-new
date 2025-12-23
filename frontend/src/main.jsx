@@ -14,10 +14,13 @@ import { Provider } from "react-redux";
 import { store } from "./store/srore";
 import { BrowserRouter } from "react-router-dom";
 import Loading from "@/components/common/loading";
+import { env } from "@/config/env";
 
 const queryClient = new QueryClient();
 
-const projectId = "a65bc026af82f217afeb8f7543a83113";
+// Use WalletConnect Project ID from environment, fallback to hardcoded for development only
+// TODO: Remove hardcoded fallback once environment variable is set
+const projectId = env.walletConnectProjectId || "a65bc026af82f217afeb8f7543a83113";
 // Set the networks
 const networks = [mainnet];
 
