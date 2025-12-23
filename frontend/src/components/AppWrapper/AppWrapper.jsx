@@ -5,11 +5,13 @@ import { Box, Container, CssBaseline } from "@mui/material";
 import Topbar from "@components/Topbar/Topbar";
 import { AnimatePresence, motion } from "framer-motion";
 import Sidebar from "@components/Topbar/Sidebar";
+import { useSelector } from "react-redux";
 
 const MotionDiv = motion.div;
 
 const AppWrapper = ({ children }) => {
     const { isDarkMode } = useGenrelContext();
+    const { isGuestMode } = useSelector((state) => state.user);
 
     const duration = 0.3; // match 300ms from theme
     return (
@@ -48,7 +50,14 @@ const AppWrapper = ({ children }) => {
                                 },
                             }}
                         >
-                            <Container maxWidth="xl">{children}</Container>
+                            <Container 
+                                maxWidth="xl"
+                                sx={{
+                                    pb: isGuestMode ? { xs: 12, sm: 14 } : 0,
+                                }}
+                            >
+                                {children}
+                            </Container>
                         </MotionDiv>
                     </AnimatePresence>
                 </Box>

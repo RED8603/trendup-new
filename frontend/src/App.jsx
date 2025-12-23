@@ -7,6 +7,7 @@ import { SocketProvider } from '@/context/SocketContext';
 import { ConfigProvider } from '@/context/GenrelContext';
 import { GuestModeProvider } from '@/context/GuestModeContext';
 import GuestModeBanner from '@/components/common/GuestModeBanner';
+import GuestLoginPrompt from '@/components/common/GuestLoginPrompt';
 import { useSelector } from 'react-redux';
 
 // Toast notification wrapper
@@ -30,6 +31,7 @@ function App() {
                         <AppWrapper>
                             <GuestModeBanner />
                             <AuthContainer />
+                            <GuestLoginPrompt />
                             <ToastNotification />
                             <KarmaNotifications />
                         </AppWrapper>

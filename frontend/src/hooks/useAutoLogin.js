@@ -28,12 +28,14 @@ export const useAutoLogin = () => {
         if (accessToken && !authUtils.isAccessTokenExpired()) {
             setShouldFetchProfile(true);
         } else {
-            // No valid token - stop loading immediately
-            dispatch(setLoading(false));
-            // Clear invalid tokens
+            // No valid token - automatically enable guest mode
+            // Clear invalid tokens first
             if (accessToken && authUtils.isAccessTokenExpired()) {
                 authUtils.clearTokens();
             }
+            // Automatically set guest mode so user sees the home page instead of login
+            dispatch(setGuestMode());
+            dispatch(setLoading(false));
         }
     }, [dispatch]);
 

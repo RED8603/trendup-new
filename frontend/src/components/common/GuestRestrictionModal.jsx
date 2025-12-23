@@ -10,24 +10,57 @@ import {
     useTheme,
     alpha,
     IconButton,
+    Stack,
 } from '@mui/material';
-import { Close as CloseIcon, Lock as LockIcon } from '@mui/icons-material';
+import { Close as CloseIcon, RocketLaunch as RocketIcon, CheckCircle as CheckIcon, Login as LoginIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { exitGuestMode } from '@/store/slices/userSlices';
 
 const GuestRestrictionModal = ({ open, onClose, action, feature, route = '/register' }) => {
     const theme = useTheme();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const handleSignUp = () => {
         onClose();
-        navigate(route);
+        dispatch(exitGuestMode());
+        navigate('/register');
+    };
+    
+    const handleLogin = () => {
+        onClose();
+        dispatch(exitGuestMode());
+        navigate('/login');
     };
 
-    const displayText = action 
-        ? `Sign up to ${action}`
-        : feature 
-        ? `Sign up to get access to ${feature}`
-        : 'Sign up to continue';
+    const getFriendlyMessage = () => {
+        if (action) {
+            const actionMap = {
+                'react to posts': 'like and react',
+                'comment on posts': 'join the conversation',
+                'follow users': 'connect with creators',
+                'create posts': 'share your thoughts',
+                'go live': 'start streaming',
+                'create votes': 'start voting',
+            };
+            return actionMap[action.toLowerCase()] || action;
+        }
+        if (feature) {
+            return feature;
+        }
+        return 'continue';
+    };
+
+    const friendlyAction = getFriendlyMessage();
+
+    const benefits = [
+        'Create and share your thoughts',
+        'Connect with the community',
+        'Chat and go live',
+        'Build karma and earn badges',
+        'Vote on proposals and polls',
+    ];
 
     return (
         <Dialog
@@ -37,10 +70,13 @@ const GuestRestrictionModal = ({ open, onClose, action, feature, route = '/regis
             fullWidth
             PaperProps={{
                 sx: {
-                    borderRadius: 3,
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
+                    borderRadius: 4,
+                    background: theme.palette.mode === 'dark' 
+                        ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)}, ${alpha(theme.palette.background.paper, 0.95)})`
+                        : `linear-gradient(145deg, ${theme.palette.background.paper}, ${alpha(theme.palette.background.paper, 0.98)})`,
                     backdropFilter: 'blur(20px)',
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
                 },
             }}
         >
@@ -49,34 +85,39 @@ const GuestRestrictionModal = ({ open, onClose, action, feature, route = '/regis
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    pb: 1,
-                    background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, transparent 100%)`,
-                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    pb: 2,
+                    pt: 3,
+                    px: 3,
                 }}
             >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box
                         sx={{
-                            p: 1,
+                            p: 1.5,
                             borderRadius: 2,
-                            background: alpha(theme.palette.primary.main, 0.1),
+                            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)}, ${alpha(theme.palette.primary.main, 0.05)})`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                         }}
                     >
-                        <LockIcon color="primary" />
+                        <RocketIcon sx={{ color: theme.palette.primary.main, fontSize: 28 }} />
                     </Box>
-                    <Typography variant="h6" fontWeight={700}>
-                        Sign Up Required
-                    </Typography>
+                    <Box>
+                        <Typography variant="h5" fontWeight={700} sx={{ mb: 0.5 }}>
+                            Join TrendUp
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Sign up to {friendlyAction}
+                        </Typography>
+                    </Box>
                 </Box>
                 <IconButton
                     onClick={onClose}
                     size="small"
                     sx={{
                         '&:hover': {
-                            backgroundColor: alpha(theme.palette.error.main, 0.1),
+                            backgroundColor: alpha(theme.palette.action.hover, 0.5),
                         },
                     }}
                 >
@@ -84,66 +125,83 @@ const GuestRestrictionModal = ({ open, onClose, action, feature, route = '/regis
                 </IconButton>
             </DialogTitle>
 
-            <DialogContent sx={{ py: 3 }}>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 2, lineHeight: 1.7 }}>
-                    {displayText}
+            <DialogContent sx={{ py: 2, px: 3 }}>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
+                    Create a free account to unlock all features and start engaging with the community.
                 </Typography>
-                <Box
-                    sx={{
-                        mt: 3,
-                        p: 2,
-                        borderRadius: 2,
-                        background: alpha(theme.palette.primary.main, 0.05),
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                    }}
-                >
-                    <Typography variant="body2" color="text.secondary">
-                        <strong>Benefits of signing up:</strong>
-                    </Typography>
-                    <Box component="ul" sx={{ mt: 1, pl: 2, mb: 0 }}>
-                        <Typography component="li" variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                            Create and share posts
-                        </Typography>
-                        <Typography component="li" variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                            Engage with the community
-                        </Typography>
-                        <Typography component="li" variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                            Access chat and live features
-                        </Typography>
-                        <Typography component="li" variant="body2" color="text.secondary">
-                            Build your karma and earn badges
-                        </Typography>
-                    </Box>
-                </Box>
+                
+                <Stack spacing={1.5}>
+                    {benefits.map((benefit, index) => (
+                        <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box
+                                sx={{
+                                    p: 0.5,
+                                    borderRadius: '50%',
+                                    background: alpha(theme.palette.primary.main, 0.1),
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <CheckIcon sx={{ color: theme.palette.primary.main, fontSize: 18 }} />
+                            </Box>
+                            <Typography variant="body2" color="text.secondary">
+                                {benefit}
+                            </Typography>
+                        </Box>
+                    ))}
+                </Stack>
             </DialogContent>
 
-            <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+            <DialogActions sx={{ px: 3, pb: 3, gap: 1.5, pt: 2 }}>
                 <Button
                     onClick={onClose}
                     variant="outlined"
                     sx={{
                         borderColor: alpha(theme.palette.divider, 0.5),
+                        color: theme.palette.text.secondary,
+                        px: 3,
                         '&:hover': {
                             borderColor: theme.palette.divider,
+                            backgroundColor: alpha(theme.palette.action.hover, 0.5),
                         },
                     }}
                 >
-                    Maybe Later
+                    Continue Browsing
                 </Button>
                 <Button
                     onClick={handleSignUp}
-                    variant="contained"
-                    color="primary"
+                    variant="outlined"
+                    startIcon={<PersonAddIcon />}
                     sx={{
                         px: 3,
+                        borderColor: alpha(theme.palette.primary.main, 0.5),
+                        color: theme.palette.text.primary,
                         fontWeight: 600,
-                        background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
                         '&:hover': {
-                            background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
+                            borderColor: theme.palette.primary.main,
+                            backgroundColor: alpha(theme.palette.primary.main, 0.08),
                         },
                     }}
                 >
-                    Sign Up Now
+                    Sign Up
+                </Button>
+                <Button
+                    onClick={handleLogin}
+                    variant="contained"
+                    startIcon={<LoginIcon />}
+                    sx={{
+                        px: 4,
+                        fontWeight: 600,
+                        background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+                        '&:hover': {
+                            background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
+                            boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}`,
+                        },
+                    }}
+                >
+                    Login
                 </Button>
             </DialogActions>
         </Dialog>
