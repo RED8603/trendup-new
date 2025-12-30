@@ -37,10 +37,16 @@ export const useAuth = () => {
                 refreshToken: result.data.refreshToken,
             }));
             
-            navigate('/home');
+            // Use replace: true and delay to ensure Redux state is fully updated before navigation
+            // This prevents AuthContainer from interfering with the navigation
+            setTimeout(() => {
+                navigate('/home', { replace: true });
+            }, 200);
+            
             return result;
         } catch (err) {
             dispatch(setError(err.data?.message || 'Login failed'));
+            dispatch(setLoading(false));
             throw err;
         }
     };
@@ -56,10 +62,15 @@ export const useAuth = () => {
                 refreshToken: result.data.refreshToken,
             }));
             
-            navigate('/home');
+            // Use replace: true and delay to ensure Redux state is fully updated before navigation
+            setTimeout(() => {
+                navigate('/home', { replace: true });
+            }, 200);
+            
             return result;
         } catch (err) {
             dispatch(setError(err.data?.message || 'Registration failed'));
+            dispatch(setLoading(false));
             throw err;
         }
     };
@@ -79,10 +90,15 @@ export const useAuth = () => {
                 refreshToken: result.data.refreshToken,
             }));
             
-            navigate('/home');
+            // Use replace: true and delay to ensure Redux state is fully updated before navigation
+            setTimeout(() => {
+                navigate('/home', { replace: true });
+            }, 200);
+            
             return result;
         } catch (err) {
             dispatch(setError(err.data?.message || 'Wallet login failed'));
+            dispatch(setLoading(false));
             throw err;
         }
     };

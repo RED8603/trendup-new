@@ -67,7 +67,12 @@ app.use('/api/v1/social/media', mediaRoutes);
 app.use('/api/v1/social/polls', pollRoutes);
 app.use('/api/v1/social/predictions', predictionRoutes);
 app.use('/api/v1/social/moderation', moderationRoutes);
+app.use('/api/v1/social/moderation', moderationRoutes);
 app.use('/api/v1/social/notifications', notificationRoutes);
+
+// News routes
+const newsRoutes = require('./modules/news/news.routes');
+app.use('/api/v1/news', newsRoutes);
 
 // Redis infrastructure routes
 const redisRoutes = require('./core/routes/redis.routes');

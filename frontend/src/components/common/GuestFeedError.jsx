@@ -9,17 +9,23 @@ const GuestFeedError = ({ featureName = 'this feature' }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const theme = useTheme();
-    
+
     const handleLogin = () => {
         dispatch(exitGuestMode());
-        navigate('/login');
+        // Small delay to ensure state is updated before navigation
+        setTimeout(() => {
+            navigate('/login');
+        }, 50);
     };
-    
+
     const handleSignUp = () => {
         dispatch(exitGuestMode());
-        navigate('/register');
+        // Small delay to ensure state is updated before navigation
+        setTimeout(() => {
+            navigate('/register');
+        }, 50);
     };
-    
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -62,7 +68,7 @@ const GuestFeedError = ({ featureName = 'this feature' }) => {
                         <ExploreIcon sx={{ color: theme.palette.primary.main, fontSize: 48 }} />
                     </Box>
                 </Box>
-                
+
                 <Typography
                     variant="h5"
                     sx={{
@@ -73,7 +79,7 @@ const GuestFeedError = ({ featureName = 'this feature' }) => {
                 >
                     You're browsing as a guest
                 </Typography>
-                
+
                 <Typography
                     variant="body1"
                     sx={{
@@ -84,7 +90,7 @@ const GuestFeedError = ({ featureName = 'this feature' }) => {
                 >
                     To explore {featureName}, create an account or login to unlock all features and start engaging with the community.
                 </Typography>
-                
+
                 <Stack
                     direction={{ xs: 'column', sm: 'row' }}
                     spacing={2}

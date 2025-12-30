@@ -25,13 +25,19 @@ const GuestRestrictionModal = ({ open, onClose, action, feature, route = '/regis
     const handleSignUp = () => {
         onClose();
         dispatch(exitGuestMode());
-        navigate('/register');
+        // Small delay to ensure state is updated before navigation
+        setTimeout(() => {
+            navigate('/register');
+        }, 50);
     };
-    
+
     const handleLogin = () => {
         onClose();
         dispatch(exitGuestMode());
-        navigate('/login');
+        // Small delay to ensure state is updated before navigation
+        setTimeout(() => {
+            navigate('/login');
+        }, 50);
     };
 
     const getFriendlyMessage = () => {
@@ -71,7 +77,7 @@ const GuestRestrictionModal = ({ open, onClose, action, feature, route = '/regis
             PaperProps={{
                 sx: {
                     borderRadius: 4,
-                    background: theme.palette.mode === 'dark' 
+                    background: theme.palette.mode === 'dark'
                         ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)}, ${alpha(theme.palette.background.paper, 0.95)})`
                         : `linear-gradient(145deg, ${theme.palette.background.paper}, ${alpha(theme.palette.background.paper, 0.98)})`,
                     backdropFilter: 'blur(20px)',
@@ -129,7 +135,7 @@ const GuestRestrictionModal = ({ open, onClose, action, feature, route = '/regis
                 <Typography variant="body1" color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
                     Create a free account to unlock all features and start engaging with the community.
                 </Typography>
-                
+
                 <Stack spacing={1.5}>
                     {benefits.map((benefit, index) => (
                         <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>

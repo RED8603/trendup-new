@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAuth, initAuth, setLoading, setGuestMode } from '@/store/slices/userSlices';
 import { useGetProfileQuery } from '@/api/slices/authApi';
@@ -6,17 +6,24 @@ import { authUtils } from '@/utils/auth';
 
 export const useAutoLogin = () => {
     const dispatch = useDispatch();
-    const { isGuestMode } = useSelector((state) => state.user);
+    const { isGuestMode, user, isAuthenticated } = useSelector((state) => state.user);
     const [shouldFetchProfile, setShouldFetchProfile] = useState(false);
+    const hasInitializedRef = useRef(false);
 
     useEffect(() => {
-        // Check for guest mode first
-        const guestMode = localStorage.getItem('guestMode');
-        if (guestMode === 'true') {
-            dispatch(setGuestMode());
-            dispatch(setLoading(false));
+        // Only run once on mount - prevent infinite loops
+        if (hasInitializedRef.current) {
             return;
         }
+        
+        // If user is already authenticated with user data, mark as initialized and return
+        if (isAuthenticated && user && user._id && user._id !== 'guest-user') {
+            hasInitializedRef.current = true;
+            return;
+        }
+        
+        // Mark as initialized to prevent re-running
+        hasInitializedRef.current = true;
         
         // Set loading state BEFORE initAuth to prevent premature redirects
         dispatch(setLoading(true));
@@ -25,17 +32,30 @@ export const useAutoLogin = () => {
         
         const { accessToken } = authUtils.getTokens();
         
+        // Prioritize tokens over guest mode - if tokens exist, user is authenticated
         if (accessToken && !authUtils.isAccessTokenExpired()) {
+            // User has valid tokens - fetch profile and clear any guest mode
+            const guestMode = localStorage.getItem('guestMode');
+            if (guestMode === 'true') {
+                localStorage.removeItem('guestMode');
+            }
             setShouldFetchProfile(true);
         } else {
-            // No valid token - automatically enable guest mode
+            // No valid token - check for guest mode
             // Clear invalid tokens first
             if (accessToken && authUtils.isAccessTokenExpired()) {
                 authUtils.clearTokens();
             }
-            // Automatically set guest mode so user sees the home page instead of login
-            dispatch(setGuestMode());
-            dispatch(setLoading(false));
+            
+            // Only set guest mode if explicitly set in localStorage AND no valid tokens
+            const guestMode = localStorage.getItem('guestMode');
+            if (guestMode === 'true') {
+                dispatch(setGuestMode());
+                dispatch(setLoading(false));
+            } else {
+                // No tokens and no guest mode - user needs to login
+                dispatch(setLoading(false));
+            }
         }
     }, [dispatch]);
 

@@ -6,6 +6,7 @@ import NotificationItem from "./NotificationItem";
 import { useGetNotificationsQuery, useMarkAllNotificationsAsReadMutation } from "@/api/slices/socialApi";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Loading from "../loading";
 
 const MotionIconButton = motion(IconButton);
@@ -14,9 +15,13 @@ const NotificationBell = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
+    const { isGuestMode } = useSelector((state) => state.user);
     
     const { unreadCount } = useNotifications();
-    const { data, isLoading, error } = useGetNotificationsQuery({ limit: 10, unreadOnly: false });
+    const { data, isLoading, error } = useGetNotificationsQuery(
+        { limit: 10, unreadOnly: false },
+        { skip: isGuestMode } // Skip query when in guest mode
+    );
     const [markAllAsRead] = useMarkAllNotificationsAsReadMutation();
 
     const notifications = data?.data?.notifications || [];

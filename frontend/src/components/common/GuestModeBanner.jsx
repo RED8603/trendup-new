@@ -10,21 +10,21 @@ const GuestModeBanner = () => {
     const dispatch = useDispatch();
     const theme = useTheme();
     const { isGuestMode } = useSelector((state) => state.user);
-    
+
     // Check if user has dismissed the banner before
     const bannerDismissedKey = 'guestBannerDismissed';
     const [show, setShow] = useState(() => {
         if (typeof window === 'undefined') return false;
         return !localStorage.getItem(bannerDismissedKey);
     });
-    
+
     const handleDismiss = useCallback(() => {
         setShow(false);
         if (typeof window !== 'undefined') {
             localStorage.setItem(bannerDismissedKey, 'true');
         }
     }, []);
-    
+
     // Auto-dismiss after 8 seconds
     useEffect(() => {
         if (show && isGuestMode) {
@@ -34,15 +34,18 @@ const GuestModeBanner = () => {
             return () => clearTimeout(timer);
         }
     }, [show, isGuestMode, handleDismiss]);
-    
+
     if (!isGuestMode || !show) return null;
-    
+
     const handleSignUp = () => {
         dispatch(exitGuestMode());
         handleDismiss();
-        navigate('/register');
+        // Small delay to ensure state is updated before navigation
+        setTimeout(() => {
+            navigate('/register');
+        }, 50);
     };
-    
+
     return (
         <Fade in={show}>
             <Box
@@ -74,7 +77,7 @@ const GuestModeBanner = () => {
                                 size="small"
                                 variant="contained"
                                 onClick={handleSignUp}
-                                sx={{ 
+                                sx={{
                                     whiteSpace: 'nowrap',
                                     background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
                                     fontWeight: 600,
@@ -89,7 +92,7 @@ const GuestModeBanner = () => {
                             <IconButton
                                 size="small"
                                 onClick={handleDismiss}
-                                sx={{ 
+                                sx={{
                                     color: theme.palette.text.secondary,
                                     '&:hover': {
                                         backgroundColor: alpha(theme.palette.action.hover, 0.5),

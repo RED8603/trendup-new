@@ -20,6 +20,10 @@ const userSlice = createSlice({
             state.error = null;
             state.isAuthenticated = true;
             state.isGuestMode = false; // Clear guest mode when real user logs in
+            
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('guestMode'); // Remove guest mode from localStorage
+            }
         },
         
         setTokens: (state, action) => {
@@ -44,6 +48,7 @@ const userSlice = createSlice({
             if (typeof window !== 'undefined') {
                 localStorage.setItem("accessToken", action.payload.accessToken);
                 localStorage.setItem("refreshToken", action.payload.refreshToken);
+                localStorage.removeItem('guestMode'); // Remove guest mode from localStorage
             }
         },
         
@@ -76,8 +81,19 @@ const userSlice = createSlice({
                 const refreshToken = localStorage.getItem("refreshToken");
                 const guestMode = localStorage.getItem("guestMode");
                 
-                if (guestMode === 'true') {
-                    // Restore guest mode
+                // Prioritize tokens over guest mode - if tokens exist, user is authenticated
+                if (accessToken && refreshToken) {
+                    state.accessToken = accessToken;
+                    state.refreshToken = refreshToken;
+                    state.isGuestMode = false; // Clear guest mode when tokens exist
+                    // Remove guestMode from localStorage if it exists
+                    if (guestMode === 'true') {
+                        localStorage.removeItem('guestMode');
+                    }
+                    // Don't set isAuthenticated here - wait for user data to be loaded
+                    // This prevents the race condition where isAuthenticated is true but user is null
+                } else if (guestMode === 'true') {
+                    // Only restore guest mode if no valid tokens exist
                     state.isGuestMode = true;
                     state.user = {
                         _id: 'guest-user',
@@ -88,11 +104,6 @@ const userSlice = createSlice({
                     };
                     state.loading = false;
                     state.isAuthenticated = false;
-                } else if (accessToken && refreshToken) {
-                    state.accessToken = accessToken;
-                    state.refreshToken = refreshToken;
-                    // Don't set isAuthenticated here - wait for user data to be loaded
-                    // This prevents the race condition where isAuthenticated is true but user is null
                 }
             }
         },

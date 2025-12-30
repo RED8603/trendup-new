@@ -15,14 +15,14 @@ import TrendingTabs from "./TrendingTabs/TrendingTabs";
 const Home = () => {
     const theme = useTheme();
     const isMdup = useMediaQuery(theme.breakpoints.up("lg"));
-    const [tabId, setTabId] = useState(1);
+    const [tabId, setTabId] = useState("1");
 
     const handleChange = (event, newValue) => {
         setTabId(newValue);
     };
 
     return (
-        <Box>
+        <Box sx={{ width: "100%", minHeight: "60vh", py: 2 }}>
             <TabContext value={tabId}>
                 <Box 
                     sx={{ 
@@ -30,34 +30,36 @@ const Home = () => {
                         borderColor: "divider",
                         display: "flex",
                         justifyContent: "center",
-                        mb: 2
+                        mb: 2,
+                        pt: 2,
+                        width: "100%"
                     }}
                 >
-                    <CustomTabs onChange={handleChange} aria-label="home tabs">
+                    <CustomTabs onChange={handleChange} aria-label="home tabs" value={tabId}>
                         <CustomTab 
                             icon={<FeedIcon />} 
                             label="Crypto News" 
-                            value={1} 
+                            value="1" 
                             selected={tabId} 
                         />
                         <CustomTab 
                             icon={<TimelineIcon />} 
                             label="News Feed" 
-                            value={2} 
+                            value="2" 
                             selected={tabId} 
                         />
                         <CustomTab 
                             icon={<CryptoMarketIcon />} 
                             label="Crypto Market" 
-                            value={3} 
+                            value="3" 
                             selected={tabId} 
                         />
                     </CustomTabs>
                 </Box>
 
                 {/* Crypto News Tab */}
-                <TabPanel value={1} sx={{ px: { md: 2, xs: 0 }, py: 2 }}>
-                    <Container maxWidth="lg">
+                <TabPanel value="1" sx={{ px: { md: 2, xs: 1 }, py: 2, width: "100%" }}>
+                    <Container maxWidth="lg" sx={{ width: "100%", mx: "auto" }}>
                         <Typography 
                             variant="h2" 
                             color="textSecondary" 
@@ -70,15 +72,15 @@ const Home = () => {
                 </TabPanel>
 
                 {/* News Feed Tab */}
-                <TabPanel value={2} sx={{ px: { md: 2, xs: 0 }, py: 2 }}>
-                    <Container maxWidth="lg">
+                <TabPanel value="2" sx={{ px: { md: 2, xs: 1 }, py: 2, width: "100%" }}>
+                    <Container maxWidth="lg" sx={{ width: "100%", mx: "auto" }}>
                         <TrendingTabs />
                     </Container>
                 </TabPanel>
 
                 {/* Crypto Market Tab */}
-                <TabPanel value={3} sx={{ px: { md: 2, xs: 0 }, py: 2 }}>
-                    <Container maxWidth="lg">
+                <TabPanel value="3" sx={{ px: { md: 2, xs: 1 }, py: 2, width: "100%" }}>
+                    <Container maxWidth="lg" sx={{ width: "100%", mx: "auto" }}>
                         <Typography 
                             variant="h2" 
                             color="textSecondary" 

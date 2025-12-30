@@ -17,12 +17,12 @@ const isProduction = isProductionBuild || import.meta.env.VITE_ENV === 'producti
 // Helper to get env var with fallback (development) or throw error (production build only)
 const getEnvVar = (key, fallback = null, requiredInProduction = true) => {
   const value = import.meta.env[key];
-  
+
   // If value exists, use it
   if (value) {
     return value;
   }
-  
+
   // Only validate in actual production builds (not dev server)
   // This ensures the app works in development even without env vars
   if (isProductionBuild && requiredInProduction && import.meta.env.MODE === 'production') {
@@ -32,7 +32,7 @@ const getEnvVar = (key, fallback = null, requiredInProduction = true) => {
       `Please set this variable in your production environment.`
     );
   }
-  
+
   // Always use fallback if provided (works in both dev and prod if not set)
   if (fallback !== null) {
     if (isDevelopment) {
@@ -40,7 +40,7 @@ const getEnvVar = (key, fallback = null, requiredInProduction = true) => {
     }
     return fallback;
   }
-  
+
   // Return null if no fallback
   return null;
 };
@@ -49,10 +49,13 @@ export const env = {
   // API Configuration - REQUIRED in production
   apiUrl: getEnvVar('VITE_API_URL', 'http://localhost:3001/api/v1', true),
   backendUrl: getEnvVar('VITE_BACKEND_URL', 'http://localhost:3001', true),
-  
+
   // WalletConnect - Optional (can be null if Web3 is disabled)
   walletConnectProjectId: getEnvVar('VITE_WALLET_CONNECT_PROJECT_ID', null, false),
-  
+
+  // Google Auth
+  googleClientId: getEnvVar('VITE_GOOGLE_CLIENT_ID', 'YOUR_GOOGLE_CLIENT_ID_PLACEHOLDER', false),
+
   // Environment flags
   isDevelopment: isDevelopment,
   isProduction: isProduction,

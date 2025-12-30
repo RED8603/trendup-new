@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Card, CardContent, Typography, Stack, Box, useTheme, IconButton, CircularProgress } from "@mui/material";
+import { Card, CardContent, Typography, Stack, Box, useTheme, IconButton, CircularProgress, Alert } from "@mui/material";
 import { motion } from "framer-motion";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LaunchIcon from "@mui/icons-material/Launch";
 import { useGetCryptoNewsQuery } from "@/api/cryptoNewsApi";
-import { store } from "@/store/srore";
+import { useSelector } from "react-redux";
 
 
 const MotionBox = motion(Box);
@@ -28,16 +28,16 @@ const formatDate = (isoDate) => {
 };
 
 const CryptoNewsList = () => {
-    console.log(store.getState().cryptoNewsApi);
-   const [news, setNews] = useState([]);
+    const { isGuestMode } = useSelector((state) => state.user);
+    const [news, setNews] = useState([]);
     
-    // ✅ Calling the RTK query hook
-    const { data, isLoading, error } = useGetCryptoNewsQuery();
-
-    // 🔍 Logging to debug hook structure
-    useEffect(() => {
-        console.log({ data, isLoading, error }, "GET_NEWS_STATUS");
-    }, [data, isLoading, error]);
+    // ✅ Calling the RTK query hook with polling interval and skip for guest mode
+    const { data, isLoading, error } = useGetCryptoNewsQuery(undefined, {
+        // Poll every 5 minutes to reduce API calls and avoid rate limiting
+        pollingInterval: 300000, // 5 minutes in milliseconds
+        // Skip query when in guest mode
+        skip: isGuestMode,
+    });
 
     // ✅ Sync state when data is available
     useEffect(() => {
@@ -48,11 +48,59 @@ const CryptoNewsList = () => {
   
     const theme = useTheme();
 
-    if (isLoading) return <CircularProgress />;
+    // Show guest mode message
+    if (isGuestMode) {
+        return (
+            <Alert severity="info" sx={{ mt: 2 }}>
+                Sign in to view the latest crypto news and market updates.
+            </Alert>
+        );
+    }
+
+    // Show loading state
+    if (isLoading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" py={4}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+    // Show error state
+    if (error) {
+        const errorMessage = error?.data?.message || 
+                           (error?.status === 'CORS_ERROR' 
+                               ? 'Unable to fetch crypto news due to CORS restrictions. Please try again later.' 
+                               : 'Failed to load crypto news. Please try again later.');
+        
+        return (
+            <Alert severity="warning" sx={{ mt: 2 }}>
+                <Typography variant="body2" fontWeight="bold" gutterBottom>
+                    Unable to Load Crypto News
+                </Typography>
+                <Typography variant="body2">
+                    {errorMessage}
+                </Typography>
+                {error?.status === 429 && (
+                    <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                        Rate limit exceeded. Please wait a few minutes before refreshing.
+                    </Typography>
+                )}
+            </Alert>
+        );
+    }
+
+    // Show empty state
+    if (!news || news.length === 0) {
+        return (
+            <Alert severity="info" sx={{ mt: 2 }}>
+                No crypto news available at the moment. Please check back later.
+            </Alert>
+        );
+    }
 
     return (
         <Stack spacing={2}>
-            {/* <MainButton onClick={refetch}> fetch </MainButton> */}
             {news.map((item, i) => (
                 <MotionBox
                     key={item.id}

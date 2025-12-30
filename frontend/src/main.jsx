@@ -16,6 +16,8 @@ import { BrowserRouter } from "react-router-dom";
 import Loading from "@/components/common/loading";
 import { env } from "@/config/env";
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 const queryClient = new QueryClient();
 
 // Use WalletConnect Project ID from environment, fallback to hardcoded for development only
@@ -47,19 +49,21 @@ createAppKit({
 
 createRoot(document.getElementById("root")).render(
     <StrictMode>
-        <BrowserRouter>
-            <WagmiProvider config={wagmiAdapter.wagmiConfig}>
-                <QueryClientProvider client={queryClient}>
-                    {" "}
-                    <ConfigProvider>
-                        <Provider store={store}>
-                            <Suspense fallback={<Loading isLoading={true} />}>
-                                <App />{" "}
-                            </Suspense>
-                        </Provider>
-                    </ConfigProvider>
-                </QueryClientProvider>
-            </WagmiProvider>
-        </BrowserRouter>
+        <GoogleOAuthProvider clientId={env.googleClientId}>
+            <BrowserRouter>
+                <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+                    <QueryClientProvider client={queryClient}>
+                        {" "}
+                        <ConfigProvider>
+                            <Provider store={store}>
+                                <Suspense fallback={<Loading isLoading={true} />}>
+                                    <App />{" "}
+                                </Suspense>
+                            </Provider>
+                        </ConfigProvider>
+                    </QueryClientProvider>
+                </WagmiProvider>
+            </BrowserRouter>
+        </GoogleOAuthProvider>
     </StrictMode>
 );

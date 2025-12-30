@@ -10,19 +10,25 @@ const GuestLoginPrompt = () => {
     const dispatch = useDispatch();
     const theme = useTheme();
     const { isGuestMode } = useSelector((state) => state.user);
-    
+
     if (!isGuestMode) return null;
-    
+
     const handleLogin = () => {
         dispatch(exitGuestMode());
-        navigate('/login');
+        // Small delay to ensure state is updated before navigation
+        setTimeout(() => {
+            navigate('/login');
+        }, 50);
     };
-    
+
     const handleSignUp = () => {
         dispatch(exitGuestMode());
-        navigate('/register');
+        // Small delay to ensure state is updated before navigation
+        setTimeout(() => {
+            navigate('/register');
+        }, 50);
     };
-    
+
     return (
         <motion.div
             initial={{ y: 100, opacity: 0 }}
@@ -90,7 +96,7 @@ const GuestLoginPrompt = () => {
                             </Typography>
                         </Box>
                     </Stack>
-                    
+
                     <Stack
                         direction={{ xs: 'column', sm: 'row' }}
                         spacing={1.5}

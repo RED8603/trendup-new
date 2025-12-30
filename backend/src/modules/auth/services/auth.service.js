@@ -80,17 +80,22 @@ class AuthService {
   }
 
   async login({ email, password }) {
+    console.log('AuthService: Attempting login for', email);
     const user = await User.findOne({ email });
     if (!user) {
+      console.log('AuthService: User not found for email', email);
       throw new AuthenticationError('Invalid email or password');
     }
+    console.log('AuthService: User found', user._id);
 
     const auth = await Auth.findOne({ userId: user._id }).select('+password');
     if (!auth) {
+      console.log('AuthService: Auth record not found for user', user._id);
       throw new AuthenticationError('Invalid email or password');
     }
 
     if (auth.isLocked) {
+      console.log('AuthService: Account is locked for user', user._id);
       throw new AuthenticationError(
         'Account is locked due to too many failed login attempts. Please try again later'
       );
@@ -98,8 +103,10 @@ class AuthService {
 
     const { comparePassword } = require('../utils');
     const isPasswordValid = await comparePassword(password, auth.password);
+    console.log('AuthService: Password validation result:', isPasswordValid);
 
     if (!isPasswordValid) {
+      console.log('AuthService: Password invalid for user', user._id);
       await auth.incLoginAttempts();
       throw new AuthenticationError('Invalid email or password');
     }
