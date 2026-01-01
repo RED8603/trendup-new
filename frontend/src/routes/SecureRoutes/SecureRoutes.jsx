@@ -16,7 +16,7 @@ const SecureRoutes = () => {
         <Routes>
             {/* Default redirect to home */}
             <Route path="/" element={<Navigate to="/home" replace />} />
-            
+
             {/* Main routes */}
             <Route path="/home" element={<Home />} />
             <Route path="/social/*" element={<Social />} />
@@ -27,12 +27,12 @@ const SecureRoutes = () => {
             <Route path="/live/:streamId" element={<Live />} />
             <Route path="/karma" element={<KarmaDashboard />} />
             <Route path="/notifications" element={<NotificationCenter />} />
-            
+
             {/* Profile routes */}
             <Route path="/user/profile" element={<UserProfile />} />
             <Route path="/user/edit-profile" element={<EditProfile />} />
             <Route path="/user/:userId" element={<OtherUserProfile />} />
-            
+
             {/* Catch all - redirect to home */}
             <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>

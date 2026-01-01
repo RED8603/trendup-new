@@ -87,6 +87,12 @@ const { conversationRoutes, messageRoutes } = require('./modules/chat');
 app.use('/api/v1/chat/conversations', conversationRoutes);
 app.use('/api/v1/chat', messageRoutes);
 
+// Project routes
+const { projectRoutes, documentRoutes, changeHistoryRoutes } = require('./modules/project');
+app.use('/api/v1/projects', projectRoutes);
+app.use('/api/v1/projects', documentRoutes);
+app.use('/api/v1/projects', changeHistoryRoutes);
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
