@@ -1,0 +1,114 @@
+.change-history-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s;
+}
+
+.change-history-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.change-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.change-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.change-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.change-description {
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.change-time {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.change-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-avatar-placeholder {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.user-name {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+}
+
+.change-values {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 0.8rem;
+}
+
+.value-old,
+.value-new {
+    display: flex;
+    gap: 8px;
+}
+
+.value-old {
+    margin-bottom: 8px;
+}
+
+.value-label {
+    color: rgba(255, 255, 255, 0.4);
+    min-width: 50px;
+}
+
+.value-old .value-text {
+    color: #f87171;
+    word-break: break-all;
+}
+
+.value-new .value-text {
+    color: #22c55e;
+    word-break: break-all;
+}

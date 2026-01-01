@@ -29,6 +29,7 @@ class AuthController {
 
   async login(req, res) {
     const { email, password } = req.body;
+    console.log('Login request received for:', email);
     const result = await authService.login({ email, password });
     sendSuccessResponse(res, result, 'Login successful');
   }

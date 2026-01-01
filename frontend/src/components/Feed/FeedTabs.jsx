@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Tabs, Tab, useTheme } from '@mui/material';
 import { motion } from 'framer-motion';
+import { useSelector } from 'react-redux';
 import { 
   useGetForYouFeedQuery, 
   useGetFollowingFeedQuery, 
@@ -9,10 +10,12 @@ import {
 } from '@/api/slices/socialApi';
 import FeedList from './FeedList';
 import Loading from '../common/loading';
+import GuestFeedError from '../common/GuestFeedError';
 
 const FeedTabs = () => {
   const theme = useTheme();
   const [activeTab, setActiveTab] = useState(0);
+  const { isGuestMode } = useSelector((state) => state.user);
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -25,7 +28,10 @@ const FeedTabs = () => {
     { label: 'Discover', query: useGetDiscoverFeedQuery },
   ];
 
-  const currentQuery = tabs[activeTab].query({ page: 1, limit: 20 });
+  const currentQuery = tabs[activeTab].query(
+    { page: 1, limit: 20 },
+    { skip: isGuestMode && (activeTab === 1 || activeTab === 2) } // Skip Following and Trending for guests
+  );
   const { data, error, isLoading, refetch } = currentQuery;
 
   return (
@@ -61,6 +67,8 @@ const FeedTabs = () => {
       >
         {isLoading ? (
           <Loading isLoading={true} />
+        ) : (isGuestMode && (activeTab === 1 || activeTab === 2)) || (error && (error.data?.message?.includes('token') || error.data?.message?.includes('Token') || error.data?.message?.includes('No token'))) ? (
+          <GuestFeedError featureName={`the ${tabs[activeTab].label} feed`} />
         ) : error ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <p>Error loading feed: {error.data?.message || 'Something went wrong'}</p>

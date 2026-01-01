@@ -10,6 +10,7 @@ import {
   useMediaQuery,
   Paper
 } from '@mui/material';
+import { useSelector } from 'react-redux';
 import { useGetNotificationsQuery, useMarkAllNotificationsAsReadMutation } from '@/api/slices/socialApi';
 import NotificationItem from '@/components/common/Notifictions/NotificationItem';
 import Loading from '@/components/common/loading';
@@ -19,11 +20,15 @@ const NotificationCenter = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [activeTab, setActiveTab] = useState(0);
+  const { isGuestMode } = useSelector((state) => state.user);
   
-  const { data, isLoading, refetch } = useGetNotificationsQuery({
-    limit: 50,
-    unreadOnly: activeTab === 1
-  });
+  const { data, isLoading, refetch } = useGetNotificationsQuery(
+    {
+      limit: 50,
+      unreadOnly: activeTab === 1
+    },
+    { skip: isGuestMode } // Skip query when in guest mode
+  );
   
   const [markAllAsRead] = useMarkAllNotificationsAsReadMutation();
 

@@ -12,11 +12,12 @@ import { baseApi } from '@/api/baseApi';
  */
 export const useNotifications = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.user);
+  const { user, isGuestMode } = useSelector((state) => state.user);
   const { showToast } = useToast();
   const { data, refetch } = useGetUnreadCountQuery(undefined, {
     // Poll every 30 seconds as backup
     pollingInterval: 30000,
+    skip: isGuestMode, // Skip query when in guest mode
   });
 
   // Handle new notification received via socket

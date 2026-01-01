@@ -12,10 +12,8 @@ export const useGuestAwareApi = () => {
     const navigate = useNavigate();
     
     const promptLogin = (action = 'perform this action') => {
-        showToast(`Sign up to ${action}`, 'info');
-        setTimeout(() => {
-            navigate('/register');
-        }, 1500);
+        // More friendly messaging - don't automatically navigate
+        showToast(`Create an account to ${action}`, 'info');
     };
     
     // New function to check if action is allowed and return modal props

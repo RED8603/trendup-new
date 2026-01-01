@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { TabContext, TabPanel } from "@mui/lab";
-import { Box, Container, Grid, Alert } from "@mui/material";
+import { Box, Container, Grid, Alert, Typography, alpha } from "@mui/material";
 import CreateDemocraticVote from "./DemocraticVoting/DemocraticVoting";
 import DemocraticVotesList from "./DemocraticVoting/DemocraticVotesList";
 import VoteOnProposal from "./DemocraticVoting/VoteOnProposal";
@@ -26,8 +26,21 @@ const Vote = () => {
     return (
         <>
             {isGuest && (
-                <Alert severity="info" sx={{ m: 2 }}>
-                    You're viewing sample votes. Sign up to create and participate in real votes!
+                <Alert 
+                    severity="info" 
+                    sx={{ 
+                        m: 2,
+                        borderRadius: 2,
+                        backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.06),
+                        border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                        '& .MuiAlert-icon': {
+                            color: 'primary.main',
+                        },
+                    }}
+                >
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        Explore sample votes and proposals. <strong>Sign up</strong> to create your own and vote!
+                    </Typography>
                 </Alert>
             )}
             <Container maxWidth="xl">

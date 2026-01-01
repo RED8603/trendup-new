@@ -1,17 +1,28 @@
 import React from 'react';
 import { Box, Container, useTheme, useMediaQuery } from '@mui/material';
 import { useGetFollowingFeedQuery } from '@/api/slices/socialApi';
+import { useSelector } from 'react-redux';
 import FeedList from './FeedList';
 import CreatePost from '../CreatePost/CreatePost';
 import Loading from '../common/loading';
+import GuestFeedError from '../common/GuestFeedError';
 
 const FollowingFeed = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data, error, isLoading, refetch } = useGetFollowingFeedQuery({ page: 1, limit: 20 });
+  const { isGuestMode } = useSelector((state) => state.user);
+  const { data, error, isLoading, refetch } = useGetFollowingFeedQuery(
+    { page: 1, limit: 20 },
+    { skip: isGuestMode }
+  );
 
-  if (isLoading) {
+  if (isLoading && !isGuestMode) {
     return <Loading isLoading={true} />;
+  }
+
+  // Show guest error message for guest users or when error is "No token provided"
+  if (isGuestMode || (error && (error.data?.message?.includes('token') || error.data?.message?.includes('Token') || error.data?.message?.includes('No token')))) {
+    return <GuestFeedError featureName="the Following feed" />;
   }
 
   if (error) {

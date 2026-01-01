@@ -82,6 +82,14 @@ export const authApi = baseApi.injectEndpoints({
                 body: data
             })
         }),
+
+        googleLogin: builder.mutation({
+            query: (data) => ({
+                url: '/auth/google',
+                method: 'POST',
+                body: data
+            })
+        }),
     })
 });
 
@@ -97,4 +105,5 @@ export const {
     useResetPasswordMutation,
     useRequestWalletNonceMutation,
     useVerifyWalletMutation,
+    useGoogleLoginMutation,
 } = authApi;

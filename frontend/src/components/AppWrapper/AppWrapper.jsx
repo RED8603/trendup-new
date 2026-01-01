@@ -5,11 +5,15 @@ import { Box, Container, CssBaseline } from "@mui/material";
 import Topbar from "@components/Topbar/Topbar";
 import { AnimatePresence, motion } from "framer-motion";
 import Sidebar from "@components/Topbar/Sidebar";
+import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 
 const MotionDiv = motion.div;
 
 const AppWrapper = ({ children }) => {
     const { isDarkMode } = useGenrelContext();
+    const { isGuestMode } = useSelector((state) => state.user);
+    const location = useLocation();
 
     const duration = 0.3; // match 300ms from theme
     return (
@@ -17,10 +21,10 @@ const AppWrapper = ({ children }) => {
             <CssBaseline />
             {/* <Topbar /> */}
             <Sidebar>
-                <Box sx={{ overflowX: "hidden", position: "relative" }}>
+                <Box sx={{ overflowX: "hidden", position: "relative", width: "100%" }}>
                     <AnimatePresence mode="wait">
                         <MotionDiv
-                            // key={isDarkMode}
+                            key={location.pathname}
                             initial={{
                                 opacity: 0,
                                 scale: 0.98,
@@ -47,8 +51,18 @@ const AppWrapper = ({ children }) => {
                                     ease: "easeInOut",
                                 },
                             }}
+                            style={{ width: "100%" }}
                         >
-                            <Container maxWidth="xl">{children}</Container>
+                            <Container 
+                                maxWidth="xl"
+                                sx={{
+                                    pb: isGuestMode ? { xs: 12, sm: 14 } : 0,
+                                    width: "100%",
+                                    px: { xs: 1, sm: 2, md: 3 }
+                                }}
+                            >
+                                {children}
+                            </Container>
                         </MotionDiv>
                     </AnimatePresence>
                 </Box>

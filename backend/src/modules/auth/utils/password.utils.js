@@ -1,13 +1,16 @@
-const bcrypt = require('bcryptjs');
+const argon2 = require('argon2');
 
 /**
- * Hash password using bcrypt
+ * Hash password using argon2
  * @param {String} password - Plain text password
  * @returns {Promise<String>} Hashed password
  */
 const hashPassword = async (password) => {
-  const saltRounds = 10;
-  return await bcrypt.hash(password, saltRounds);
+  try {
+    return await argon2.hash(password);
+  } catch (err) {
+    throw new Error('Password hashing failed');
+  }
 };
 
 /**
@@ -17,7 +20,11 @@ const hashPassword = async (password) => {
  * @returns {Promise<Boolean>} True if password matches
  */
 const comparePassword = async (password, hash) => {
-  return await bcrypt.compare(password, hash);
+  try {
+    return await argon2.verify(hash, password);
+  } catch (err) {
+    return false;
+  }
 };
 
 /**

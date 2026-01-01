@@ -2,9 +2,11 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { removeUser } from "@/store/slices/userSlices";
 import { env } from "@/config/env";
 
-
-const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1"; // loacl
-// const baseUrl = import.meta.env.VITE_API_URL || "https://api.trenduplive.com/api/v1"; // production
+/**
+ * Get API base URL from environment configuration
+ * In production, VITE_API_URL must be set or env.js will throw an error
+ */
+const baseUrl = env.apiUrl;
 
 const baseQueryWithAuth = fetchBaseQuery({
     baseUrl: baseUrl,
@@ -29,7 +31,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
         }
 
         const refreshToken = localStorage.getItem("refreshToken");
-        
+
         if (refreshToken) {
             const refreshResult = await baseQueryWithAuth(
                 {
@@ -69,17 +71,19 @@ export const baseApi = createApi({
     baseQuery: baseQueryWithReauth,
     endpoints: () => ({}),
     tagTypes: [
-        "Auth", "Users", "Posts", "Comments", "Reactions", "Feed", "Following", "Followers", 
-        "Karma", "Badges", "Polls", "Predictions", "Categories", "Hashtags", "Trending", "Discover", 
-        "FollowSuggestions", "KarmaLeaderboard", "KarmaStats", "Notifications", "NotificationCount", 
+        "Auth", "Users", "Posts", "Comments", "Reactions", "Feed", "Following", "Followers",
+        "Karma", "Badges", "Polls", "Predictions", "Categories", "Hashtags", "Trending", "Discover",
+        "FollowSuggestions", "KarmaLeaderboard", "KarmaStats", "Notifications", "NotificationCount",
         "UserProfile", "UserSearch", "FollowerStats", "FollowingStats",
         // Karma system tags
         "UsersByLevel", "UserKarmaHistory", "UserReactions", "ReactionPermission", "UserReactionWeight",
         "MyKarma", "MyKarmaStats", "MyBadges", "MyReactions", "MyKarmaHistory",
         // Badge system tags
-        "BadgeStats", "BadgesByCategory", "BadgesByRarity", "Badge", "AvailableBadges", 
+        "BadgeStats", "BadgesByCategory", "BadgesByRarity", "Badge", "AvailableBadges",
         "UserBadgeProgress", "MyAvailableBadges", "MyBadgeProgress",
         // Chat system tags
-        "Conversations", "Messages"
+        "Conversations", "Messages",
+        // Project system tags
+        "Projects", "ProjectDocuments", "ProjectHistory"
     ],
 });

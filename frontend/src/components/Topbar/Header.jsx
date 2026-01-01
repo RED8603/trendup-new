@@ -15,7 +15,7 @@ import {
     Button,
     Avatar,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import { motion } from "framer-motion";
 
@@ -57,13 +57,23 @@ const drawerLinks = [
 
 export default function HeaderDrawer() {
     const theme = useTheme();
+    const navigate = useNavigate();
     const { address } = useGenrelContext();
     const { user } = useSelector((state) => state.user);
     const [isOpen, setIsOpen] = useState(false);
     const { logout } = useAuth();
     const { showToast } = useToast();
 
-    const toggleDrawer = (open) => () => setIsOpen(open);
+    const toggleDrawer = (open) => (event) => {
+        if (
+            event &&
+            event.type === 'keydown' &&
+            (event.key === 'Tab' || event.key === 'Shift')
+        ) {
+            return;
+        }
+        setIsOpen(open);
+    };
 
     const handleLogout = () => {
         logout();
@@ -87,12 +97,9 @@ export default function HeaderDrawer() {
                     open={isOpen}
                     onClose={toggleDrawer(false)}
                     onOpen={toggleDrawer(true)}
+                    disableSwipeToOpen={false}
+                    swipeAreaWidth={20}
                     PaperProps={{
-                        component: motion.div,
-                        initial: { x: -300 },
-                        animate: { x: 0 },
-                        exit: { x: -300 },
-                        transition: { duration: 0.3 },
                         sx: {
                             width: 280,
                             background: theme.palette.background.default,
@@ -120,8 +127,6 @@ export default function HeaderDrawer() {
                             {drawerLinks.map(({ name, path, Icon }) => (
                                 <ListItemButton
                                     key={name}
-                                    component={Link}
-                                    to={path}
                                     sx={{
                                         borderRadius: 2,
                                         mb: 1,
@@ -131,7 +136,14 @@ export default function HeaderDrawer() {
                                             background: theme.palette.action.hover,
                                         },
                                     }}
-                                    onClick={toggleDrawer(false)}
+                                    onClick={() => {
+                                        // Close drawer first
+                                        setIsOpen(false);
+                                        // Navigate after a small delay to ensure drawer closes smoothly
+                                        setTimeout(() => {
+                                            navigate(path);
+                                        }, 150);
+                                    }}
                                 >
                                     <ListItemIcon>
                                         <Icon fontSize="medium" sx={{ color: theme.palette.text.primary }} />
