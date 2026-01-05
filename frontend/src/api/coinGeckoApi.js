@@ -11,5 +11,10 @@ export const cryptoMarketApi = createApi({
             return headers;
         },
     }),
+    // Keep data fresh - don't cache for too long
+    keepUnusedDataFor: 10, // Only cache for 10 seconds
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
     endpoints: () => ({}),
 });
