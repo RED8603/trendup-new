@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { io } from 'socket.io-client';
 import { useSelector } from 'react-redux';
 import { useToast } from '@/hooks/useToast';
+import { env } from '@/config/env';
 
 // Provide default context value to prevent errors if used outside provider
 const defaultContextValue = {
@@ -28,8 +29,8 @@ export const SocketProvider = ({ children }) => {
   const { user } = useSelector((state) => state.user);
   const { showToast } = useToast();
 
-  // Socket configuration
-  const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+  // Socket configuration - use env helper to ensure required vars in production
+  const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || env.backendUrl;
   const MAX_RECONNECT_ATTEMPTS = 5;
   const RECONNECT_DELAY = 1000; // Start with 1 second
 

@@ -9,11 +9,12 @@ import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useRequestWalletNonceMutation } from "@/api/slices/authApi";
+import { useRequestWalletNonceMutation, useGoogleLoginMutation } from "@/api/slices/authApi";
 import { useSignMessage } from "wagmi";
 import { useToast } from "@/hooks/useToast";
 import { useDispatch } from "react-redux";
-import { setGuestMode } from "@/store/slices/userSlices";
+import { setGuestMode, setAuth, setLoading, setError } from "@/store/slices/userSlices";
+import { useGoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
     const { open } = useAppKit();
@@ -31,6 +32,7 @@ const Login = () => {
     const [checked, setChecked] = useState(false);
 
     const [requestWalletNonce] = useRequestWalletNonceMutation();
+    const [googleLoginApi] = useGoogleLoginMutation();
     const { signMessageAsync } = useSignMessage();
 
     const handleChange = (event) => {
@@ -139,6 +141,37 @@ const Login = () => {
         }
     };
 
+    const loginToGoogle = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            try {
+                dispatch(setLoading(true));
+                const result = await googleLoginApi({
+                    accessToken: tokenResponse.access_token
+                }).unwrap();
+
+                dispatch(setAuth({
+                    user: result.data.user,
+                    accessToken: result.data.accessToken,
+                    refreshToken: result.data.refreshToken,
+                }));
+
+                showToast("Google login successful!", "success");
+                // Use replace: true and delay to ensure Redux state is fully updated before navigation
+                setTimeout(() => {
+                    navigate('/home', { replace: true });
+                }, 200);
+            } catch (error) {
+                dispatch(setError(error.data?.message || "Google login failed"));
+                dispatch(setLoading(false));
+                showToast(error.data?.message || "Google login failed", "error");
+            }
+        },
+        onError: () => {
+            dispatch(setLoading(false));
+            showToast("Google login failed", "error");
+        }
+    });
+
     const handleSkip = () => {
         setLoginWithEmail(false);
     };
@@ -146,10 +179,10 @@ const Login = () => {
     const handleGuestLogin = (e) => {
         e?.preventDefault?.(); // Prevent any default behavior
         e?.stopPropagation?.(); // Stop event propagation
-        
+
         dispatch(setGuestMode());
         showToast("Browsing as guest. Sign up to unlock all features!", "info");
-        
+
         // Navigate directly after a small delay to ensure state is updated
         setTimeout(() => {
             navigate('/home', { replace: true });
@@ -290,23 +323,23 @@ const Login = () => {
                             justifyContent={"center"}
                             mt={4}
                         >
-                            <MainButton 
-                                sx={{ width: "230px" }} 
-                                startIcon={<WalletIconSvg />} 
+                            <MainButton
+                                sx={{ width: "230px" }}
+                                startIcon={<WalletIconSvg />}
                                 onClick={handleWalletLogin}
                             >
                                 {address ? 'Login with Wallet' : 'Connect Wallet'}
                             </MainButton>
-                            <MainButton 
-                                sx={{ width: "230px", opacity: 0.5 }} 
-                                startIcon={<GoogleSvg />} 
-                                disabled
+                            <MainButton
+                                sx={{ width: "230px" }}
+                                startIcon={<GoogleSvg />}
+                                onClick={() => loginToGoogle()}
                             >
-                                Coming Soon
+                                Login with Google
                             </MainButton>
-                            <MainButton 
-                                sx={{ width: "230px", opacity: 0.5 }} 
-                                startIcon={<AppleIconSvg />} 
+                            <MainButton
+                                sx={{ width: "230px", opacity: 0.5 }}
+                                startIcon={<AppleIconSvg />}
                                 disabled
                             >
                                 Coming Soon
@@ -318,12 +351,12 @@ const Login = () => {
                             >
                                 Login with Email
                             </MainButton>
-                            
+
                             {/* NEW: Guest Mode Button */}
                             <Box sx={{ width: "230px", mt: 1, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.2)}` }}>
                                 <MainButton
                                     type="button"
-                                    sx={{ 
+                                    sx={{
                                         width: "100%",
                                         backgroundColor: "transparent",
                                         border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
@@ -337,9 +370,9 @@ const Login = () => {
                                 >
                                     Continue as Guest
                                 </MainButton>
-                                <Typography 
-                                    variant="caption" 
-                                    color="text.secondary" 
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
                                     sx={{ mt: 1, textAlign: 'center', display: 'block' }}
                                 >
                                     Try the app before signing up

@@ -1,34 +1,43 @@
-import Chat from "@/pages/Chat/Chat";
+import { Route, Routes, Navigate } from "react-router-dom";
 import Home from "@/pages/Home/Home";
-import GoLiveView from "@/pages/Live/Live";
-import LiveStreamView from "@/pages/Live/LiveStream";
-import EditProfilePage from "@/pages/profile/Edit/EditProfile";
-import Profile from "@/pages/profile/UserProfile";
-import Vote from "@/pages/Vote/Vote";
 import Social from "@/pages/Social/Social";
-import NotificationCenter from "@/pages/Notifications/NotificationCenter";
-import OtherUserProfile from "@/pages/User/OtherUserProfile";
-import UserSearch from "@/components/User/UserSearch";
+import Chat from "@/pages/Chat/Chat";
+import ChatDetail from "@/pages/Chat/ChatDetail";
+import Vote from "@/pages/Vote/Vote";
+import Live from "@/pages/Live/Live";
 import KarmaDashboard from "@/pages/Karma/KarmaDashboard";
-import { Route, Routes } from "react-router-dom";
+import NotificationCenter from "@/pages/Notifications/NotificationCenter";
+import UserProfile from "@/pages/profile/UserProfile";
+import EditProfile from "@/pages/profile/Edit/EditProfile";
+import OtherUserProfile from "@/pages/User/OtherUserProfile";
 
 const SecureRoutes = () => {
     return (
         <Routes>
-            <Route element={<Home />} path="/home/*" />
-            <Route element={<Social />} path="/social/*" />
-            <Route element={<Vote />} path="/vote" />
-            <Route element={<Chat />} path="/chat" />
-            <Route element={<GoLiveView />} path="/live" />
-            <Route element={<LiveStreamView />} path="/live/stream" />
-            <Route element={<Profile />} path="/user/profile" />
-            <Route element={<EditProfilePage />} path="/user/edit-profile" />
-            <Route element={<UserSearch />} path="/users/search" />
-            <Route element={<OtherUserProfile />} path="/user/:userId" />
-            <Route element={<NotificationCenter />} path="/notifications" />
-            <Route element={<KarmaDashboard />} path="/karma" />
+            {/* Default redirect to home */}
+            <Route path="/" element={<Navigate to="/home" replace />} />
+
+            {/* Main routes */}
+            <Route path="/home" element={<Home />} />
+            <Route path="/social/*" element={<Social />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/chat/:conversationId" element={<ChatDetail />} />
+            <Route path="/vote/*" element={<Vote />} />
+            <Route path="/live" element={<Live />} />
+            <Route path="/live/:streamId" element={<Live />} />
+            <Route path="/karma" element={<KarmaDashboard />} />
+            <Route path="/notifications" element={<NotificationCenter />} />
+
+            {/* Profile routes */}
+            <Route path="/user/profile" element={<UserProfile />} />
+            <Route path="/user/edit-profile" element={<EditProfile />} />
+            <Route path="/user/:userId" element={<OtherUserProfile />} />
+
+            {/* Catch all - redirect to home */}
+            <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
     );
 };
 
 export default SecureRoutes;
+

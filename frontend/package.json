@@ -17,6 +17,7 @@
     "@mui/icons-material": "^7.1.0",
     "@mui/lab": "^7.0.0-beta.14",
     "@mui/material": "^6.4.8",
+    "@react-oauth/google": "^0.13.4",
     "@reduxjs/toolkit": "^2.8.2",
     "@reown/appkit": "^1.7.0",
     "@reown/appkit-adapter-wagmi": "^1.7.0",

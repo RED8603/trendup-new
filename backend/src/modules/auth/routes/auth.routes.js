@@ -78,6 +78,14 @@ router.get(
   getCurrentUser
 );
 
+const { googleLogin } = require('../controllers/social.controller');
+
+router.post(
+  '/google',
+  authLimiter,
+  googleLogin
+);
+
 const passwordResetRoutes = require('./password-reset.routes');
 router.use('/', passwordResetRoutes);
 

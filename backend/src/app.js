@@ -67,7 +67,12 @@ app.use('/api/v1/social/media', mediaRoutes);
 app.use('/api/v1/social/polls', pollRoutes);
 app.use('/api/v1/social/predictions', predictionRoutes);
 app.use('/api/v1/social/moderation', moderationRoutes);
+app.use('/api/v1/social/moderation', moderationRoutes);
 app.use('/api/v1/social/notifications', notificationRoutes);
+
+// News routes
+const newsRoutes = require('./modules/news/news.routes');
+app.use('/api/v1/news', newsRoutes);
 
 // Redis infrastructure routes
 const redisRoutes = require('./core/routes/redis.routes');
@@ -81,6 +86,12 @@ app.use('/api/v1/realtime', realtimeRoutes);
 const { conversationRoutes, messageRoutes } = require('./modules/chat');
 app.use('/api/v1/chat/conversations', conversationRoutes);
 app.use('/api/v1/chat', messageRoutes);
+
+// Project routes
+const { projectRoutes, documentRoutes, changeHistoryRoutes } = require('./modules/project');
+app.use('/api/v1/projects', projectRoutes);
+app.use('/api/v1/projects', documentRoutes);
+app.use('/api/v1/projects', changeHistoryRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
